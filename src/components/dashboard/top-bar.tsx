@@ -1,10 +1,25 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Search, FolderPlus, Plus } from "lucide-react";
+'use client'
 
-export default function TopBar() {
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Search, FolderPlus, Plus, Menu } from 'lucide-react'
+
+interface TopBarProps {
+  onMobileMenuToggle?: () => void
+}
+
+export default function TopBar({ onMobileMenuToggle }: TopBarProps) {
   return (
     <header className="flex items-center gap-4 px-4 h-14 border-b border-border shrink-0">
+      {/* Mobile hamburger */}
+      <button
+        onClick={onMobileMenuToggle}
+        className="md:hidden p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
       <div className="flex items-center gap-2 w-48 shrink-0">
         <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary text-primary-foreground text-sm font-bold">
           S
@@ -24,15 +39,15 @@ export default function TopBar() {
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
-        <Button variant="outline" size="sm" className="gap-1.5">
+        <Button variant="outline" size="sm" className="gap-1.5 hidden sm:flex">
           <FolderPlus className="w-4 h-4" />
           New Collection
         </Button>
         <Button size="sm" className="gap-1.5">
           <Plus className="w-4 h-4" />
-          New Item
+          <span className="hidden sm:inline">New Item</span>
         </Button>
       </div>
     </header>
-  );
+  )
 }
