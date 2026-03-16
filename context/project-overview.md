@@ -513,3 +513,10 @@ model ItemTag {
 | Notion   | Clean layout, sidebar UX, dark mode      |
 | Linear   | Minimal UI, keyboard shortcuts, speed    |
 | Raycast  | Quick-access patterns, command palette   |
+
+### Screenshots
+
+Refer to the screenshots below as a base for the dashboard ui. It does not have to be exact. Use it as a reference.
+
+- @context/screenshots/dashboard-ui-main.png
+- @context/screenshots/dashboard-ui-drawer.png
