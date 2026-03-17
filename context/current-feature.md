@@ -2,15 +2,26 @@
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-None
+Rewrite `prisma/seed.ts` with richer sample data per seed-spec.md:
+
+- **User** — `demo@devstash.io`, password `12345678` hashed with bcryptjs (12 rounds), `emailVerified` set to current date
+- **7 system item types** — snippet, prompt, command, note, file, image, link (unchanged)
+- **React Patterns** collection — 3 TypeScript snippets (custom hooks, component patterns, utility functions)
+- **AI Workflows** collection — 3 prompts (code review, docs generation, refactoring)
+- **DevOps** collection — 1 snippet, 1 command, 2 links (real URLs)
+- **Terminal Commands** collection — 4 commands (git, docker, process management, package manager)
+- **Design Resources** collection — 4 links (real URLs: Tailwind, component libraries, design systems, icon libraries)
 
 ## Notes
 
-None
+- Install `bcryptjs` + `@types/bcryptjs`
+- Overwrite the existing `prisma/seed.ts` entirely
+- Use `upsert` throughout to keep the seed idempotent
+- Use real, working URLs for link items
 
 ## History
 
