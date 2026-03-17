@@ -2,26 +2,15 @@
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-Rewrite `prisma/seed.ts` with richer sample data per seed-spec.md:
-
-- **User** — `demo@devstash.io`, password `12345678` hashed with bcryptjs (12 rounds), `emailVerified` set to current date
-- **7 system item types** — snippet, prompt, command, note, file, image, link (unchanged)
-- **React Patterns** collection — 3 TypeScript snippets (custom hooks, component patterns, utility functions)
-- **AI Workflows** collection — 3 prompts (code review, docs generation, refactoring)
-- **DevOps** collection — 1 snippet, 1 command, 2 links (real URLs)
-- **Terminal Commands** collection — 4 commands (git, docker, process management, package manager)
-- **Design Resources** collection — 4 links (real URLs: Tailwind, component libraries, design systems, icon libraries)
+None
 
 ## Notes
 
-- Install `bcryptjs` + `@types/bcryptjs`
-- Overwrite the existing `prisma/seed.ts` entirely
-- Use `upsert` throughout to keep the seed idempotent
-- Use real, working URLs for link items
+None
 
 ## History
 
@@ -30,3 +19,5 @@ Rewrite `prisma/seed.ts` with richer sample data per seed-spec.md:
 - 2026-03-16: Dashboard UI Phase 2 — collapsible sidebar (icon-only on desktop, overlay drawer on mobile), item types with colored icons and counts linking to /items/[type]s, favorite collections, recent collections, user avatar area at bottom. DashboardShell client component added to manage sidebar state.
 - 2026-03-16: Dashboard UI Phase 3 — 4 stats cards (total items, collections, favorite items, favorite collections), recent collections grid with type color indicators, pinned items section, 10 most recent items list. All powered by mock data.
 - 2026-03-17: Prisma + Neon PostgreSQL setup — installed Prisma 7.5.0 (`prisma-client` provider, TypeScript-native, Rust-free), Neon serverless driver (`@neondatabase/serverless`) and adapter (`@prisma/adapter-neon`). Created full schema (`prisma/schema.prisma`) with all data models: User, Account, Session, VerificationToken, ItemType, Item, Collection, ItemCollection, Tag, ItemTag. Created `prisma.config.ts` with `defineConfig` for datasource and seed command. Created `src/lib/prisma.ts` singleton using `PrismaNeon` adapter. Ran initial migration (`20260317130653_init`). Seeded database with demo user, 7 system item types, 6 collections, and 6 items with tags and collection links.
+- 2026-03-17: Seed data — rewrote `prisma/seed.ts` with richer sample data. Installed `bcryptjs` to hash the demo user password (12 rounds) and set `emailVerified`. Created 5 collections with 18 items: React Patterns (3 TypeScript snippets), AI Workflows (3 prompts), DevOps (1 snippet, 1 command, 2 links), Terminal Commands (4 commands), Design Resources (4 links). All upserts for idempotency.
+- 2026-03-17: Dashboard collections from DB — created `src/lib/db/collections.ts` with `getCollections` query (includes items + item types, computes dominant color and type icons per collection). Refactored `DashboardShell` to accept `children`, made `DashboardPage` async to fetch and pass real collection data to `MainContent`. Collection cards now show colored accent bar, type-colored border, small icon badges for each type, and real item counts.
