@@ -3,8 +3,16 @@
 import { useState } from 'react'
 import TopBar from './top-bar'
 import Sidebar from './sidebar'
+import type { ItemTypeWithCount } from '@/lib/db/items'
+import type { CollectionWithMeta } from '@/lib/db/collections'
 
-export default function DashboardShell({ children }: { children: React.ReactNode }) {
+interface DashboardShellProps {
+  children: React.ReactNode
+  itemTypes: ItemTypeWithCount[]
+  collections: CollectionWithMeta[]
+}
+
+export default function DashboardShell({ children, itemTypes, collections }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -17,6 +25,8 @@ export default function DashboardShell({ children }: { children: React.ReactNode
           isMobileOpen={isMobileOpen}
           onClose={() => setIsMobileOpen(false)}
           onToggleCollapse={() => setIsCollapsed((v) => !v)}
+          itemTypes={itemTypes}
+          collections={collections}
         />
         {children}
       </div>
