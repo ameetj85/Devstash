@@ -15,12 +15,8 @@ import {
   Clock,
   type LucideIcon,
 } from 'lucide-react'
-import {
-  mockItems,
-  mockItemTypes,
-  mockTypeCounts,
-} from '@/lib/mock-data'
 import type { CollectionWithMeta } from '@/lib/db/collections'
+import type { ItemWithType, ItemStats } from '@/lib/db/items'
 
 // ─── Icon map ────────────────────────────────────────────────────────────────
 
@@ -34,20 +30,8 @@ const iconMap: Record<string, LucideIcon> = {
   Image,
 }
 
-// ─── Derived data (mock — will be replaced per section) ───────────────────────
-
-const typeById = Object.fromEntries(mockItemTypes.map((t) => [t.id, t]))
-
-const totalItems = Object.values(mockTypeCounts).reduce((a, b) => a + b, 0)
-const favoriteItems = mockItems.filter((i) => i.isFavorite).length
-
-const pinnedItems = mockItems.filter((i) => i.isPinned)
-const recentItems = [...mockItems]
-  .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-  .slice(0, 10)
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
+function formatDate(date: Date) {
+  return date.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
   })
@@ -55,16 +39,29 @@ function formatDate(dateStr: string) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function MainContent({ collections }: { collections: CollectionWithMeta[] }) {
+interface MainContentProps {
+  collections: CollectionWithMeta[]
+  pinnedItems: ItemWithType[]
+  recentItems: ItemWithType[]
+  itemStats: ItemStats
+}
+
+export default function MainContent({
+  collections,
+  pinnedItems,
+  recentItems,
+  itemStats,
+}: MainContentProps) {
   const totalCollections = collections.length
   const favoriteCollections = collections.filter((c) => c.isFavorite).length
 
   const stats = [
-    { label: 'Total Items', value: totalItems, icon: Layers },
+    { label: 'Total Items', value: itemStats.totalItems, icon: Layers },
     { label: 'Collections', value: totalCollections, icon: FolderOpen },
-    { label: 'Favorite Items', value: favoriteItems, icon: Heart },
+    { label: 'Favorite Items', value: itemStats.favoriteItems, icon: Heart },
     { label: 'Favorite Collections', value: favoriteCollections, icon: Star },
   ]
+
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-8">
       {/* Heading */}
@@ -166,8 +163,7 @@ export default function MainContent({ collections }: { collections: CollectionWi
           </div>
           <div className="space-y-2">
             {pinnedItems.map((item) => {
-              const type = typeById[item.itemTypeId]
-              const Icon = type ? (iconMap[type.icon] ?? File) : File
+              const Icon = iconMap[item.itemType.icon] ?? File
               return (
                 <div
                   key={item.id}
@@ -175,11 +171,11 @@ export default function MainContent({ collections }: { collections: CollectionWi
                 >
                   <div
                     className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
-                    style={{ backgroundColor: type?.color + '22' }}
+                    style={{ backgroundColor: item.itemType.color + '22' }}
                   >
                     <Icon
                       className="w-3.5 h-3.5"
-                      style={{ color: type?.color }}
+                      style={{ color: item.itemType.color }}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -215,8 +211,7 @@ export default function MainContent({ collections }: { collections: CollectionWi
         </div>
         <div className="space-y-2">
           {recentItems.map((item) => {
-            const type = typeById[item.itemTypeId]
-            const Icon = type ? (iconMap[type.icon] ?? File) : File
+            const Icon = iconMap[item.itemType.icon] ?? File
             return (
               <div
                 key={item.id}
@@ -224,11 +219,11 @@ export default function MainContent({ collections }: { collections: CollectionWi
               >
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
-                  style={{ backgroundColor: type?.color + '22' }}
+                  style={{ backgroundColor: item.itemType.color + '22' }}
                 >
                   <Icon
                     className="w-3.5 h-3.5"
-                    style={{ color: type?.color }}
+                    style={{ color: item.itemType.color }}
                   />
                 </div>
                 <div className="flex-1 min-w-0">
