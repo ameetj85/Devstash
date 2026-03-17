@@ -17,10 +17,10 @@ import {
 } from 'lucide-react'
 import {
   mockItems,
-  mockCollections,
   mockItemTypes,
   mockTypeCounts,
 } from '@/lib/mock-data'
+import type { CollectionWithMeta } from '@/lib/db/collections'
 
 // ─── Icon map ────────────────────────────────────────────────────────────────
 
@@ -34,34 +34,17 @@ const iconMap: Record<string, LucideIcon> = {
   Image,
 }
 
-// ─── Derived data ─────────────────────────────────────────────────────────────
+// ─── Derived data (mock — will be replaced per section) ───────────────────────
 
 const typeById = Object.fromEntries(mockItemTypes.map((t) => [t.id, t]))
 
 const totalItems = Object.values(mockTypeCounts).reduce((a, b) => a + b, 0)
-const totalCollections = mockCollections.length
 const favoriteItems = mockItems.filter((i) => i.isFavorite).length
-const favoriteCollections = mockCollections.filter((c) => c.isFavorite).length
 
 const pinnedItems = mockItems.filter((i) => i.isPinned)
 const recentItems = [...mockItems]
   .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
   .slice(0, 10)
-
-const stats = [
-  { label: 'Total Items', value: totalItems, icon: Layers },
-  { label: 'Collections', value: totalCollections, icon: FolderOpen },
-  { label: 'Favorite Items', value: favoriteItems, icon: Heart },
-  { label: 'Favorite Collections', value: favoriteCollections, icon: Star },
-]
-
-function getCollectionTypeColors(collectionId: string): string[] {
-  const colors = mockItems
-    .filter((i) => i.collectionIds.includes(collectionId))
-    .map((i) => typeById[i.itemTypeId]?.color)
-    .filter((c): c is string => Boolean(c))
-  return [...new Set(colors)].slice(0, 4)
-}
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -72,7 +55,16 @@ function formatDate(dateStr: string) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function MainContent() {
+export default function MainContent({ collections }: { collections: CollectionWithMeta[] }) {
+  const totalCollections = collections.length
+  const favoriteCollections = collections.filter((c) => c.isFavorite).length
+
+  const stats = [
+    { label: 'Total Items', value: totalItems, icon: Layers },
+    { label: 'Collections', value: totalCollections, icon: FolderOpen },
+    { label: 'Favorite Items', value: favoriteItems, icon: Heart },
+    { label: 'Favorite Collections', value: favoriteCollections, icon: Star },
+  ]
   return (
     <main className="flex-1 overflow-y-auto p-6 space-y-8">
       {/* Heading */}
@@ -113,14 +105,18 @@ export default function MainContent() {
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-          {mockCollections.map((col) => {
-            const typeColors = getCollectionTypeColors(col.id)
+          {collections.map((col) => {
             return (
               <Link
                 key={col.id}
                 href={`/collections/${col.id}`}
-                className="group rounded-lg border border-border bg-card p-4 hover:border-border/80 hover:bg-card/80 transition-colors"
+                className="group rounded-lg border bg-card p-4 hover:bg-card/80 transition-colors"
+                style={{ borderColor: col.dominantColor + '55' }}
               >
+                <div
+                  className="w-full h-0.5 rounded-full mb-3 opacity-60"
+                  style={{ backgroundColor: col.dominantColor }}
+                />
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <span className="font-medium text-sm leading-snug">
                     {col.name}
@@ -134,20 +130,25 @@ export default function MainContent() {
                 </p>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-1">
-                    {typeColors.length > 0 ? (
-                      typeColors.map((color) => (
-                        <span
-                          key={color}
-                          className="w-2 h-2 rounded-full"
-                          style={{ backgroundColor: color }}
-                        />
-                      ))
+                    {col.typeIcons.length > 0 ? (
+                      col.typeIcons.slice(0, 4).map(({ icon, color, name }) => {
+                        const Icon = iconMap[icon] ?? File
+                        return (
+                          <span
+                            key={name}
+                            className="w-5 h-5 rounded flex items-center justify-center"
+                            style={{ backgroundColor: color + '22' }}
+                          >
+                            <Icon className="w-3 h-3" style={{ color }} />
+                          </span>
+                        )
+                      })
                     ) : (
                       <span className="w-2 h-2 rounded-full bg-muted-foreground/30" />
                     )}
                   </div>
                   <span className="text-xs text-muted-foreground">
-                    {col.itemCount} items
+                    {col.itemCount} {col.itemCount === 1 ? 'item' : 'items'}
                   </span>
                 </div>
               </Link>

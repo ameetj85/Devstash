@@ -3,9 +3,8 @@
 import { useState } from 'react'
 import TopBar from './top-bar'
 import Sidebar from './sidebar'
-import MainContent from './main-content'
 
-export default function DashboardShell() {
+export default function DashboardShell({ children }: { children: React.ReactNode }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -19,7 +18,7 @@ export default function DashboardShell() {
           onClose={() => setIsMobileOpen(false)}
           onToggleCollapse={() => setIsCollapsed((v) => !v)}
         />
-        <MainContent />
+        {children}
       </div>
     </div>
   )
