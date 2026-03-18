@@ -11,6 +11,7 @@
     "studio": "prisma studio"
   },
   "dependencies": {
+    "@auth/prisma-adapter": "^2.11.1",
     "@base-ui/react": "^1.3.0",
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "^7.5.0",
@@ -20,6 +21,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.577.0",
     "next": "16.1.6",
+    "next-auth": "^5.0.0-beta.30",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "shadcn": "^4.0.8",
