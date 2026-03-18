@@ -11,6 +11,25 @@ Read the following to get the full context of the project:
 - @context/ai-interaction.md
 - @context/current-feature.md
 
+## Neon Database (MCP)
+
+The DevStash Neon project does **not** appear in `mcp__neon__list_projects`. Always query the database using the connection string from `.env` via the `@neondatabase/serverless` driver:
+
+```js
+const { neon } = require('@neondatabase/serverless');
+const sql = neon('<DATABASE_URL from .env>');
+```
+
+| Branch      | Endpoint                   | Connection string source |
+|-------------|----------------------------|--------------------------|
+| development | `ep-cool-base-adkxkun8`    | `.env`                   |
+| production  | `ep-flat-truth-ad0gmg29`   | `.env.production`        |
+
+- **Database:** `neondb` (both branches)
+- **Default for all dev work:** use `.env` (development branch)
+
+> Never use `mcp__neon__run_sql` with another project's ID for DevStash queries — it will hit the wrong database.
+
 ## Commands
 
 - **Dev server**: `npm run dev` (runs on http://localhost:3000)
