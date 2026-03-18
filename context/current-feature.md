@@ -1,45 +1,16 @@
-# Current Feature: Auth Setup - NextAuth + GitHub Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Set up split auth config pattern for edge compatibility
-- Add GitHub OAuth provider
-- Protect `/dashboard/*` routes using Next.js 16 proxy
-- Redirect unauthenticated users to sign-in
+None
 
 ## Notes
 
-### Files to Create
-1. `src/auth.config.ts` - Edge-compatible config (providers only, no adapter)
-2. `src/auth.ts` - Full config with Prisma adapter and JWT strategy
-3. `src/app/api/auth/[...nextauth]/route.ts` - Export handlers from auth.ts
-4. `src/proxy.ts` - Route protection with redirect logic
-5. `src/types/next-auth.d.ts` - Extend Session type with user.id
-
-### Key Gotchas
-- Use `next-auth@beta` (not `@latest` which installs v4)
-- Proxy file must be at `src/proxy.ts` (same level as `app/`)
-- Use named export: `export const proxy = auth(...)` not default export
-- Use `session: { strategy: 'jwt' }` with split config pattern
-- Don't set custom `pages.signIn` - use NextAuth's default page
-- Use Context7 to verify newest config and conventions
-
-### Environment Variables Needed
-```
-AUTH_SECRET=
-AUTH_GITHUB_ID=
-AUTH_GITHUB_SECRET=
-```
-
-### Testing
-1. Go to `/dashboard` - should redirect to sign-in
-2. Click "Sign in with GitHub"
-3. Verify redirect back to `/dashboard` after auth
+None
 
 ## History
 
@@ -53,3 +24,4 @@ AUTH_GITHUB_SECRET=
 - 2026-03-17: Dashboard items from DB — created `src/lib/db/items.ts` with `getPinnedItems`, `getRecentItems`, and `getItemStats` queries. Updated `DashboardPage` to fetch all data in parallel. Replaced all mock item data in `MainContent` with real DB data. Stats cards (total items, favorite items) now reflect live counts. Pinned section hidden when no pinned items exist.
 - 2026-03-17: Stats & sidebar from DB — added `getItemTypesWithCounts()` to `src/lib/db/items.ts`. Sidebar now shows real system item types with live per-type counts linking to `/items/[type]s`. Removed all mock data from `Sidebar`. Favorites and Recent collections grouped under a single "Collections" heading; favorites show item counts; recent collections show a colored circle based on dominant item type color. "View all collections →" link added at the bottom of the collections section. Data threaded from `DashboardPage` → `DashboardShell` → `Sidebar`.
 - 2026-03-18: Pro badge in sidebar — installed shadcn/ui `Badge` component. Files and Images item types in the sidebar now display a subtle outline "PRO" badge next to their item count when the sidebar is expanded. Badge only renders for `file` and `image` types (the two Pro-only system types per spec).
+- 2026-03-18: Auth Setup - NextAuth v5 with GitHub OAuth — installed `next-auth@beta` and `@auth/prisma-adapter`. Split auth config for edge compatibility (`src/auth.config.ts` providers-only, `src/auth.ts` with Prisma adapter + JWT strategy). Added GitHub OAuth provider. Created `src/proxy.ts` to protect `/dashboard/*` routes and redirect unauthenticated users to sign-in. Created `src/app/api/auth/[...nextauth]/route.ts` for handlers. Extended Session type with `user.id` via `src/types/next-auth.d.ts`.
