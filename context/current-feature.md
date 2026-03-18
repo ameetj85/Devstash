@@ -1,20 +1,16 @@
-# Current Feature: Add Pro Badge to Sidebar
+# Current Feature
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Add a PRO badge next to "Files" and "Images" item types in the sidebar
-- Use the shadcn/ui Badge component
-- Badge should be clean and subtle (not distracting)
-- Badge text must be "PRO" (all uppercase)
+None
 
 ## Notes
 
-- Only the `file` and `image` system item types are Pro-only (per project spec)
-- Badge should work in both the full sidebar and the collapsed icon-only state (if applicable)
+None
 
 ## History
 
@@ -27,3 +23,4 @@ In Progress
 - 2026-03-17: Dashboard collections from DB — created `src/lib/db/collections.ts` with `getCollections` query (includes items + item types, computes dominant color and type icons per collection). Refactored `DashboardShell` to accept `children`, made `DashboardPage` async to fetch and pass real collection data to `MainContent`. Collection cards now show colored accent bar, type-colored border, small icon badges for each type, and real item counts.
 - 2026-03-17: Dashboard items from DB — created `src/lib/db/items.ts` with `getPinnedItems`, `getRecentItems`, and `getItemStats` queries. Updated `DashboardPage` to fetch all data in parallel. Replaced all mock item data in `MainContent` with real DB data. Stats cards (total items, favorite items) now reflect live counts. Pinned section hidden when no pinned items exist.
 - 2026-03-17: Stats & sidebar from DB — added `getItemTypesWithCounts()` to `src/lib/db/items.ts`. Sidebar now shows real system item types with live per-type counts linking to `/items/[type]s`. Removed all mock data from `Sidebar`. Favorites and Recent collections grouped under a single "Collections" heading; favorites show item counts; recent collections show a colored circle based on dominant item type color. "View all collections →" link added at the bottom of the collections section. Data threaded from `DashboardPage` → `DashboardShell` → `Sidebar`.
+- 2026-03-18: Pro badge in sidebar — installed shadcn/ui `Badge` component. Files and Images item types in the sidebar now display a subtle outline "PRO" badge next to their item count when the sidebar is expanded. Badge only renders for `file` and `image` types (the two Pro-only system types per spec).
