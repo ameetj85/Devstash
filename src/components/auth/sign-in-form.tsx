@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
@@ -25,7 +26,11 @@ export default function SignInForm() {
 
     setLoading(false)
 
-    if (result?.error) {
+    if (result?.code === 'email_not_verified') {
+      const msg = 'Please verify your email before signing in.'
+      setError(msg)
+      toast.error(msg)
+    } else if (result?.error) {
       setError('Invalid email or password.')
     } else {
       window.location.href = '/dashboard'

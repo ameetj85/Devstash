@@ -1,3 +1,4 @@
+import { redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import MainContent from '@/components/dashboard/main-content'
 import { auth } from '@/auth'
@@ -5,16 +6,20 @@ import { getCollections } from '@/lib/db/collections'
 import { getPinnedItems, getRecentItems, getItemStats, getItemTypesWithCounts } from '@/lib/db/items'
 
 export default async function DashboardPage() {
-  const [session, collections, pinnedItems, recentItems, itemStats, itemTypes] = await Promise.all([
-    auth(),
-    getCollections(),
-    getPinnedItems(),
-    getRecentItems(),
-    getItemStats(),
-    getItemTypesWithCounts(),
+  const session = await auth()
+  const userId = session?.user?.id
+
+  if (!userId) redirect('/sign-in')
+
+  const [collections, pinnedItems, recentItems, itemStats, itemTypes] = await Promise.all([
+    getCollections(userId),
+    getPinnedItems(userId),
+    getRecentItems(userId),
+    getItemStats(userId),
+    getItemTypesWithCounts(userId),
   ])
 
-  const user = session?.user ?? {}
+  const user = session.user ?? {}
 
   return (
     <DashboardShell itemTypes={itemTypes} collections={collections} user={user}>

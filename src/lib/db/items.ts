@@ -42,9 +42,9 @@ function mapItem(item: {
   }
 }
 
-export async function getPinnedItems(): Promise<ItemWithType[]> {
+export async function getPinnedItems(userId: string): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
-    where: { isPinned: true },
+    where: { userId, isPinned: true },
     include: {
       itemType: true,
       tags: { include: { tag: true } },
@@ -54,8 +54,9 @@ export async function getPinnedItems(): Promise<ItemWithType[]> {
   return items.map(mapItem)
 }
 
-export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
+export async function getRecentItems(userId: string, limit = 10): Promise<ItemWithType[]> {
   const items = await prisma.item.findMany({
+    where: { userId },
     include: {
       itemType: true,
       tags: { include: { tag: true } },
@@ -66,10 +67,10 @@ export async function getRecentItems(limit = 10): Promise<ItemWithType[]> {
   return items.map(mapItem)
 }
 
-export async function getItemStats(): Promise<ItemStats> {
+export async function getItemStats(userId: string): Promise<ItemStats> {
   const [totalItems, favoriteItems] = await Promise.all([
-    prisma.item.count(),
-    prisma.item.count({ where: { isFavorite: true } }),
+    prisma.item.count({ where: { userId } }),
+    prisma.item.count({ where: { userId, isFavorite: true } }),
   ])
   return { totalItems, favoriteItems }
 }
@@ -82,11 +83,11 @@ export type ItemTypeWithCount = {
   count: number
 }
 
-export async function getItemTypesWithCounts(): Promise<ItemTypeWithCount[]> {
+export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
     include: {
-      _count: { select: { items: true } },
+      _count: { select: { items: { where: { userId } } } },
     },
     orderBy: { name: 'asc' },
   })

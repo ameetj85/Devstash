@@ -10,8 +10,9 @@ export type CollectionWithMeta = {
   typeIcons: { icon: string; color: string; name: string }[]
 }
 
-export async function getCollections(): Promise<CollectionWithMeta[]> {
+export async function getCollections(userId: string): Promise<CollectionWithMeta[]> {
   const collections = await prisma.collection.findMany({
+    where: { userId },
     include: {
       items: {
         include: {
