@@ -1,11 +1,14 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 
 export default function RegisterForm() {
+  const router = useRouter()
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -44,13 +47,19 @@ export default function RegisterForm() {
 
     setLoading(false)
 
+    const data = await res.json().catch(() => ({}))
+
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}))
       setError(data.error ?? 'Registration failed. Please try again.')
       return
     }
 
-    setSubmitted(true)
+    if (data.message === 'Account created successfully.') {
+      toast.success('Account created! You can now sign in.')
+      router.push('/sign-in')
+    } else {
+      setSubmitted(true)
+    }
   }
 
   if (submitted) {
