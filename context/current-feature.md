@@ -1,16 +1,28 @@
-# Current Feature
+# Current Feature: Forgot Password
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-None
+- Add a "Forgot password?" link on the sign-in page that navigates to `/forgot-password`
+- Create `/forgot-password` page with an email input form
+- Create `POST /api/auth/forgot-password` route that generates a password reset token using the existing `VerificationToken` model and sends a reset email via Resend
+- Create `/reset-password?token=...` page with new password + confirm password fields
+- Create `POST /api/auth/reset-password` route that validates the token, updates the user's `hashedPassword`, and deletes the token
+- Tokens should expire after 1 hour (shorter window than email verification)
+- Show appropriate success/error states and toast notifications throughout the flow
+- Redirect to sign-in after successful password reset
 
 ## Notes
 
-None
+- Reuse the existing `VerificationToken` model (identifier = user email, token = UUID, expires = 1 hour from now)
+- Reuse `src/lib/tokens.ts` patterns for token generation/lookup
+- Reuse `src/lib/email.ts` patterns for sending email via Resend
+- Only applies to users with `hashedPassword` (credentials users); GitHub OAuth users have no password to reset
+- Follow existing auth UI patterns (same card layout as sign-in/register pages)
+- `EMAIL_VERIFICATION_ENABLED` flag does NOT gate password reset — reset emails always send
 
 ## History
 
