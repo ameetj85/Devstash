@@ -1,28 +1,16 @@
-# Current Feature: Forgot Password
+# Current Feature
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Add a "Forgot password?" link on the sign-in page that navigates to `/forgot-password`
-- Create `/forgot-password` page with an email input form
-- Create `POST /api/auth/forgot-password` route that generates a password reset token using the existing `VerificationToken` model and sends a reset email via Resend
-- Create `/reset-password?token=...` page with new password + confirm password fields
-- Create `POST /api/auth/reset-password` route that validates the token, updates the user's `hashedPassword`, and deletes the token
-- Tokens should expire after 1 hour (shorter window than email verification)
-- Show appropriate success/error states and toast notifications throughout the flow
-- Redirect to sign-in after successful password reset
+None
 
 ## Notes
 
-- Reuse the existing `VerificationToken` model (identifier = user email, token = UUID, expires = 1 hour from now)
-- Reuse `src/lib/tokens.ts` patterns for token generation/lookup
-- Reuse `src/lib/email.ts` patterns for sending email via Resend
-- Only applies to users with `hashedPassword` (credentials users); GitHub OAuth users have no password to reset
-- Follow existing auth UI patterns (same card layout as sign-in/register pages)
-- `EMAIL_VERIFICATION_ENABLED` flag does NOT gate password reset — reset emails always send
+None
 
 ## History
 
@@ -41,3 +29,4 @@ In Progress
 - 2026-03-19: Auth UI - Sign In, Register & Sign Out — custom `/sign-in` page (email/password form + GitHub OAuth button + link to register) and `/register` page (name, email, password, confirm password with client-side validation, success toast, redirect to sign-in). Reusable `UserAvatar` component (GitHub image or initials fallback). Sidebar user area replaced with `UserMenu` client component: real name, email, avatar, dropdown with Profile link and Sign out. Session user threaded from `DashboardPage` → `DashboardShell` → `Sidebar`. Sonner toast added to root layout. GitHub avatar hostname added to `next.config.ts` image remotePatterns.
 - 2026-03-19: Email Verification on Register — installed `resend` and `@types/uuid`. Created `src/lib/email.ts` (Resend client, `sendVerificationEmail`), `src/lib/tokens.ts` (generate/get verification tokens via `VerificationToken` table, 24h expiry). Register API now sends a verification email instead of returning immediately. New `GET /api/auth/verify-email` route validates token, sets `emailVerified`, deletes token. New `/verify-email` page shows loading/success/error states with auto-redirect on success. Credentials sign-in blocks unverified users and throws `EmailNotVerified` error (code `email_not_verified`) so the sign-in form can show a specific error message and toast. Register form replaced success toast+redirect with a "check your email" screen. Dashboard queries (`getCollections`, `getPinnedItems`, `getRecentItems`, `getItemStats`, `getItemTypesWithCounts`) now all filter by `userId`. Added `scripts/delete-users.ts` utility to purge all non-demo users and their data.
 - 2026-03-19: Email Verification Toggle Flag — added `EMAIL_VERIFICATION_ENABLED` env var (`true`/`false`). When `false` (default in dev): register sets `emailVerified` to now and returns immediately, sign-in skips the unverified check, register form shows a success toast and redirects to sign-in. When `true`: full Resend verification flow runs as before. No code removed — just gated behind the flag.
+- 2026-03-19: Forgot Password — added `/forgot-password` page (email input → "check your email" confirmation) and `/reset-password?token=...` page (new password form → toast + redirect to sign-in). `POST /api/auth/forgot-password` generates a 1-hour reset token via `VerificationToken` (identifier prefixed `reset:<email>`) and sends email via Resend. `POST /api/auth/reset-password` validates token, updates `hashedPassword`, deletes token. Always returns a generic message on forgot-password to prevent email enumeration. "Forgot password?" link added inline with the password label on the sign-in form.
