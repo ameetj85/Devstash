@@ -10,13 +10,13 @@ import {
   File,
   Image,
   Star,
-  Settings,
   PanelLeftClose,
   PanelLeftOpen,
   type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import UserMenu from '@/components/dashboard/user-menu'
 import type { ItemTypeWithCount } from '@/lib/db/items'
 import type { CollectionWithMeta } from '@/lib/db/collections'
 
@@ -30,6 +30,12 @@ const iconMap: Record<string, LucideIcon> = {
   Image,
 }
 
+interface SidebarUser {
+  name?: string | null
+  email?: string | null
+  image?: string | null
+}
+
 interface SidebarProps {
   isCollapsed: boolean
   isMobileOpen: boolean
@@ -37,6 +43,7 @@ interface SidebarProps {
   onToggleCollapse: () => void
   itemTypes: ItemTypeWithCount[]
   collections: CollectionWithMeta[]
+  user: SidebarUser
 }
 
 export default function Sidebar({
@@ -46,6 +53,7 @@ export default function Sidebar({
   onToggleCollapse,
   itemTypes,
   collections,
+  user,
 }: SidebarProps) {
   const favoriteCollections = collections.filter((c) => c.isFavorite)
   const recentCollections = collections.filter((c) => !c.isFavorite).slice(0, 3)
@@ -203,33 +211,14 @@ export default function Sidebar({
           )}
         </div>
 
-        {/* User avatar — placeholder until auth is wired up */}
+        {/* User area */}
         <div className="border-t border-sidebar-border p-3 shrink-0">
-          <div
-            className={cn(
-              'flex items-center gap-2.5',
-              isCollapsed && 'justify-center'
-            )}
-          >
-            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-xs font-bold text-primary-foreground shrink-0">
-              D
-            </div>
-            {!isCollapsed && (
-              <>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs font-medium text-sidebar-foreground truncate">
-                    Demo User
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    demo@devstash.io
-                  </p>
-                </div>
-                <button className="p-1 rounded hover:bg-sidebar-accent text-muted-foreground hover:text-sidebar-foreground transition-colors">
-                  <Settings className="w-3.5 h-3.5" />
-                </button>
-              </>
-            )}
-          </div>
+          <UserMenu
+            name={user.name}
+            email={user.email}
+            image={user.image}
+            isCollapsed={isCollapsed}
+          />
         </div>
       </aside>
     </>

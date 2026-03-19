@@ -36,3 +36,5 @@ const sql = neon('<DATABASE_URL from .env>');
 - **Build**: `npm run build`
 - **Production server**: `npm run start`
 - **Lint**: `npm run lint`
+
+**IMPORTANT:** Do not add Claude to any commit messages.
