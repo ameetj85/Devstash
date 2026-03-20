@@ -2,8 +2,22 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { getPasswordResetToken } from '@/lib/tokens'
+import { checkRateLimit, getIp } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
+  const ip = getIp(req)
+  const { allowed, retryAfter } = await checkRateLimit('resetPassword', ip)
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfter / 60)
+    return NextResponse.json(
+      { error: `Too many attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.` },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
   const body = await req.json().catch(() => ({}))
   const { token, password, confirmPassword } = body
 

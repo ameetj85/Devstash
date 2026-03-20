@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { toast } from 'sonner'
@@ -11,6 +12,7 @@ export default function SignInForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const router = useRouter()
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
@@ -26,14 +28,18 @@ export default function SignInForm() {
 
     setLoading(false)
 
-    if (result?.code === 'email_not_verified') {
+    if (result?.code === 'rate_limited') {
+      const msg = 'Too many sign-in attempts. Please try again in 15 minutes.'
+      setError(msg)
+      toast.error(msg)
+    } else if (result?.code === 'email_not_verified') {
       const msg = 'Please verify your email before signing in.'
       setError(msg)
       toast.error(msg)
     } else if (result?.error) {
       setError('Invalid email or password.')
     } else {
-      window.location.href = '/dashboard'
+      router.push('/dashboard')
     }
   }
 

@@ -3,8 +3,22 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { generateVerificationToken } from '@/lib/tokens'
 import { sendVerificationEmail } from '@/lib/email'
+import { checkRateLimit, getIp } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
+  const ip = getIp(request)
+  const { allowed, retryAfter } = await checkRateLimit('register', ip)
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfter / 60)
+    return NextResponse.json(
+      { error: `Too many attempts. Please try again in ${minutes} minute${minutes !== 1 ? 's' : ''}.` },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      }
+    )
+  }
+
   const body = await request.json()
   const { name, email, password, confirmPassword } = body
 
