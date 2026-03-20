@@ -38,3 +38,5 @@ const sql = neon('<DATABASE_URL from .env>');
 - **Lint**: `npm run lint`
 
 **IMPORTANT:** Do not add Claude to any commit messages.
+
+**IMPORTANT:** When completing a feature please add information to the bottom of the Histroy section explaning what was done in this feature
