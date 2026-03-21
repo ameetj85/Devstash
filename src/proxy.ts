@@ -8,7 +8,9 @@ export const proxy = auth(function proxy(req) {
   const isLoggedIn = !!req.auth
 
   const isProtected =
-    nextUrl.pathname.startsWith('/dashboard') || nextUrl.pathname.startsWith('/profile')
+    nextUrl.pathname.startsWith('/dashboard') ||
+    nextUrl.pathname.startsWith('/profile') ||
+    nextUrl.pathname.startsWith('/items')
 
   if (isProtected && !isLoggedIn) {
     return Response.redirect(new URL('/sign-in', nextUrl))

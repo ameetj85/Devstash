@@ -83,6 +83,33 @@ export type ItemTypeWithCount = {
   count: number
 }
 
+export type ItemTypeInfo = {
+  id: string
+  name: string
+  icon: string
+  color: string
+}
+
+export async function getItemsByType(userId: string, typeName: string): Promise<{ items: ItemWithType[]; itemType: ItemTypeInfo | null }> {
+  const itemType = await prisma.itemType.findFirst({
+    where: { name: typeName, isSystem: true },
+    select: { id: true, name: true, icon: true, color: true },
+  })
+
+  if (!itemType) return { items: [], itemType: null }
+
+  const items = await prisma.item.findMany({
+    where: { userId, itemTypeId: itemType.id },
+    include: {
+      itemType: true,
+      tags: { include: { tag: true } },
+    },
+    orderBy: { updatedAt: 'desc' },
+  })
+
+  return { items: items.map(mapItem), itemType }
+}
+
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
