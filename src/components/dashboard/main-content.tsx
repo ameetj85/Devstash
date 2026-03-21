@@ -167,7 +167,8 @@ export default function MainContent({
               return (
                 <div
                   key={item.id}
-                  className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:bg-card/80 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 rounded-lg border border-l-2 border-border bg-card px-4 py-3 hover:bg-card/80 transition-colors cursor-pointer"
+                  style={{ borderLeftColor: item.itemType.color }}
                 >
                   <div
                     className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
@@ -215,7 +216,8 @@ export default function MainContent({
             return (
               <div
                 key={item.id}
-                className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 hover:bg-card/80 transition-colors cursor-pointer"
+                className="flex items-center gap-3 rounded-lg border border-l-2 border-border bg-card px-4 py-3 hover:bg-card/80 transition-colors cursor-pointer"
+                style={{ borderLeftColor: item.itemType.color }}
               >
                 <div
                   className="w-7 h-7 rounded-md flex items-center justify-center shrink-0"
