@@ -89,9 +89,17 @@ Example v4 configuration:
 - Return `{ success, data, error }` pattern from actions
 - Display user-friendly error messages via toast
 
+## Testing
+
+- Framework: **Vitest** (`npm test` / `npm run test:watch` / `npm run test:coverage`)
+- Test server actions and utility functions only — no component tests
+- Test files: `src/**/__tests__/*.test.ts` (co-located with the code they test)
+- Mock Prisma and external services with `vi.mock()` — never hit the real DB in tests
+- Use `vi.mock('@/lib/prisma')` to mock the Prisma client for DB-dependent functions
+- Tests should be fast and deterministic — no network calls, no real DB
+
 ## Code Quality
 
 - No commented-out code unless specified
 - No unused imports or variables
 - Keep functions under 50 lines when possible
-```
