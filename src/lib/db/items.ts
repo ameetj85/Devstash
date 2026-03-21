@@ -233,6 +233,77 @@ export async function updateItem(userId: string, itemId: string, data: UpdateIte
   }
 }
 
+export type CreateItemData = {
+  title: string
+  description: string | null
+  content: string | null
+  url: string | null
+  language: string | null
+  typeName: string
+  tags: string[]
+}
+
+/** Creates a new item for the user. Returns null if the item type is not found. */
+export async function createItem(userId: string, data: CreateItemData): Promise<ItemDetail | null> {
+  const itemType = await prisma.itemType.findFirst({
+    where: { name: data.typeName, isSystem: true },
+  })
+  if (!itemType) return null
+
+  const contentType = data.typeName === 'link' ? 'FILE' : 'TEXT'
+
+  const created = await prisma.item.create({
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      contentType,
+      userId,
+      itemTypeId: itemType.id,
+      tags: {
+        create: data.tags.map((name) => ({
+          tag: {
+            connectOrCreate: {
+              where: { name },
+              create: { name },
+            },
+          },
+        })),
+      },
+    },
+    include: {
+      itemType: true,
+      tags: { include: { tag: true } },
+      collections: { include: { collection: true } },
+    },
+  })
+
+  return {
+    id: created.id,
+    title: created.title,
+    description: created.description,
+    content: created.content,
+    contentType: created.contentType,
+    url: created.url,
+    fileUrl: created.fileUrl,
+    fileName: created.fileName,
+    language: created.language,
+    isFavorite: created.isFavorite,
+    isPinned: created.isPinned,
+    createdAt: created.createdAt,
+    updatedAt: created.updatedAt,
+    tags: created.tags.map((t) => t.tag.name),
+    collections: created.collections.map((c) => ({ id: c.collection.id, name: c.collection.name })),
+    itemType: {
+      name: created.itemType.name,
+      icon: created.itemType.icon,
+      color: created.itemType.color,
+    },
+  }
+}
+
 /** Returns true if deleted, false if not found / not owned. */
 export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
   const item = await prisma.item.findFirst({ where: { id: itemId, userId } })

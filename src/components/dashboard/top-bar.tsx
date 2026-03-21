@@ -2,7 +2,8 @@
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, FolderPlus, Plus, Menu } from 'lucide-react'
+import { Search, FolderPlus, Menu } from 'lucide-react'
+import CreateItemDialog from '@/components/items/create-item-dialog'
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void
@@ -43,10 +44,7 @@ export default function TopBar({ onMobileMenuToggle }: TopBarProps) {
           <FolderPlus className="w-4 h-4" />
           New Collection
         </Button>
-        <Button size="sm" className="gap-1.5">
-          <Plus className="w-4 h-4" />
-          <span className="hidden sm:inline">New Item</span>
-        </Button>
+        <CreateItemDialog />
       </div>
     </header>
   )
