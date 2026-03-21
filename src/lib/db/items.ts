@@ -233,6 +233,14 @@ export async function updateItem(userId: string, itemId: string, data: UpdateIte
   }
 }
 
+/** Returns true if deleted, false if not found / not owned. */
+export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
+  const item = await prisma.item.findFirst({ where: { id: itemId, userId } })
+  if (!item) return false
+  await prisma.item.delete({ where: { id: itemId } })
+  return true
+}
+
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
@@ -249,3 +257,4 @@ export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWi
     count: t._count.items,
   }))
 }
+
