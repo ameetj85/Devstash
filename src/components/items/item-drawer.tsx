@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   Code,
   Sparkles,
@@ -15,6 +16,8 @@ import {
   Pencil,
   Trash2,
   ExternalLink,
+  Save,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -25,6 +28,12 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
+import { updateItem } from '@/actions/items'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,6 +56,15 @@ type ItemDetailResponse = {
   itemType: { name: string; icon: string; color: string }
 }
 
+type EditFormState = {
+  title: string
+  description: string
+  content: string
+  url: string
+  language: string
+  tags: string
+}
+
 // ─── Icon map ─────────────────────────────────────────────────────────────────
 
 const iconMap: Record<string, LucideIcon> = {
@@ -59,12 +77,26 @@ const iconMap: Record<string, LucideIcon> = {
   Image,
 }
 
+const CONTENT_TYPES = ['snippet', 'prompt', 'command', 'note']
+const LANGUAGE_TYPES = ['snippet', 'command']
+
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+function itemToFormState(item: ItemDetailResponse): EditFormState {
+  return {
+    title: item.title,
+    description: item.description ?? '',
+    content: item.content ?? '',
+    url: item.url ?? '',
+    language: item.language ?? '',
+    tags: item.tags.join(', '),
+  }
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -104,19 +136,34 @@ interface ItemDrawerProps {
 }
 
 export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
+  const router = useRouter()
   const [item, setItem] = useState<ItemDetailResponse | null>(null)
   const [loading, setLoading] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [form, setForm] = useState<EditFormState>({
+    title: '',
+    description: '',
+    content: '',
+    url: '',
+    language: '',
+    tags: '',
+  })
 
   useEffect(() => {
     if (!open || !itemId) {
       setItem(null)
+      setIsEditing(false)
       return
     }
 
     setLoading(true)
     fetch(`/api/items/${itemId}`)
       .then((r) => r.json())
-      .then((data) => setItem(data))
+      .then((data) => {
+        setItem(data)
+        setForm(itemToFormState(data))
+      })
       .catch(() => toast.error('Failed to load item'))
       .finally(() => setLoading(false))
   }, [open, itemId])
@@ -130,6 +177,68 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
     navigator.clipboard.writeText(text)
     toast.success('Copied to clipboard')
   }
+
+  function handleEditToggle() {
+    if (item) setForm(itemToFormState(item))
+    setIsEditing(true)
+  }
+
+  function handleCancel() {
+    if (item) setForm(itemToFormState(item))
+    setIsEditing(false)
+  }
+
+  async function handleSave() {
+    if (!item || !form.title.trim()) return
+    setSaving(true)
+
+    const tags = form.tags
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean)
+
+    const result = await updateItem(item.id, {
+      title: form.title.trim(),
+      description: form.description.trim() || null,
+      content: form.content || null,
+      url: form.url.trim() || null,
+      language: form.language.trim() || null,
+      tags,
+    })
+
+    setSaving(false)
+
+    if (!result.success) {
+      const errorMsg =
+        typeof result.error === 'string'
+          ? result.error
+          : Object.values(result.error as Record<string, string[]>)
+              .flat()
+              .join(', ')
+      toast.error(errorMsg || 'Failed to save item')
+      return
+    }
+
+    // Merge dates back as strings (server returns Date objects)
+    const updated = result.data
+    setItem({
+      ...updated,
+      createdAt: updated.createdAt instanceof Date
+        ? updated.createdAt.toISOString()
+        : String(updated.createdAt),
+      updatedAt: updated.updatedAt instanceof Date
+        ? updated.updatedAt.toISOString()
+        : String(updated.updatedAt),
+    })
+    setIsEditing(false)
+    toast.success('Item saved')
+    router.refresh()
+  }
+
+  const typeName = item?.itemType.name ?? ''
+  const showContent = CONTENT_TYPES.includes(typeName)
+  const showLanguage = LANGUAGE_TYPES.includes(typeName)
+  const showUrl = typeName === 'link'
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -151,7 +260,7 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                 >
                   {item.itemType.name}
                 </span>
-                {item.tags.slice(0, 2).map((tag) => (
+                {!isEditing && item.tags.slice(0, 2).map((tag) => (
                   <span
                     key={tag}
                     className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
@@ -163,7 +272,16 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
             )}
           </div>
           <SheetTitle className="text-left text-base leading-snug">
-            {item?.title ?? ''}
+            {isEditing ? (
+              <Input
+                value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                className="text-base font-semibold h-8"
+                placeholder="Title"
+              />
+            ) : (
+              item?.title ?? ''
+            )}
           </SheetTitle>
         </SheetHeader>
 
@@ -171,141 +289,296 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
           <DrawerSkeleton />
         ) : item ? (
           <div className="flex flex-col gap-6 p-6">
-            {/* Action bar */}
-            <div className="flex items-center gap-1.5">
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-xs"
-              >
-                <Star
-                  className="w-3.5 h-3.5"
-                  style={item.isFavorite ? { fill: '#facc15', color: '#facc15' } : {}}
-                />
-                Favorite
-              </Button>
-              <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                <Pin className="w-3.5 h-3.5" />
-                Pin
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-1.5 text-xs"
-                onClick={handleCopy}
-              >
-                <Copy className="w-3.5 h-3.5" />
-                Copy
-              </Button>
-              <div className="flex-1" />
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <Pencil className="w-3.5 h-3.5" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-              </Button>
-            </div>
+            {isEditing ? (
+              <>
+                {/* Edit action bar */}
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={handleSave}
+                    disabled={saving || !form.title.trim()}
+                  >
+                    <Save className="w-3.5 h-3.5" />
+                    {saving ? 'Saving…' : 'Save'}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={handleCancel}
+                    disabled={saving}
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    Cancel
+                  </Button>
+                </div>
 
-            {/* Description */}
-            {item.description && (
-              <section>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Description
-                </p>
-                <p className="text-sm text-foreground/80 leading-relaxed">
-                  {item.description}
-                </p>
-              </section>
-            )}
+                {/* Description */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Description
+                  </Label>
+                  <Textarea
+                    value={form.description}
+                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder="Optional description"
+                    className="text-sm resize-none"
+                    rows={3}
+                  />
+                </div>
 
-            {/* Content */}
-            {item.content && (
-              <section>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Content
-                </p>
-                <pre className="text-xs bg-muted rounded-lg p-4 overflow-x-auto whitespace-pre-wrap break-words leading-relaxed font-mono">
-                  {item.content}
-                </pre>
-              </section>
-            )}
+                {/* Content */}
+                {showContent && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Content
+                    </Label>
+                    <Textarea
+                      value={form.content}
+                      onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                      placeholder="Content"
+                      className="text-xs font-mono resize-none"
+                      rows={8}
+                    />
+                  </div>
+                )}
 
-            {/* URL */}
-            {item.url && (
-              <section>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  URL
-                </p>
-                <a
-                  href={item.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary flex items-center gap-1 hover:underline break-all"
-                >
-                  {item.url}
-                  <ExternalLink className="w-3 h-3 shrink-0" />
-                </a>
-              </section>
-            )}
+                {/* Language */}
+                {showLanguage && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Language
+                    </Label>
+                    <Input
+                      value={form.language}
+                      onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
+                      placeholder="e.g. typescript"
+                      className="text-sm"
+                    />
+                  </div>
+                )}
 
-            {/* Tags */}
-            {item.tags.length > 0 && (
-              <section>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Tags
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {item.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
+                {/* URL */}
+                {showUrl && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      URL
+                    </Label>
+                    <Input
+                      value={form.url}
+                      onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
+                      placeholder="https://..."
+                      className="text-sm"
+                      type="url"
+                    />
+                  </div>
+                )}
+
+                {/* Tags */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                    Tags
+                  </Label>
+                  <Input
+                    value={form.tags}
+                    onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
+                    placeholder="react, typescript, hooks"
+                    className="text-sm"
+                  />
+                  <p className="text-xs text-muted-foreground">Comma-separated</p>
+                </div>
+
+                {/* Non-editable: Collections */}
+                {item.collections.length > 0 && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Collections
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.collections.map((col) => (
+                        <span
+                          key={col.id}
+                          className="text-xs px-2 py-1 rounded border border-border bg-card text-foreground/80"
+                        >
+                          {col.name}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Non-editable: Details */}
+                <section>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    Details
+                  </p>
+                  <dl className="space-y-1.5 text-sm">
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">Created</dt>
+                      <dd>{formatDate(item.createdAt)}</dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">Updated</dt>
+                      <dd>{formatDate(item.updatedAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+              </>
+            ) : (
+              <>
+                {/* View action bar */}
+                <div className="flex items-center gap-1.5">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                  >
+                    <Star
+                      className="w-3.5 h-3.5"
+                      style={item.isFavorite ? { fill: '#facc15', color: '#facc15' } : {}}
+                    />
+                    Favorite
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 text-xs">
+                    <Pin className="w-3.5 h-3.5" />
+                    Pin
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={handleCopy}
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    Copy
+                  </Button>
+                  <div className="flex-1" />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8"
+                    onClick={handleEditToggle}
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+
+                {/* Description */}
+                {item.description && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Description
+                    </p>
+                    <p className="text-sm text-foreground/80 leading-relaxed">
+                      {item.description}
+                    </p>
+                  </section>
+                )}
+
+                {/* Content */}
+                {item.content && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Content
+                    </p>
+                    <SyntaxHighlighter
+                      language={item.language ?? 'text'}
+                      style={vscDarkPlus}
+                      customStyle={{
+                        margin: 0,
+                        borderRadius: '0.5rem',
+                        fontSize: '0.75rem',
+                        lineHeight: '1.6',
+                      }}
+                      wrapLongLines
                     >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
+                      {item.content}
+                    </SyntaxHighlighter>
+                  </section>
+                )}
 
-            {/* Collections */}
-            {item.collections.length > 0 && (
-              <section>
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                  Collections
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {item.collections.map((col) => (
-                    <span
-                      key={col.id}
-                      className="text-xs px-2 py-1 rounded border border-border bg-card text-foreground/80"
+                {/* URL */}
+                {item.url && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      URL
+                    </p>
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-primary flex items-center gap-1 hover:underline break-all"
                     >
-                      {col.name}
-                    </span>
-                  ))}
-                </div>
-              </section>
-            )}
+                      {item.url}
+                      <ExternalLink className="w-3 h-3 shrink-0" />
+                    </a>
+                  </section>
+                )}
 
-            {/* Details */}
-            <section>
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                Details
-              </p>
-              <dl className="space-y-1.5 text-sm">
-                <div className="flex items-center justify-between">
-                  <dt className="text-muted-foreground">Created</dt>
-                  <dd>{formatDate(item.createdAt)}</dd>
-                </div>
-                <div className="flex items-center justify-between">
-                  <dt className="text-muted-foreground">Updated</dt>
-                  <dd>{formatDate(item.updatedAt)}</dd>
-                </div>
-              </dl>
-            </section>
+                {/* Tags */}
+                {item.tags.length > 0 && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Tags
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Collections */}
+                {item.collections.length > 0 && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      Collections
+                    </p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {item.collections.map((col) => (
+                        <span
+                          key={col.id}
+                          className="text-xs px-2 py-1 rounded border border-border bg-card text-foreground/80"
+                        >
+                          {col.name}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                )}
+
+                {/* Details */}
+                <section>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                    Details
+                  </p>
+                  <dl className="space-y-1.5 text-sm">
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">Created</dt>
+                      <dd>{formatDate(item.createdAt)}</dd>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <dt className="text-muted-foreground">Updated</dt>
+                      <dd>{formatDate(item.updatedAt)}</dd>
+                    </div>
+                  </dl>
+                </section>
+              </>
+            )}
           </div>
         ) : null}
       </SheetContent>
