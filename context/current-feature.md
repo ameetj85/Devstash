@@ -1,30 +1,16 @@
-# Current Feature: Item Drawer — Edit Mode
+# Current Feature
 
 ## Status
 
-In Progress
+Completed
 
 ## Goals
 
-- Edit button in item drawer action bar toggles inline edit mode (same drawer stays open)
-- In edit mode, action bar is replaced with Save and Cancel buttons
-- Cancel discards changes and returns to view mode
-- Save persists changes via `updateItem` server action, returns to view mode, refreshes drawer data, and calls `router.refresh()`
-- Toast notification on save success or error
-- Editable fields for all types: title (required), description, tags (comma-separated input)
-- Type-specific editable fields: content (snippet/prompt/command/note), language (snippet/command), URL (link)
-- Non-editable in edit mode: item type, collections, created/updated dates
-- Zod validation in server action (`src/actions/items.ts`) with `{ success, data, error }` return pattern
-- `updateItem` query in `src/lib/db/items.ts` handles tag disconnect-all + connect-or-create, returns updated `ItemDetail`
-- Save button disabled client-side when title is empty
+None
 
 ## Notes
 
-- No form library — use controlled inputs with local state
-- The content textarea does not need to be a code editor (that comes later)
-- Zod schema validates: title (non-empty, trimmed), description (string|null), content (string|null), url (valid URL|null), language (string|null), tags (array of trimmed non-empty strings)
-- Return Zod errors in `{ success: false, error }` so client can display field-level errors
-- Server action validates ownership via `auth()` session before touching DB
+None
 
 ## History
 
@@ -49,3 +35,4 @@ In Progress
 - 2026-03-20: Items List View — created dynamic route `/items/[type]` (e.g., `/items/snippets`, `/items/prompts`). Added `getItemsByType()` query to `src/lib/db/items.ts` (looks up system item type by name, returns filtered items for the user). Created `src/components/items/item-card.tsx` — card with left border colored by item type, type icon, title, description, tags, and date. `src/app/items/[type]/page.tsx` uses `DashboardShell` for consistent layout, resolves slug (strips trailing `s`) to DB type name, shows a responsive 2-column grid on `md+`, and returns 404 for unknown types. Added `/items` to protected routes in `src/proxy.ts`.
 - 2026-03-21: Items List 3-Column Layout — updated the items list view grid in `src/app/items/[type]/page.tsx` from 2 columns to 3 columns on large screens. Layout is now fully responsive: 1 column on mobile, 2 columns at `md` (768px+), 3 columns at `lg` (1024px+).
 - 2026-03-21: Item Drawer — added shadcn `Sheet` component. Clicking any item card (items list page) or item row (dashboard pinned/recent) opens a right-side slide-in drawer. Full item detail fetched on click via `GET /api/items/[id]` with auth check (`src/app/api/items/[id]/route.ts`). Added `getItemDetail()` query to `src/lib/db/items.ts` returning content, URL, collections, language, and dates. Drawer shows skeleton while loading, then displays: type badge + tags in header, action bar (Favorite, Pin, Copy, Edit, Delete), description, content (pre block), URL link, tags, collections, and created/updated dates. Created `ItemsClientWrapper` for the items list grid and `DashboardItemRows` client component for dashboard pinned/recent rows — both manage drawer open state locally.
+- 2026-03-21: Item Drawer Edit Mode — pencil button in the action bar toggles inline edit mode within the same drawer. Edit mode replaces the action bar with Save/Cancel buttons and shows controlled form inputs: title (required, inline in header), description textarea, type-specific fields (content textarea for snippet/prompt/command/note, language input for snippet/command, URL input for link), and comma-separated tags input. Save calls `updateItem` server action (`src/actions/items.ts`) with Zod validation and ownership check; on success updates drawer state, shows toast, and calls `router.refresh()`. Cancel resets form to original values. `updateItem` query in `src/lib/db/items.ts` does full tag replacement (deleteMany + connectOrCreate) and returns updated `ItemDetail`. Added `react-syntax-highlighter` with `vscDarkPlus` theme for syntax-highlighted content blocks in view mode (uses `item.language` for language detection). Added shadcn `Textarea` and `Label` components. Installed `zod` as a direct dependency.
