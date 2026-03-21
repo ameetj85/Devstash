@@ -1,6 +1,6 @@
 import { notFound, redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
-import ItemCard from '@/components/items/item-card'
+import ItemsClientWrapper from '@/components/items/items-client-wrapper'
 import { auth } from '@/auth'
 import { getItemsByType, getItemTypesWithCounts } from '@/lib/db/items'
 import { getCollections } from '@/lib/db/collections'
@@ -44,11 +44,7 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
             <p className="text-muted-foreground text-sm">No {typeSlug} yet.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {items.map((item) => (
-              <ItemCard key={item.id} item={item} />
-            ))}
-          </div>
+          <ItemsClientWrapper items={items} />
         )}
       </main>
     </DashboardShell>

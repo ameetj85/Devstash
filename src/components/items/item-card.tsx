@@ -27,9 +27,10 @@ function formatDate(date: Date) {
 
 interface ItemCardProps {
   item: ItemWithType
+  onClick?: () => void
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
+export default function ItemCard({ item, onClick }: ItemCardProps) {
   const Icon = iconMap[item.itemType.icon] ?? File
   const { color } = item.itemType
 
@@ -37,6 +38,7 @@ export default function ItemCard({ item }: ItemCardProps) {
     <div
       className="rounded-lg border border-l-4 border-border bg-card p-4 hover:bg-card/80 transition-colors cursor-pointer flex flex-col gap-3"
       style={{ borderLeftColor: color }}
+      onClick={onClick}
     >
       {/* Header */}
       <div className="flex items-start gap-3">

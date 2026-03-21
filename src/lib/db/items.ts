@@ -1,5 +1,64 @@
 import { prisma } from '@/lib/prisma'
 
+export type ItemDetail = {
+  id: string
+  title: string
+  description: string | null
+  content: string | null
+  contentType: string
+  url: string | null
+  fileUrl: string | null
+  fileName: string | null
+  language: string | null
+  isFavorite: boolean
+  isPinned: boolean
+  createdAt: Date
+  updatedAt: Date
+  tags: string[]
+  collections: { id: string; name: string }[]
+  itemType: {
+    name: string
+    icon: string
+    color: string
+  }
+}
+
+export async function getItemDetail(userId: string, itemId: string): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    include: {
+      itemType: true,
+      tags: { include: { tag: true } },
+      collections: { include: { collection: { select: { id: true, name: true } } } },
+    },
+  })
+
+  if (!item) return null
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    content: item.content,
+    contentType: item.contentType,
+    url: item.url,
+    fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    language: item.language,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    createdAt: item.createdAt,
+    updatedAt: item.updatedAt,
+    tags: item.tags.map((t) => t.tag.name),
+    collections: item.collections.map((c) => ({ id: c.collection.id, name: c.collection.name })),
+    itemType: {
+      name: item.itemType.name,
+      icon: item.itemType.icon,
+      color: item.itemType.color,
+    },
+  }
+}
+
 export type ItemWithType = {
   id: string
   title: string
