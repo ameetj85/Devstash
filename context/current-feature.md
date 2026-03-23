@@ -1,16 +1,8 @@
-# Current Feature: Image Gallery View
+# Current Feature
 
 ## Status
 
-In Progress
-
 ## Goals
-
-- Create an image thumbnail card to replace the current item card on the images page
-- Show an image grid/gallery with 3 columns
-- Display image thumbnails with 16:9 aspect ratio (`aspect-video`)
-- Use `object-cover` to fill the card (may crop edges)
-- Add a subtle hover zoom effect (5% scale with 300ms transition)
 
 ## Notes
 
@@ -42,11 +34,5 @@ In Progress
 - 2026-03-21: Item Create — installed shadcn `Dialog` component (base-ui). "New Item" button in the top bar replaced with `CreateItemDialog` (`src/components/items/create-item-dialog.tsx`) — a self-contained dialog with its own trigger. Dialog has a color-coded type selector (snippet, prompt, command, note, link — file/image excluded as Pro-only). Fields shown conditionally per type: title + description + tags always shown; content for snippet/prompt/command/note; language for snippet/command; URL (required) for link. `createItem` server action added to `src/actions/items.ts` with Zod validation (including `superRefine` for URL-required-on-link). `createItem` DB query added to `src/lib/db/items.ts` — looks up system type by name, creates item with tag `connectOrCreate`. On success: toast, modal close, `router.refresh()`. Unit tests added for DB query and server action (12 new tests, 24 total passing).
 - 2026-03-23: Code Editor — installed `@monaco-editor/react`. Created `src/components/items/code-editor.tsx` — Monaco Editor (`vs-dark` theme) wrapped in a macOS-style header with red/yellow/green window dots, language label, and a copy button. Editor height is fluid (computed from line count, max 400px) with a themed slim scrollbar. In the item drawer, snippet and command types now use `CodeEditor` for both view mode (readonly) and edit mode (editable), replacing `SyntaxHighlighter` and `Textarea` respectively; prompt/note/link keep their existing rendering. `CreateItemDialog` also uses `CodeEditor` for snippet/command content. `CreateItemDialog` gains a `defaultType` prop; each items list page (`/items/[type]`) now shows a type-specific "New Item" button in the header and in the empty state that opens the dialog with the current type pre-selected.
 - 2026-03-23: Markdown Editor — installed `react-markdown` and `remark-gfm`. Created `src/components/items/markdown-editor.tsx` — tabbed Write/Preview editor with dark theme header (`bg-[#2d2d2d]`) matching `CodeEditor` styling, including a copy button. Write tab uses a styled `Textarea`; Preview tab renders `ReactMarkdown` with GFM support inside a `.markdown-preview` div. Readonly mode hides tabs and shows Preview only. Added `.markdown-preview` CSS class to `globals.css` with styles for headings (h1–h6 with sizing and h1/h2 bottom borders), links, inline code, code blocks, ordered/unordered lists, blockquotes, tables, hr, bold, and italic. Updated item drawer (view + edit modes) and create dialog to use `MarkdownEditor` for `note` and `prompt` types; `CodeEditor` unchanged for `snippet`/`command`.
-- 2026-03-23: File Upload - create a file uload for Files and Images.
-- Create upload API route for R2
-- Create `FileUpload` component with drag-and-drop and upload progress indicator
-- Update create item modal to use `FileUpload` for `file` and `image` types
-- Display image preview for images, file info for files in the item drawer
-- Add download button in `ItemDrawer` for file types via a proxy API route (avoids CORS)
-- Delete files from R2 when items are deleted
-- Stick to `src/lib/db/items.ts` for all Prisma/DB functions
+- 2026-03-23: File & Image Upload with Cloudflare R2 — created upload API route (`/api/upload`) for R2 using `@aws-sdk/client-s3`. Created `FileUpload` component with drag-and-drop, file type/size validation, and upload progress indicator. Updated `CreateItemDialog` to use `FileUpload` for `file` and `image` types. Item drawer displays image preview (`next/image`) for images and file info (name, size, type icon) for files. Download button added for file types via a proxy API route (`/api/files/[key]`) to avoid CORS. Files deleted from R2 when items are deleted. `fileUrl` added to `ItemWithType` type and `mapItem`. Removed Pro-only gate on the items list page so Files and Images pages show the "New Item" button.
+- 2026-03-23: Image Gallery View — created `ImageThumbnailCard` component with 16:9 `aspect-video` thumbnail, `object-cover`, 5% hover zoom (`group-hover:scale-105` with 300ms transition), favorite star overlay, and title/description/tags footer. `/items/images` page renders `ItemsClientWrapper` with `layout="gallery"` which uses `ImageThumbnailCard` instead of `ItemCard`. Toggle buttons (`LayoutGrid` / `LayoutList`) appear above the grid on the images page only, letting users switch between thumbnail and card views. Added R2 hostname to `next.config.ts` `remotePatterns` for `next/image`. Added `fileUrl` to `ItemWithType`.
