@@ -1,5 +1,33 @@
 import { prisma } from '@/lib/prisma'
 
+export type CreatedCollection = {
+  id: string
+  name: string
+  description: string | null
+  isFavorite: boolean
+  createdAt: Date
+}
+
+export async function createCollection(
+  userId: string,
+  data: { name: string; description?: string | null },
+): Promise<CreatedCollection> {
+  return prisma.collection.create({
+    data: {
+      name: data.name,
+      description: data.description ?? null,
+      userId,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      createdAt: true,
+    },
+  })
+}
+
 export type CollectionWithMeta = {
   id: string
   name: string

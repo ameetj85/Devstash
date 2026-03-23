@@ -1,10 +1,25 @@
-# Current Feature
+# Current Feature: Collection Create
 
 ## Status
 
+In Progress
+
 ## Goals
 
+- Add a "New Collection" button in the top bar (alongside the existing "New Item" button)
+- Clicking the button opens a modal dialog with fields: name (required) and description (optional)
+- On save, call a server action to create the collection (user-scoped)
+- Show a success toast and close the modal on success; show an error toast on failure
+- After creation, the page refreshes so the new collection appears in the sidebar and dashboard without a full reload
+- Collection creation follows the same patterns as item creation: `lib/db/collections.ts` for DB queries, `src/actions/collections.ts` for server actions, and a `CreateCollectionDialog` component
+
 ## Notes
+
+- Collections are user-scoped — always pass `userId` from the session
+- Use the existing `createItem` flow as the reference pattern (Zod validation, server action returning `{ success, data, error }`, `router.refresh()` on success)
+- The dialog should use shadcn `Dialog` (already installed)
+- Sonner toasts are already wired up in the root layout
+- No Pro gate needed for collection creation (free users get 3 collections — don't enforce limits yet per project spec note about dev mode)
 
 ## History
 

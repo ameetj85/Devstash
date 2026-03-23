@@ -1,9 +1,9 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Search, FolderPlus, Menu } from 'lucide-react'
+import { Search, Menu } from 'lucide-react'
 import CreateItemDialog from '@/components/items/create-item-dialog'
+import CreateCollectionDialog from '@/components/collections/create-collection-dialog'
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void
@@ -40,10 +40,7 @@ export default function TopBar({ onMobileMenuToggle }: TopBarProps) {
       </div>
 
       <div className="flex items-center gap-2 ml-auto">
-        <Button variant="outline" size="sm" className="gap-1.5 hidden sm:flex">
-          <FolderPlus className="w-4 h-4" />
-          New Collection
-        </Button>
+        <CreateCollectionDialog />
         <CreateItemDialog />
       </div>
     </header>
