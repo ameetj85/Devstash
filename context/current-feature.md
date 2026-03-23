@@ -1,23 +1,10 @@
-# Current Feature: File List View
+# Current Feature
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Update `/items/files` to display as a single-column list (like Google Drive/Dropbox) instead of grid cards
-- Each row shows: file icon (by extension), file name, file size, upload date, and download button
-- Row hover highlight
-- Clicking a row opens the ItemDrawer
-- Download button triggers direct download (with stopPropagation so it doesn't open the drawer)
-- Responsive: stack info vertically on mobile
-
 ## Notes
-
-- Only affects `/items/files` — images page keeps its existing gallery/grid layout
-- File icon should vary by extension (e.g., PDF, image, zip, code file, etc.)
-- Download button should reuse the existing `/api/files/[key]` proxy route
 
 ## History
 
@@ -49,3 +36,4 @@ In Progress
 - 2026-03-23: Markdown Editor — installed `react-markdown` and `remark-gfm`. Created `src/components/items/markdown-editor.tsx` — tabbed Write/Preview editor with dark theme header (`bg-[#2d2d2d]`) matching `CodeEditor` styling, including a copy button. Write tab uses a styled `Textarea`; Preview tab renders `ReactMarkdown` with GFM support inside a `.markdown-preview` div. Readonly mode hides tabs and shows Preview only. Added `.markdown-preview` CSS class to `globals.css` with styles for headings (h1–h6 with sizing and h1/h2 bottom borders), links, inline code, code blocks, ordered/unordered lists, blockquotes, tables, hr, bold, and italic. Updated item drawer (view + edit modes) and create dialog to use `MarkdownEditor` for `note` and `prompt` types; `CodeEditor` unchanged for `snippet`/`command`.
 - 2026-03-23: File & Image Upload with Cloudflare R2 — created upload API route (`/api/upload`) for R2 using `@aws-sdk/client-s3`. Created `FileUpload` component with drag-and-drop, file type/size validation, and upload progress indicator. Updated `CreateItemDialog` to use `FileUpload` for `file` and `image` types. Item drawer displays image preview (`next/image`) for images and file info (name, size, type icon) for files. Download button added for file types via a proxy API route (`/api/files/[key]`) to avoid CORS. Files deleted from R2 when items are deleted. `fileUrl` added to `ItemWithType` type and `mapItem`. Removed Pro-only gate on the items list page so Files and Images pages show the "New Item" button.
 - 2026-03-23: Image Gallery View — created `ImageThumbnailCard` component with 16:9 `aspect-video` thumbnail, `object-cover`, 5% hover zoom (`group-hover:scale-105` with 300ms transition), favorite star overlay, and title/description/tags footer. `/items/images` page renders `ItemsClientWrapper` with `layout="gallery"` which uses `ImageThumbnailCard` instead of `ItemCard`. Toggle buttons (`LayoutGrid` / `LayoutList`) appear above the grid on the images page only, letting users switch between thumbnail and card views. Added R2 hostname to `next.config.ts` `remotePatterns` for `next/image`. Added `fileUrl` to `ItemWithType`.
+- 2026-03-23: File List View — `/items/files` now renders as a single-column list (Google Drive-style) instead of grid cards. Created `FileListRow` component with extension-aware file icons (image, code, document, archive, video, audio), file name, formatted file size, upload date, hover highlight, and a download button (stopPropagation so the drawer doesn't open). `ItemsClientWrapper` gained a `'list'` layout option. Fixed `fileSize` not being stored on upload: upload API now returns `fileSize`, `UploadedFile` type updated, and `fileSize` threaded through `createItem` action and DB query. Fixed download key extraction (was using only the last URL segment instead of the full `userId/uuid.ext` path).
