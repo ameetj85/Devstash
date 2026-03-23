@@ -1,25 +1,10 @@
-# Current Feature: Collection Create
+# Current Feature
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Add a "New Collection" button in the top bar (alongside the existing "New Item" button)
-- Clicking the button opens a modal dialog with fields: name (required) and description (optional)
-- On save, call a server action to create the collection (user-scoped)
-- Show a success toast and close the modal on success; show an error toast on failure
-- After creation, the page refreshes so the new collection appears in the sidebar and dashboard without a full reload
-- Collection creation follows the same patterns as item creation: `lib/db/collections.ts` for DB queries, `src/actions/collections.ts` for server actions, and a `CreateCollectionDialog` component
-
 ## Notes
-
-- Collections are user-scoped — always pass `userId` from the session
-- Use the existing `createItem` flow as the reference pattern (Zod validation, server action returning `{ success, data, error }`, `router.refresh()` on success)
-- The dialog should use shadcn `Dialog` (already installed)
-- Sonner toasts are already wired up in the root layout
-- No Pro gate needed for collection creation (free users get 3 collections — don't enforce limits yet per project spec note about dev mode)
 
 ## History
 
@@ -54,3 +39,4 @@ In Progress
 - 2026-03-23: File List View — `/items/files` now renders as a single-column list (Google Drive-style) instead of grid cards. Created `FileListRow` component with extension-aware file icons (image, code, document, archive, video, audio), file name, formatted file size, upload date, hover highlight, and a download button (stopPropagation so the drawer doesn't open). `ItemsClientWrapper` gained a `'list'` layout option. Fixed `fileSize` not being stored on upload: upload API now returns `fileSize`, `UploadedFile` type updated, and `fileSize` threaded through `createItem` action and DB query. Fixed download key extraction (was using only the last URL segment instead of the full `userId/uuid.ext` path).
 - 2026-03-23: Hydration warning fix — added `suppressHydrationWarning` to `<body>` in `src/app/layout.tsx` to suppress browser-extension-caused attribute mismatch warnings (password managers, Grammarly, etc. injecting attributes into inputs).
 - 2026-03-23: Code audit fixes — Applied security, performance, and code quality fixes from a codebase audit: (1) Added rate limiting to `POST /api/profile/change-password` (5 req/15min by user ID). (2) R2 orphan cleanup: delete uploaded file if `createItem` DB call fails. (3) Optimized `getCollections` to use Prisma `_count` + selective `select` instead of fetching full item records for each collection. (4) Collapsed `updateItem` from 2 DB round-trips to 1 by using `where: { id, userId }` with P2025 error catch. (5) Added `max()` Zod constraints to `createItem`/`updateItem` schemas. (6) Extracted shared `iconMap`/`getItemIcon()` to `src/lib/item-type-icons.ts` (was duplicated across 5 components). (7) Extracted shared type-classification arrays to `src/lib/item-type-config.ts` (was duplicated in 2 components). (8) Extracted `extractFileKey()` to `src/lib/file-utils.ts` (was duplicated in 3 places).
+- 2026-03-23: Collection Create — added "New Collection" button to the top bar that opens a shadcn `Dialog` modal with name (required) and description (optional) fields. Created `createCollection` DB query in `src/lib/db/collections.ts`, `createCollection` server action in `src/actions/collections.ts` (Zod validation, auth check, `{ success, data, error }` pattern), and `CreateCollectionDialog` component in `src/components/collections/create-collection-dialog.tsx`. On success: toast shown, modal closed, `router.refresh()` updates sidebar and dashboard. 8 unit tests added across DB query and server action (43 total passing).
