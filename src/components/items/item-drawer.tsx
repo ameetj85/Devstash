@@ -46,6 +46,7 @@ import {
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import CodeEditor from '@/components/items/code-editor'
+import MarkdownEditor from '@/components/items/markdown-editor'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -91,6 +92,7 @@ const iconMap: Record<string, LucideIcon> = {
 
 const CONTENT_TYPES = ['snippet', 'prompt', 'command', 'note']
 const LANGUAGE_TYPES = ['snippet', 'command']
+const MARKDOWN_TYPES = ['note', 'prompt']
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -367,6 +369,11 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                         onChange={(v) => setForm((f) => ({ ...f, content: v }))}
                         language={form.language}
                       />
+                    ) : MARKDOWN_TYPES.includes(typeName) ? (
+                      <MarkdownEditor
+                        value={form.content}
+                        onChange={(v) => setForm((f) => ({ ...f, content: v }))}
+                      />
                     ) : (
                       <Textarea
                         value={form.content}
@@ -552,6 +559,11 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                       <CodeEditor
                         value={item.content}
                         language={item.language}
+                        readonly
+                      />
+                    ) : MARKDOWN_TYPES.includes(typeName) ? (
+                      <MarkdownEditor
+                        value={item.content}
                         readonly
                       />
                     ) : (

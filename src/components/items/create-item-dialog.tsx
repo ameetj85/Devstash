@@ -17,6 +17,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { createItem } from '@/actions/items'
 import CodeEditor from '@/components/items/code-editor'
+import MarkdownEditor from '@/components/items/markdown-editor'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -51,6 +52,7 @@ const EMPTY_FORM: FormState = {
 
 const CONTENT_TYPES: ItemType[] = ['snippet', 'prompt', 'command', 'note']
 const LANGUAGE_TYPES: ItemType[] = ['snippet', 'command']
+const MARKDOWN_TYPES: ItemType[] = ['note', 'prompt']
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -201,6 +203,11 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
                   value={form.content}
                   onChange={(v) => setForm((f) => ({ ...f, content: v }))}
                   language={form.language}
+                />
+              ) : MARKDOWN_TYPES.includes(selectedType) ? (
+                <MarkdownEditor
+                  value={form.content}
+                  onChange={(v) => setForm((f) => ({ ...f, content: v }))}
                 />
               ) : (
                 <Textarea
