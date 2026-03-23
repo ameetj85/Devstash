@@ -196,58 +196,69 @@ export type UpdateItemData = {
   tags: string[]
 }
 
+function isPrismaNotFoundError(e: unknown): boolean {
+  return (
+    typeof e === 'object' &&
+    e !== null &&
+    'code' in e &&
+    (e as { code: string }).code === 'P2025'
+  )
+}
+
 export async function updateItem(userId: string, itemId: string, data: UpdateItemData): Promise<ItemDetail | null> {
-  const existing = await prisma.item.findFirst({ where: { id: itemId, userId } })
-  if (!existing) return null
-
-  const updated = await prisma.item.update({
-    where: { id: itemId },
-    data: {
-      title: data.title,
-      description: data.description,
-      content: data.content,
-      url: data.url,
-      language: data.language,
-      tags: {
-        deleteMany: {},
-        create: data.tags.map((name) => ({
-          tag: {
-            connectOrCreate: {
-              where: { name },
-              create: { name },
+  try {
+    const updated = await prisma.item.update({
+      where: { id: itemId, userId },
+      data: {
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        url: data.url,
+        language: data.language,
+        tags: {
+          deleteMany: {},
+          create: data.tags.map((name) => ({
+            tag: {
+              connectOrCreate: {
+                where: { name },
+                create: { name },
+              },
             },
-          },
-        })),
+          })),
+        },
       },
-    },
-    include: {
-      itemType: true,
-      tags: { include: { tag: true } },
-      collections: { include: { collection: { select: { id: true, name: true } } } },
-    },
-  })
+      include: {
+        itemType: true,
+        tags: { include: { tag: true } },
+        collections: { include: { collection: { select: { id: true, name: true } } } },
+      },
+    })
 
-  return {
-    id: updated.id,
-    title: updated.title,
-    description: updated.description,
-    content: updated.content,
-    contentType: updated.contentType,
-    url: updated.url,
-    fileUrl: updated.fileUrl,
-    fileName: updated.fileName,
-    language: updated.language,
-    isFavorite: updated.isFavorite,
-    isPinned: updated.isPinned,
-    createdAt: updated.createdAt,
-    updatedAt: updated.updatedAt,
-    tags: updated.tags.map((t) => t.tag.name),
-    collections: updated.collections.map((c) => ({ id: c.collection.id, name: c.collection.name })),
-    itemType: {
-      name: updated.itemType.name,
-      icon: updated.itemType.icon,
-      color: updated.itemType.color,
-    },
+    return {
+      id: updated.id,
+      title: updated.title,
+      description: updated.description,
+      content: updated.content,
+      contentType: updated.contentType,
+      url: updated.url,
+      fileUrl: updated.fileUrl,
+      fileName: updated.fileName,
+      language: updated.language,
+      isFavorite: updated.isFavorite,
+      isPinned: updated.isPinned,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+      tags: updated.tags.map((t) => t.tag.name),
+      collections: updated.collections.map((c) => ({ id: c.collection.id, name: c.collection.name })),
+      itemType: {
+        name: updated.itemType.name,
+        icon: updated.itemType.icon,
+        color: updated.itemType.color,
+      },
+    }
+  } catch (e: unknown) {
+    if (isPrismaNotFoundError(e)) return null
+    throw e
   }
 }
 

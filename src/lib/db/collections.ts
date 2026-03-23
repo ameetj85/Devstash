@@ -14,11 +14,14 @@ export async function getCollections(userId: string): Promise<CollectionWithMeta
   const collections = await prisma.collection.findMany({
     where: { userId },
     include: {
+      _count: { select: { items: true } },
       items: {
-        include: {
+        select: {
           item: {
-            include: {
-              itemType: true,
+            select: {
+              itemType: {
+                select: { id: true, icon: true, color: true, name: true },
+              },
             },
           },
         },
@@ -28,16 +31,14 @@ export async function getCollections(userId: string): Promise<CollectionWithMeta
   })
 
   return collections.map((col) => {
-    const items = col.items.map((ic) => ic.item)
-
     // Count items per type to find dominant and unique types
     const typeCounts: Record<
       string,
       { count: number; icon: string; color: string; name: string }
     > = {}
 
-    for (const item of items) {
-      const t = item.itemType
+    for (const ic of col.items) {
+      const t = ic.item.itemType
       if (!typeCounts[t.id]) {
         typeCounts[t.id] = { count: 0, icon: t.icon, color: t.color, name: t.name }
       }
@@ -53,7 +54,7 @@ export async function getCollections(userId: string): Promise<CollectionWithMeta
       name: col.name,
       description: col.description,
       isFavorite: col.isFavorite,
-      itemCount: items.length,
+      itemCount: col._count.items,
       dominantColor,
       typeIcons,
     }

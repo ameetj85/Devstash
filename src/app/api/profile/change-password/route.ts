@@ -2,11 +2,20 @@ import { NextResponse } from 'next/server'
 import bcrypt from 'bcryptjs'
 import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
+import { checkRateLimit } from '@/lib/rate-limit'
 
 export async function POST(req: Request) {
   const session = await auth()
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 })
+  }
+
+  const { allowed, retryAfter } = await checkRateLimit('changePassword', session.user.id)
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many attempts. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(retryAfter) } }
+    )
   }
 
   const body = await req.json().catch(() => ({}))

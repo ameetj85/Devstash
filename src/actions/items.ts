@@ -6,12 +6,12 @@ import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createIte
 import { deleteR2Object, keyFromUrl } from '@/lib/r2'
 
 const updateItemSchema = z.object({
-  title: z.string().trim().min(1, 'Title is required'),
-  description: z.string().nullable().optional(),
-  content: z.string().nullable().optional(),
+  title: z.string().trim().min(1, 'Title is required').max(500),
+  description: z.string().max(2000).nullable().optional(),
+  content: z.string().max(500_000).nullable().optional(),
   url: z.union([z.string().url('Must be a valid URL'), z.null()]).optional(),
-  language: z.string().nullable().optional(),
-  tags: z.array(z.string().trim().min(1)),
+  language: z.string().max(100).nullable().optional(),
+  tags: z.array(z.string().trim().min(1).max(100)).max(50),
 })
 
 type UpdateItemInput = z.infer<typeof updateItemSchema>
@@ -48,13 +48,13 @@ export async function updateItem(itemId: string, data: UpdateItemInput) {
 const VALID_TYPES = ['snippet', 'prompt', 'command', 'note', 'link', 'file', 'image'] as const
 
 const createItemSchema = z.object({
-  title: z.string().trim().min(1, 'Title is required'),
+  title: z.string().trim().min(1, 'Title is required').max(500),
   typeName: z.enum(VALID_TYPES, { error: 'Invalid item type' }),
-  description: z.string().nullable().optional(),
-  content: z.string().nullable().optional(),
+  description: z.string().max(2000).nullable().optional(),
+  content: z.string().max(500_000).nullable().optional(),
   url: z.union([z.string().url('Must be a valid URL'), z.literal(''), z.null()]).optional(),
-  language: z.string().nullable().optional(),
-  tags: z.array(z.string().trim().min(1)),
+  language: z.string().max(100).nullable().optional(),
+  tags: z.array(z.string().trim().min(1).max(100)).max(50),
   fileUrl: z.string().nullable().optional(),
   fileName: z.string().nullable().optional(),
   fileSize: z.number().nullable().optional(),
@@ -96,6 +96,11 @@ export async function createItem(data: CreateItemInput) {
   })
 
   if (!created) {
+    // Clean up the uploaded R2 file if the item record couldn't be created
+    if (fileUrl) {
+      const key = keyFromUrl(fileUrl)
+      if (key) await deleteR2Object(key).catch(() => {})
+    }
     return { success: false as const, error: 'Invalid item type' }
   }
 

@@ -20,6 +20,8 @@ const LIMITERS: Record<string, LimiterConfig> = {
   forgotPassword: { limit: 3, window: '1 h', prefix: 'rl:forgot-password' },
   // 5 attempts per 15 minutes, keyed by IP
   resetPassword: { limit: 5, window: '15 m', prefix: 'rl:reset-password' },
+  // 5 attempts per 15 minutes, keyed by user ID
+  changePassword: { limit: 5, window: '15 m', prefix: 'rl:change-password' },
 }
 
 // Lazily initialised — avoids module-level crash when env vars are missing.

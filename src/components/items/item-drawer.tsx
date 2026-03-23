@@ -3,13 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link as LinkIcon,
   File,
-  Image,
   Star,
   Pin,
   Copy,
@@ -19,7 +13,6 @@ import {
   Save,
   X,
   Download,
-  type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
@@ -79,22 +72,9 @@ type EditFormState = {
   tags: string
 }
 
-// ─── Icon map ─────────────────────────────────────────────────────────────────
-
-const iconMap: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link: LinkIcon,
-  File,
-  Image,
-}
-
-const CONTENT_TYPES = ['snippet', 'prompt', 'command', 'note']
-const LANGUAGE_TYPES = ['snippet', 'command']
-const MARKDOWN_TYPES = ['note', 'prompt']
-const FILE_TYPES = ['file', 'image']
+import { getItemIcon } from '@/lib/item-type-icons'
+import { CONTENT_TYPES, LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib/item-type-config'
+import { extractFileKey } from '@/lib/file-utils'
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -185,7 +165,7 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
       .finally(() => setLoading(false))
   }, [open, itemId])
 
-  const Icon = item ? (iconMap[item.itemType.icon] ?? File) : File
+  const Icon = item ? getItemIcon(item.itemType.icon) : File
   const color = item?.itemType.color ?? '#6b7280'
 
   function handleCopy() {
@@ -626,7 +606,7 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                           <p className="text-sm font-medium truncate">{item.fileName ?? 'File'}</p>
                         </div>
                         <a
-                          href={`/api/files/${encodeURIComponent(item.fileUrl.split('/').slice(-2).join('/'))}?name=${encodeURIComponent(item.fileName ?? 'download')}`}
+                          href={`/api/files/${encodeURIComponent(extractFileKey(item.fileUrl))}?name=${encodeURIComponent(item.fileName ?? 'download')}`}
                           download={item.fileName ?? 'download'}
                           className="shrink-0 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
                         >
@@ -637,7 +617,7 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                     )}
                     {typeName === 'image' && item.fileName && (
                       <a
-                        href={`/api/files/${encodeURIComponent(item.fileUrl.split('/').slice(-2).join('/'))}?name=${encodeURIComponent(item.fileName)}`}
+                        href={`/api/files/${encodeURIComponent(extractFileKey(item.fileUrl))}?name=${encodeURIComponent(item.fileName)}`}
                         download={item.fileName}
                         className="mt-2 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
                       >

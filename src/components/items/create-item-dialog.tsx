@@ -53,10 +53,7 @@ const EMPTY_FORM: FormState = {
   tags: '',
 }
 
-const CONTENT_TYPES: ItemType[] = ['snippet', 'prompt', 'command', 'note']
-const LANGUAGE_TYPES: ItemType[] = ['snippet', 'command']
-const MARKDOWN_TYPES: ItemType[] = ['note', 'prompt']
-const FILE_TYPES: ItemType[] = ['file', 'image']
+import { CONTENT_TYPES, LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib/item-type-config'
 
 // ─── Component ────────────────────────────────────────────────────────────────
 

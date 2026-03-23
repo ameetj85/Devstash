@@ -2,29 +2,12 @@
 
 import { useState } from 'react'
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link as LinkIcon,
-  File,
-  Image,
   Star,
   Pin,
   Clock,
-  type LucideIcon,
 } from 'lucide-react'
 import ItemDrawer from '@/components/items/item-drawer'
-
-const iconMap: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link: LinkIcon,
-  File,
-  Image,
-}
+import { getItemIcon } from '@/lib/item-type-icons'
 
 // Serializable item row (dates pre-formatted as strings by the server component)
 export type DashboardItemRow = {
@@ -63,7 +46,7 @@ export default function DashboardItemRows({ pinnedItems, recentItems }: Dashboar
           </div>
           <div className="space-y-2">
             {pinnedItems.map((item) => {
-              const Icon = iconMap[item.itemType.icon] ?? File
+              const Icon = getItemIcon(item.itemType.icon)
               return (
                 <div
                   key={item.id}
@@ -108,7 +91,7 @@ export default function DashboardItemRows({ pinnedItems, recentItems }: Dashboar
         </div>
         <div className="space-y-2">
           {recentItems.map((item) => {
-            const Icon = iconMap[item.itemType.icon] ?? File
+            const Icon = getItemIcon(item.itemType.icon)
             return (
               <div
                 key={item.id}

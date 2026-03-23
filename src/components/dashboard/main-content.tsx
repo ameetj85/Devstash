@@ -1,33 +1,14 @@
 import Link from 'next/link'
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link as LinkIcon,
-  File,
-  Image,
   Star,
   Layers,
   FolderOpen,
   Heart,
-  type LucideIcon,
 } from 'lucide-react'
 import type { CollectionWithMeta } from '@/lib/db/collections'
 import type { ItemWithType, ItemStats } from '@/lib/db/items'
+import { getItemIcon } from '@/lib/item-type-icons'
 import DashboardItemRows from './dashboard-item-rows'
-
-// ─── Icon map ────────────────────────────────────────────────────────────────
-
-const iconMap: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link: LinkIcon,
-  File,
-  Image,
-}
 
 function formatDate(date: Date) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -125,7 +106,7 @@ export default function MainContent({
                   <div className="flex items-center gap-1">
                     {col.typeIcons.length > 0 ? (
                       col.typeIcons.slice(0, 4).map(({ icon, color, name }) => {
-                        const Icon = iconMap[icon] ?? File
+                        const Icon = getItemIcon(icon)
                         return (
                           <span
                             key={name}

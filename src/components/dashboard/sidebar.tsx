@@ -2,33 +2,16 @@
 
 import Link from 'next/link'
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link as LinkIcon,
-  File,
-  Image,
   Star,
   PanelLeftClose,
   PanelLeftOpen,
-  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import UserMenu from '@/components/dashboard/user-menu'
 import type { ItemTypeWithCount } from '@/lib/db/items'
 import type { CollectionWithMeta } from '@/lib/db/collections'
-
-const iconMap: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link: LinkIcon,
-  File,
-  Image,
-}
+import { getItemIcon } from '@/lib/item-type-icons'
 
 interface SidebarUser {
   name?: string | null
@@ -113,7 +96,7 @@ export default function Sidebar({
             )}
             <nav className="space-y-0.5">
               {itemTypes.map((type) => {
-                const Icon = iconMap[type.icon] ?? File
+                const Icon = getItemIcon(type.icon)
                 const href = `/items/${type.name}s`
                 return (
                   <Link

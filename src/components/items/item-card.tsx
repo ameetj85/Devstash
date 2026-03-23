@@ -2,29 +2,12 @@
 
 import { useState } from 'react'
 import {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link as LinkIcon,
-  File,
-  Image,
   Star,
   Copy,
   Check,
-  type LucideIcon,
 } from 'lucide-react'
 import type { ItemWithType } from '@/lib/db/items'
-
-const iconMap: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  StickyNote,
-  Link: LinkIcon,
-  File,
-  Image,
-}
+import { getItemIcon } from '@/lib/item-type-icons'
 
 function formatDate(date: Date) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
@@ -37,7 +20,7 @@ interface ItemCardProps {
 
 export default function ItemCard({ item, onClick }: ItemCardProps) {
   const [copied, setCopied] = useState(false)
-  const Icon = iconMap[item.itemType.icon] ?? File
+  const Icon = getItemIcon(item.itemType.icon)
   const { color } = item.itemType
 
   const copyValue = item.url ?? item.content ?? ''
