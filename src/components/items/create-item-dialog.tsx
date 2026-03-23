@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { createItem } from '@/actions/items'
+import CodeEditor from '@/components/items/code-editor'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -53,10 +54,18 @@ const LANGUAGE_TYPES: ItemType[] = ['snippet', 'command']
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function CreateItemDialog() {
+interface CreateItemDialogProps {
+  defaultType?: string
+}
+
+export default function CreateItemDialog({ defaultType }: CreateItemDialogProps) {
   const router = useRouter()
+  const initialType: ItemType =
+    defaultType && (ITEM_TYPES as readonly string[]).includes(defaultType)
+      ? (defaultType as ItemType)
+      : 'snippet'
   const [open, setOpen] = useState(false)
-  const [selectedType, setSelectedType] = useState<ItemType>('snippet')
+  const [selectedType, setSelectedType] = useState<ItemType>(initialType)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
 
@@ -64,7 +73,7 @@ export default function CreateItemDialog() {
     setOpen(isOpen)
     if (!isOpen) {
       setForm(EMPTY_FORM)
-      setSelectedType('snippet')
+      setSelectedType(initialType)
     }
   }
 
@@ -187,13 +196,21 @@ export default function CreateItemDialog() {
               <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Content
               </Label>
-              <Textarea
-                value={form.content}
-                onChange={field('content')}
-                placeholder="Content"
-                className="text-xs font-mono resize-none"
-                rows={6}
-              />
+              {showLanguage ? (
+                <CodeEditor
+                  value={form.content}
+                  onChange={(v) => setForm((f) => ({ ...f, content: v }))}
+                  language={form.language}
+                />
+              ) : (
+                <Textarea
+                  value={form.content}
+                  onChange={field('content')}
+                  placeholder="Content"
+                  className="text-xs font-mono resize-none"
+                  rows={6}
+                />
+              )}
             </div>
           )}
 

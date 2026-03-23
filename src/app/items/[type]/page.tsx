@@ -1,9 +1,12 @@
 import { notFound, redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import ItemsClientWrapper from '@/components/items/items-client-wrapper'
+import CreateItemDialog from '@/components/items/create-item-dialog'
 import { auth } from '@/auth'
 import { getItemsByType, getItemTypesWithCounts } from '@/lib/db/items'
 import { getCollections } from '@/lib/db/collections'
+
+const PRO_ONLY_TYPES = ['file', 'image']
 
 interface ItemsPageProps {
   params: Promise<{ type: string }>
@@ -32,16 +35,24 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
   return (
     <DashboardShell itemTypes={itemTypes} collections={collections} user={user}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight capitalize">{typeSlug}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {items.length} {items.length === 1 ? 'item' : 'items'}
-          </p>
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight capitalize">{typeSlug}</h1>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {items.length} {items.length === 1 ? 'item' : 'items'}
+            </p>
+          </div>
+          {!PRO_ONLY_TYPES.includes(typeName) && (
+            <CreateItemDialog defaultType={typeName} />
+          )}
         </div>
 
         {items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 text-center">
+          <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
             <p className="text-muted-foreground text-sm">No {typeSlug} yet.</p>
+            {!PRO_ONLY_TYPES.includes(typeName) && (
+              <CreateItemDialog defaultType={typeName} />
+            )}
           </div>
         ) : (
           <ItemsClientWrapper items={items} />

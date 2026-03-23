@@ -45,6 +45,7 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import CodeEditor from '@/components/items/code-editor'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -360,13 +361,21 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                     <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       Content
                     </Label>
-                    <Textarea
-                      value={form.content}
-                      onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                      placeholder="Content"
-                      className="text-xs font-mono resize-none"
-                      rows={8}
-                    />
+                    {showLanguage ? (
+                      <CodeEditor
+                        value={form.content}
+                        onChange={(v) => setForm((f) => ({ ...f, content: v }))}
+                        language={form.language}
+                      />
+                    ) : (
+                      <Textarea
+                        value={form.content}
+                        onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
+                        placeholder="Content"
+                        className="text-xs font-mono resize-none"
+                        rows={8}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -539,19 +548,27 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
                       Content
                     </p>
-                    <SyntaxHighlighter
-                      language={item.language ?? 'text'}
-                      style={vscDarkPlus}
-                      customStyle={{
-                        margin: 0,
-                        borderRadius: '0.5rem',
-                        fontSize: '0.75rem',
-                        lineHeight: '1.6',
-                      }}
-                      wrapLongLines
-                    >
-                      {item.content}
-                    </SyntaxHighlighter>
+                    {LANGUAGE_TYPES.includes(typeName) ? (
+                      <CodeEditor
+                        value={item.content}
+                        language={item.language}
+                        readonly
+                      />
+                    ) : (
+                      <SyntaxHighlighter
+                        language={item.language ?? 'text'}
+                        style={vscDarkPlus}
+                        customStyle={{
+                          margin: 0,
+                          borderRadius: '0.5rem',
+                          fontSize: '0.75rem',
+                          lineHeight: '1.6',
+                        }}
+                        wrapLongLines
+                      >
+                        {item.content}
+                      </SyntaxHighlighter>
+                    )}
                   </section>
                 )}
 
