@@ -54,6 +54,8 @@ describe('createItem', () => {
       url: null,
       language: null,
       tags: [],
+      fileUrl: null,
+      fileName: null,
     })
 
     expect(result).toBeNull()
@@ -72,6 +74,8 @@ describe('createItem', () => {
       url: null,
       language: 'javascript',
       tags: ['js'],
+      fileUrl: null,
+      fileName: null,
     })
 
     expect(result).not.toBeNull()
@@ -92,6 +96,8 @@ describe('createItem', () => {
       url: null,
       language: null,
       tags: [],
+      fileUrl: null,
+      fileName: null,
     })
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -101,19 +107,21 @@ describe('createItem', () => {
     )
   })
 
-  it('sets contentType to FILE for link type', async () => {
-    const linkType = { ...fakeItemType, name: 'link' }
-    mockFindFirst.mockResolvedValue(linkType as never)
+  it('sets contentType to FILE for file type', async () => {
+    const fileType = { ...fakeItemType, name: 'file' }
+    mockFindFirst.mockResolvedValue(fileType as never)
     mockCreate.mockResolvedValue({ ...fakeCreated, contentType: 'FILE' } as never)
 
     await createItem('user-1', {
-      title: 'My Link',
-      typeName: 'link',
+      title: 'My File',
+      typeName: 'file',
       description: null,
       content: null,
-      url: 'https://example.com',
+      url: null,
       language: null,
       tags: [],
+      fileUrl: 'https://r2.example.com/file.pdf',
+      fileName: 'file.pdf',
     })
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -134,6 +142,8 @@ describe('createItem', () => {
       url: null,
       language: null,
       tags: [],
+      fileUrl: null,
+      fileName: null,
     })
 
     expect(mockFindFirst).toHaveBeenCalledWith({

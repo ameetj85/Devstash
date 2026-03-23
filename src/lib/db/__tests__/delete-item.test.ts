@@ -20,32 +20,32 @@ beforeEach(() => {
 })
 
 describe('deleteItem', () => {
-  it('returns false when item not found', async () => {
+  it('returns null when item not found', async () => {
     mockFindFirst.mockResolvedValue(null)
 
     const result = await deleteItem('user-1', 'item-999')
 
-    expect(result).toBe(false)
+    expect(result).toBeNull()
     expect(mockDelete).not.toHaveBeenCalled()
   })
 
-  it('returns false when item belongs to a different user', async () => {
+  it('returns null when item belongs to a different user', async () => {
     mockFindFirst.mockResolvedValue(null) // findFirst with userId filter returns null
 
     const result = await deleteItem('user-2', 'item-1')
 
-    expect(result).toBe(false)
+    expect(result).toBeNull()
     expect(mockDelete).not.toHaveBeenCalled()
   })
 
-  it('deletes the item and returns true when found and owned', async () => {
-    const fakeItem = { id: 'item-1', userId: 'user-1' }
+  it('deletes the item and returns it when found and owned', async () => {
+    const fakeItem = { fileUrl: null }
     mockFindFirst.mockResolvedValue(fakeItem as never)
     mockDelete.mockResolvedValue(fakeItem as never)
 
     const result = await deleteItem('user-1', 'item-1')
 
-    expect(result).toBe(true)
+    expect(result).toEqual({ fileUrl: null })
     expect(mockDelete).toHaveBeenCalledWith({ where: { id: 'item-1' } })
   })
 
@@ -56,6 +56,7 @@ describe('deleteItem', () => {
 
     expect(mockFindFirst).toHaveBeenCalledWith({
       where: { id: 'item-xyz', userId: 'user-abc' },
+      select: { fileUrl: true },
     })
   })
 })

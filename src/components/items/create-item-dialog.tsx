@@ -18,10 +18,11 @@ import { Label } from '@/components/ui/label'
 import { createItem } from '@/actions/items'
 import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
+import FileUpload, { type UploadedFile } from '@/components/items/file-upload'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-const ITEM_TYPES = ['snippet', 'prompt', 'command', 'note', 'link'] as const
+const ITEM_TYPES = ['snippet', 'prompt', 'command', 'note', 'link', 'file', 'image'] as const
 type ItemType = (typeof ITEM_TYPES)[number]
 
 const TYPE_COLORS: Record<ItemType, string> = {
@@ -30,6 +31,8 @@ const TYPE_COLORS: Record<ItemType, string> = {
   command: '#f97316',
   note: '#fde047',
   link: '#10b981',
+  file: '#6b7280',
+  image: '#ec4899',
 }
 
 type FormState = {
@@ -53,6 +56,7 @@ const EMPTY_FORM: FormState = {
 const CONTENT_TYPES: ItemType[] = ['snippet', 'prompt', 'command', 'note']
 const LANGUAGE_TYPES: ItemType[] = ['snippet', 'command']
 const MARKDOWN_TYPES: ItemType[] = ['note', 'prompt']
+const FILE_TYPES: ItemType[] = ['file', 'image']
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -69,6 +73,8 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
   const [open, setOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<ItemType>(initialType)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
+  const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
 
   function handleOpenChange(isOpen: boolean) {
@@ -76,6 +82,7 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
     if (!isOpen) {
       setForm(EMPTY_FORM)
       setSelectedType(initialType)
+      setUploadedFile(null)
     }
   }
 
@@ -87,6 +94,13 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!form.title.trim()) return
+
+    const isFile = FILE_TYPES.includes(selectedType)
+    if (isFile && !uploadedFile) {
+      toast.error('Please upload a file first')
+      return
+    }
+
     setSaving(true)
 
     const tags = form.tags
@@ -102,6 +116,8 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
       url: form.url.trim() || null,
       language: form.language.trim() || null,
       tags,
+      fileUrl: uploadedFile?.fileUrl ?? null,
+      fileName: uploadedFile?.fileName ?? null,
     })
 
     setSaving(false)
@@ -125,7 +141,15 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
   const showContent = CONTENT_TYPES.includes(selectedType)
   const showLanguage = LANGUAGE_TYPES.includes(selectedType)
   const showUrl = selectedType === 'link'
+  const showFile = FILE_TYPES.includes(selectedType)
   const color = TYPE_COLORS[selectedType]
+
+  const isSubmitDisabled =
+    saving ||
+    uploading ||
+    !form.title.trim() ||
+    (showUrl && !form.url.trim()) ||
+    (showFile && !uploadedFile)
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -150,7 +174,10 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
               <button
                 key={type}
                 type="button"
-                onClick={() => setSelectedType(type)}
+                onClick={() => {
+                  setSelectedType(type)
+                  setUploadedFile(null)
+                }}
                 className="px-2.5 py-1 rounded text-xs font-medium capitalize transition-colors border"
                 style={
                   selectedType === type
@@ -191,6 +218,22 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
               rows={2}
             />
           </div>
+
+          {/* File / Image upload */}
+          {showFile && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                {selectedType === 'image' ? 'Image' : 'File'} <span style={{ color }}>*</span>
+              </Label>
+              <FileUpload
+                itemType={selectedType as 'file' | 'image'}
+                value={uploadedFile}
+                onChange={setUploadedFile}
+                onUploadStart={() => setUploading(true)}
+                onUploadEnd={() => setUploading(false)}
+              />
+            </div>
+          )}
 
           {/* Content */}
           {showContent && (
@@ -272,15 +315,12 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
               type="button"
               variant="outline"
               onClick={() => handleOpenChange(false)}
-              disabled={saving}
+              disabled={saving || uploading}
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={saving || !form.title.trim() || (showUrl && !form.url.trim())}
-            >
-              {saving ? 'Creating…' : 'Create Item'}
+            <Button type="submit" disabled={isSubmitDisabled}>
+              {uploading ? 'Uploading…' : saving ? 'Creating…' : 'Create Item'}
             </Button>
           </DialogFooter>
         </form>

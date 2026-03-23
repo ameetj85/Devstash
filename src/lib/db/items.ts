@@ -241,6 +241,8 @@ export type CreateItemData = {
   language: string | null
   typeName: string
   tags: string[]
+  fileUrl: string | null
+  fileName: string | null
 }
 
 /** Creates a new item for the user. Returns null if the item type is not found. */
@@ -250,7 +252,7 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
   })
   if (!itemType) return null
 
-  const contentType = data.typeName === 'link' ? 'FILE' : 'TEXT'
+  const contentType = data.typeName === 'file' || data.typeName === 'image' ? 'FILE' : 'TEXT'
 
   const created = await prisma.item.create({
     data: {
@@ -259,6 +261,8 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
       content: data.content,
       url: data.url,
       language: data.language,
+      fileUrl: data.fileUrl,
+      fileName: data.fileName,
       contentType,
       userId,
       itemTypeId: itemType.id,
@@ -304,12 +308,15 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
   }
 }
 
-/** Returns true if deleted, false if not found / not owned. */
-export async function deleteItem(userId: string, itemId: string): Promise<boolean> {
-  const item = await prisma.item.findFirst({ where: { id: itemId, userId } })
-  if (!item) return false
+/** Returns the deleted item (with fileUrl) or null if not found / not owned. */
+export async function deleteItem(userId: string, itemId: string): Promise<{ fileUrl: string | null } | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { fileUrl: true },
+  })
+  if (!item) return null
   await prisma.item.delete({ where: { id: itemId } })
-  return true
+  return item
 }
 
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {

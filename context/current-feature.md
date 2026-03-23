@@ -1,16 +1,32 @@
-# Current Feature
+# Current Feature: File & Image Upload with Cloudflare R2
 
 ## Status
 
-Completed
+In Progress
 
 ## Goals
 
-None
+- Create upload API route for R2
+- Create `FileUpload` component with drag-and-drop and upload progress indicator
+- Update create item modal to use `FileUpload` for `file` and `image` types
+- Display image preview for images, file info for files in the item drawer
+- Add download button in `ItemDrawer` for file types via a proxy API route (avoids CORS)
+- Delete files from R2 when items are deleted
+- Stick to `src/lib/db/items.ts` for all Prisma/DB functions
 
 ## Notes
 
-None
+**File constraints:**
+
+| Type   | Max Size | Extensions |
+| ------ | -------- | ---------- |
+| Images | 5 MB     | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg` |
+| Files  | 10 MB    | `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini` |
+
+**Allowed MIME types:**
+
+- Images: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`
+- Files: `application/pdf`, `text/plain`, `text/markdown`, `application/json`, `application/x-yaml`, `text/yaml`, `application/xml`, `text/xml`, `text/csv`, `application/toml`
 
 ## History
 

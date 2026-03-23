@@ -18,6 +18,7 @@ import {
   ExternalLink,
   Save,
   X,
+  Download,
   type LucideIcon,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -93,6 +94,7 @@ const iconMap: Record<string, LucideIcon> = {
 const CONTENT_TYPES = ['snippet', 'prompt', 'command', 'note']
 const LANGUAGE_TYPES = ['snippet', 'command']
 const MARKDOWN_TYPES = ['note', 'prompt']
+const FILE_TYPES = ['file', 'image']
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString('en-US', {
@@ -599,6 +601,50 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                       {item.url}
                       <ExternalLink className="w-3 h-3 shrink-0" />
                     </a>
+                  </section>
+                )}
+
+                {/* File / Image */}
+                {FILE_TYPES.includes(typeName) && item.fileUrl && (
+                  <section>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                      {typeName === 'image' ? 'Image' : 'File'}
+                    </p>
+                    {typeName === 'image' ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={item.fileUrl}
+                        alt={item.fileName ?? 'Image'}
+                        className="rounded-lg border border-border max-h-80 w-auto object-contain"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
+                        <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
+                          <File className="w-5 h-5 text-muted-foreground" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate">{item.fileName ?? 'File'}</p>
+                        </div>
+                        <a
+                          href={`/api/files/${encodeURIComponent(item.fileUrl.split('/').slice(-2).join('/'))}?name=${encodeURIComponent(item.fileName ?? 'download')}`}
+                          download={item.fileName ?? 'download'}
+                          className="shrink-0 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                          Download
+                        </a>
+                      </div>
+                    )}
+                    {typeName === 'image' && item.fileName && (
+                      <a
+                        href={`/api/files/${encodeURIComponent(item.fileUrl.split('/').slice(-2).join('/'))}?name=${encodeURIComponent(item.fileName)}`}
+                        download={item.fileName}
+                        className="mt-2 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Download
+                      </a>
+                    )}
                   </section>
                 )}
 

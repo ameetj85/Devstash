@@ -3,6 +3,7 @@
 import { z } from 'zod'
 import { auth } from '@/auth'
 import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createItem as createItemQuery } from '@/lib/db/items'
+import { deleteR2Object, keyFromUrl } from '@/lib/r2'
 
 const updateItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
@@ -44,7 +45,7 @@ export async function updateItem(itemId: string, data: UpdateItemInput) {
   return { success: true as const, data: updated }
 }
 
-const VALID_TYPES = ['snippet', 'prompt', 'command', 'note', 'link'] as const
+const VALID_TYPES = ['snippet', 'prompt', 'command', 'note', 'link', 'file', 'image'] as const
 
 const createItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required'),
@@ -54,9 +55,14 @@ const createItemSchema = z.object({
   url: z.union([z.string().url('Must be a valid URL'), z.literal(''), z.null()]).optional(),
   language: z.string().nullable().optional(),
   tags: z.array(z.string().trim().min(1)),
+  fileUrl: z.string().nullable().optional(),
+  fileName: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
   if (data.typeName === 'link' && !data.url) {
     ctx.addIssue({ code: 'custom', message: 'URL is required for links', path: ['url'] })
+  }
+  if ((data.typeName === 'file' || data.typeName === 'image') && !data.fileUrl) {
+    ctx.addIssue({ code: 'custom', message: 'A file must be uploaded', path: ['fileUrl'] })
   }
 })
 
@@ -73,7 +79,7 @@ export async function createItem(data: CreateItemInput) {
     return { success: false as const, error: parsed.error.flatten().fieldErrors }
   }
 
-  const { title, typeName, description, content, url, language, tags } = parsed.data
+  const { title, typeName, description, content, url, language, tags, fileUrl, fileName } = parsed.data
 
   const created = await createItemQuery(session.user.id, {
     title,
@@ -83,6 +89,8 @@ export async function createItem(data: CreateItemInput) {
     url: url || null,
     language: language ?? null,
     tags,
+    fileUrl: fileUrl ?? null,
+    fileName: fileName ?? null,
   })
 
   if (!created) {
@@ -101,6 +109,17 @@ export async function deleteItem(itemId: string) {
   const deleted = await deleteItemQuery(session.user.id, itemId)
   if (!deleted) {
     return { success: false as const, error: 'Item not found or access denied' }
+  }
+
+  // Delete file from R2 if present
+  if (deleted.fileUrl) {
+    const key = keyFromUrl(deleted.fileUrl)
+    if (key) {
+      await deleteR2Object(key).catch(() => {
+        // Non-fatal: log but don't fail the action
+        console.error(`Failed to delete R2 object: ${key}`)
+      })
+    }
   }
 
   return { success: true as const }

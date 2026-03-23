@@ -52,7 +52,7 @@ beforeEach(() => {
 
 describe('createItem server action', () => {
   it('returns unauthorized when no session', async () => {
-    mockAuth.mockResolvedValue(null)
+    mockAuth.mockResolvedValue(null as never)
 
     const result = await createItem(validInput)
 
@@ -111,6 +111,56 @@ describe('createItem server action', () => {
       title: 'My Snippet',
       typeName: 'snippet',
       tags: ['ts'],
+    }))
+  })
+
+  it('returns validation error when file type has no fileUrl', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+
+    const result = await createItem({
+      ...validInput,
+      typeName: 'file',
+      content: null,
+      fileUrl: null,
+      fileName: null,
+    })
+
+    expect(result.success).toBe(false)
+    expect(mockCreateItemQuery).not.toHaveBeenCalled()
+  })
+
+  it('returns validation error when image type has no fileUrl', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+
+    const result = await createItem({
+      ...validInput,
+      typeName: 'image',
+      content: null,
+      fileUrl: null,
+      fileName: null,
+    })
+
+    expect(result.success).toBe(false)
+    expect(mockCreateItemQuery).not.toHaveBeenCalled()
+  })
+
+  it('passes valid file item through successfully', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockCreateItemQuery.mockResolvedValue({ ...fakeItem, typeName: 'file' } as never)
+
+    const result = await createItem({
+      ...validInput,
+      typeName: 'file',
+      content: null,
+      fileUrl: 'https://pub.r2.dev/user-1/file.pdf',
+      fileName: 'file.pdf',
+    })
+
+    expect(result.success).toBe(true)
+    expect(mockCreateItemQuery).toHaveBeenCalledWith('user-1', expect.objectContaining({
+      typeName: 'file',
+      fileUrl: 'https://pub.r2.dev/user-1/file.pdf',
+      fileName: 'file.pdf',
     }))
   })
 
