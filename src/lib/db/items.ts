@@ -63,6 +63,8 @@ export type ItemWithType = {
   id: string
   title: string
   description: string | null
+  content: string | null
+  url: string | null
   isFavorite: boolean
   isPinned: boolean
   fileUrl: string | null
@@ -87,6 +89,8 @@ function mapItem(item: {
   id: string
   title: string
   description: string | null
+  content: string | null
+  url: string | null
   isFavorite: boolean
   isPinned: boolean
   fileUrl: string | null
@@ -101,6 +105,8 @@ function mapItem(item: {
     id: item.id,
     title: item.title,
     description: item.description,
+    content: item.content,
+    url: item.url,
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
     fileUrl: item.fileUrl,

@@ -28,6 +28,7 @@ const fakeCreated = {
   url: null,
   fileUrl: null,
   fileName: null,
+  fileSize: null,
   language: 'javascript',
   isFavorite: false,
   isPinned: false,
@@ -56,6 +57,7 @@ describe('createItem', () => {
       tags: [],
       fileUrl: null,
       fileName: null,
+      fileSize: null,
     })
 
     expect(result).toBeNull()
@@ -76,6 +78,7 @@ describe('createItem', () => {
       tags: ['js'],
       fileUrl: null,
       fileName: null,
+      fileSize: null,
     })
 
     expect(result).not.toBeNull()
@@ -98,6 +101,7 @@ describe('createItem', () => {
       tags: [],
       fileUrl: null,
       fileName: null,
+      fileSize: null,
     })
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -122,6 +126,7 @@ describe('createItem', () => {
       tags: [],
       fileUrl: 'https://r2.example.com/file.pdf',
       fileName: 'file.pdf',
+      fileSize: 1024,
     })
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -144,6 +149,7 @@ describe('createItem', () => {
       tags: [],
       fileUrl: null,
       fileName: null,
+      fileSize: null,
     })
 
     expect(mockFindFirst).toHaveBeenCalledWith({

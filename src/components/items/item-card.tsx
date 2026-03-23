@@ -1,3 +1,6 @@
+'use client'
+
+import { useState } from 'react'
 import {
   Code,
   Sparkles,
@@ -7,6 +10,8 @@ import {
   File,
   Image,
   Star,
+  Copy,
+  Check,
   type LucideIcon,
 } from 'lucide-react'
 import type { ItemWithType } from '@/lib/db/items'
@@ -31,8 +36,20 @@ interface ItemCardProps {
 }
 
 export default function ItemCard({ item, onClick }: ItemCardProps) {
+  const [copied, setCopied] = useState(false)
   const Icon = iconMap[item.itemType.icon] ?? File
   const { color } = item.itemType
+
+  const copyValue = item.url ?? item.content ?? ''
+  const canCopy = Boolean(copyValue)
+
+  function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!canCopy) return
+    navigator.clipboard.writeText(copyValue)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
 
   return (
     <div
@@ -73,7 +90,22 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
             </span>
           ))}
         </div>
-        <span className="text-xs text-muted-foreground shrink-0">{formatDate(item.updatedAt)}</span>
+        <div className="flex items-center gap-2 shrink-0">
+          {canCopy && (
+            <button
+              onClick={handleCopy}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+              title="Copy to clipboard"
+            >
+              {copied ? (
+                <Check className="w-3.5 h-3.5 text-green-500" />
+              ) : (
+                <Copy className="w-3.5 h-3.5" />
+              )}
+            </button>
+          )}
+          <span className="text-xs text-muted-foreground">{formatDate(item.updatedAt)}</span>
+        </div>
       </div>
     </div>
   )
