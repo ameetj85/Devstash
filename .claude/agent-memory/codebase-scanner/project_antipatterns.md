@@ -1,21 +1,25 @@
 ---
 name: DevStash Recurring Antipatterns
-description: Recurring code quality issues and antipatterns found during March 2026 scan
+description: Recurring code quality issues and antipatterns found during March 2026 scan (updated after full auth+items+uploads audit)
 type: project
 ---
 
-Issues found during initial scan (2026-03-18):
+Updated 2026-03-23 after full audit of implemented features:
 
-1. **No user scoping on DB queries** — `getCollections`, `getPinnedItems`, `getRecentItems`, `getItemStats`, `getItemTypesWithCounts` in `src/lib/db/` have no `where: { userId }` filter. All queries return data for all users. This will be a critical security issue once auth is wired up.
+1. **Duplicated iconMap** — The `iconMap` (Lucide icon name → component) is copy-pasted into 5 files: main-content.tsx, dashboard-item-rows.tsx, sidebar.tsx, item-drawer.tsx, item-card.tsx. Should be extracted to `src/lib/item-type-icons.ts`.
 
-2. **Duplicated iconMap** — The `iconMap` (Lucide icon name → component) is copy-pasted identically in both `src/components/dashboard/main-content.tsx` and `src/components/dashboard/sidebar.tsx`. Should be extracted to a shared module.
+2. **Duplicated type-classification arrays** — `CONTENT_TYPES`, `LANGUAGE_TYPES`, `MARKDOWN_TYPES`, `FILE_TYPES` are defined identically in both `item-drawer.tsx` and `create-item-dialog.tsx`. Should be shared constants.
 
-3. **Dead file** — `src/lib/mock-data.ts` is no longer imported anywhere. Should be deleted.
+3. **Duplicated formatDate helper** — Defined independently in item-card.tsx, file-list-row.tsx, main-content.tsx, and item-drawer.tsx.
 
-4. **Seed uses sequential awaits in a loop** — `prisma/seed.ts` lines 552-562 upsert tags one at a time inside a `for` loop. For large datasets this is slow. Acceptable for seed scripts but worth noting.
+4. **Unsafe file key extraction repeated client-side** — `item.fileUrl.split('/').slice(-2).join('/')` appears in item-drawer.tsx (lines 629, 640) and file-list-row.tsx handleDownload. `keyFromUrl()` from `src/lib/r2.ts` is the canonical utility but it is server-only. A shared client-safe version of key extraction should be created.
 
-5. **URL construction for item types is fragile** — `sidebar.tsx` line 109: `` const href = `/items/${type.name}s` `` naively appends "s" to pluralize type names. "note" → "/items/notes" works, but any irregular plural (or future type whose name ends in 's') will break silently.
+5. **Dead file** — `src/lib/mock-data.ts` is no longer imported anywhere. Should be deleted.
 
-6. **Hard-coded PRO type check** — `sidebar.tsx` line 124 checks `type.name === 'file' || type.name === 'image'` rather than a flag on the model. The Prisma schema has no `isPro` field on `ItemType`, so this string comparison is the only gate. Fragile if type names change.
+6. **Two-query pattern in updateItem** — `src/lib/db/items.ts` updateItem() does a findFirst to check ownership then a separate update. These can be merged by including userId in the update's where clause and checking the result count.
 
-7. **`prisma/schema.prisma` has no `url` in datasource block** — The datasource relies entirely on `prisma.config.ts` overriding the URL. The schema file itself has no `url = env("DATABASE_URL")` line (line 7 is empty after `provider`). This can cause confusion when running standard `prisma` CLI commands without the config.
+7. **No max-length validation on text inputs** — createItem/updateItem Zod schemas validate title min(1) but no max. Content field has no size cap in the schema (only file size is capped at the upload layer). Could cause oversized DB writes.
+
+8. **Fragile slug-to-type-name mapping** — `src/app/items/[type]/page.tsx` line 21 strips trailing 's' to get DB type name. Works for current types but will break for any future type with an irregular plural or one that naturally ends in 's'.
+
+9. **prisma/schema.prisma datasource has no url field** — Relies on prisma.config.ts to supply DATABASE_URL. Running bare `prisma` CLI commands without the config file will fail with a confusing error.
