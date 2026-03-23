@@ -66,6 +66,9 @@ export type ItemWithType = {
   isFavorite: boolean
   isPinned: boolean
   fileUrl: string | null
+  fileName: string | null
+  fileSize: number | null
+  createdAt: Date
   updatedAt: Date
   tags: string[]
   itemType: {
@@ -87,6 +90,9 @@ function mapItem(item: {
   isFavorite: boolean
   isPinned: boolean
   fileUrl: string | null
+  fileName: string | null
+  fileSize: number | null
+  createdAt: Date
   updatedAt: Date
   tags: { tag: { name: string } }[]
   itemType: { name: string; icon: string; color: string }
@@ -98,6 +104,9 @@ function mapItem(item: {
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
     fileUrl: item.fileUrl,
+    fileName: item.fileName,
+    fileSize: item.fileSize,
+    createdAt: item.createdAt,
     updatedAt: item.updatedAt,
     tags: item.tags.map((t) => t.tag.name),
     itemType: item.itemType,
@@ -246,6 +255,7 @@ export type CreateItemData = {
   tags: string[]
   fileUrl: string | null
   fileName: string | null
+  fileSize: number | null
 }
 
 /** Creates a new item for the user. Returns null if the item type is not found. */
@@ -266,6 +276,7 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
       language: data.language,
       fileUrl: data.fileUrl,
       fileName: data.fileName,
+      fileSize: data.fileSize,
       contentType,
       userId,
       itemTypeId: itemType.id,

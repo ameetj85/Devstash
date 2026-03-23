@@ -80,5 +80,5 @@ export async function POST(req: NextRequest) {
   const publicUrl = process.env.R2_PUBLIC_URL!
   const fileUrl = `${publicUrl.replace(/\/$/, '')}/${key}`
 
-  return NextResponse.json({ fileUrl, fileName: file.name, key })
+  return NextResponse.json({ fileUrl, fileName: file.name, fileSize: file.size, key })
 }

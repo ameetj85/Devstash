@@ -118,6 +118,7 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
       tags,
       fileUrl: uploadedFile?.fileUrl ?? null,
       fileName: uploadedFile?.fileName ?? null,
+      fileSize: uploadedFile?.fileSize ?? null,
     })
 
     setSaving(false)

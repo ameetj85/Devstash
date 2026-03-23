@@ -8,6 +8,7 @@ import { Upload, X, File as FileIcon, Image as ImageIcon } from 'lucide-react'
 export type UploadedFile = {
   fileUrl: string
   fileName: string
+  fileSize: number
   key: string
 }
 

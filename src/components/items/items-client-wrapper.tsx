@@ -4,12 +4,13 @@ import { useState } from 'react'
 import { LayoutGrid, LayoutList } from 'lucide-react'
 import ItemCard from './item-card'
 import ImageThumbnailCard from './image-thumbnail-card'
+import FileListRow from './file-list-row'
 import ItemDrawer from './item-drawer'
 import type { ItemWithType } from '@/lib/db/items'
 
 interface ItemsClientWrapperProps {
   items: ItemWithType[]
-  layout?: 'grid' | 'gallery'
+  layout?: 'grid' | 'gallery' | 'list'
 }
 
 export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid' }: ItemsClientWrapperProps) {
@@ -46,23 +47,37 @@ export default function ItemsClientWrapper({ items, layout: initialLayout = 'gri
           </div>
         </div>
       )}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {items.map((item) =>
-          layout === 'gallery' ? (
-            <ImageThumbnailCard
+
+      {layout === 'list' ? (
+        <div className="flex flex-col gap-2">
+          {items.map((item) => (
+            <FileListRow
               key={item.id}
               item={item}
               onClick={() => handleItemClick(item.id)}
             />
-          ) : (
-            <ItemCard
-              key={item.id}
-              item={item}
-              onClick={() => handleItemClick(item.id)}
-            />
-          )
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          {items.map((item) =>
+            layout === 'gallery' ? (
+              <ImageThumbnailCard
+                key={item.id}
+                item={item}
+                onClick={() => handleItemClick(item.id)}
+              />
+            ) : (
+              <ItemCard
+                key={item.id}
+                item={item}
+                onClick={() => handleItemClick(item.id)}
+              />
+            )
+          )}
+        </div>
+      )}
+
       <ItemDrawer
         itemId={selectedId}
         open={drawerOpen}

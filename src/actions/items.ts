@@ -57,6 +57,7 @@ const createItemSchema = z.object({
   tags: z.array(z.string().trim().min(1)),
   fileUrl: z.string().nullable().optional(),
   fileName: z.string().nullable().optional(),
+  fileSize: z.number().nullable().optional(),
 }).superRefine((data, ctx) => {
   if (data.typeName === 'link' && !data.url) {
     ctx.addIssue({ code: 'custom', message: 'URL is required for links', path: ['url'] })
@@ -79,7 +80,7 @@ export async function createItem(data: CreateItemInput) {
     return { success: false as const, error: parsed.error.flatten().fieldErrors }
   }
 
-  const { title, typeName, description, content, url, language, tags, fileUrl, fileName } = parsed.data
+  const { title, typeName, description, content, url, language, tags, fileUrl, fileName, fileSize } = parsed.data
 
   const created = await createItemQuery(session.user.id, {
     title,
@@ -91,6 +92,7 @@ export async function createItem(data: CreateItemInput) {
     tags,
     fileUrl: fileUrl ?? null,
     fileName: fileName ?? null,
+    fileSize: fileSize ?? null,
   })
 
   if (!created) {

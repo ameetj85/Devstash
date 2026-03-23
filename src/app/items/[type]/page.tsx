@@ -49,7 +49,10 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
             <CreateItemDialog defaultType={typeName} />
           </div>
         ) : (
-          <ItemsClientWrapper items={items} layout={typeName === 'image' ? 'gallery' : 'grid'} />
+          <ItemsClientWrapper
+            items={items}
+            layout={typeName === 'image' ? 'gallery' : typeName === 'file' ? 'list' : 'grid'}
+          />
         )}
       </main>
     </DashboardShell>
