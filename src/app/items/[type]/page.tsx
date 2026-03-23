@@ -6,8 +6,6 @@ import { auth } from '@/auth'
 import { getItemsByType, getItemTypesWithCounts } from '@/lib/db/items'
 import { getCollections } from '@/lib/db/collections'
 
-const PRO_ONLY_TYPES = ['file', 'image']
-
 interface ItemsPageProps {
   params: Promise<{ type: string }>
 }
@@ -42,20 +40,16 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
               {items.length} {items.length === 1 ? 'item' : 'items'}
             </p>
           </div>
-          {!PRO_ONLY_TYPES.includes(typeName) && (
-            <CreateItemDialog defaultType={typeName} />
-          )}
+          <CreateItemDialog defaultType={typeName} />
         </div>
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
             <p className="text-muted-foreground text-sm">No {typeSlug} yet.</p>
-            {!PRO_ONLY_TYPES.includes(typeName) && (
-              <CreateItemDialog defaultType={typeName} />
-            )}
+            <CreateItemDialog defaultType={typeName} />
           </div>
         ) : (
-          <ItemsClientWrapper items={items} />
+          <ItemsClientWrapper items={items} layout={typeName === 'image' ? 'gallery' : 'grid'} />
         )}
       </main>
     </DashboardShell>

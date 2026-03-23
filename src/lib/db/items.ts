@@ -65,6 +65,7 @@ export type ItemWithType = {
   description: string | null
   isFavorite: boolean
   isPinned: boolean
+  fileUrl: string | null
   updatedAt: Date
   tags: string[]
   itemType: {
@@ -85,6 +86,7 @@ function mapItem(item: {
   description: string | null
   isFavorite: boolean
   isPinned: boolean
+  fileUrl: string | null
   updatedAt: Date
   tags: { tag: { name: string } }[]
   itemType: { name: string; icon: string; color: string }
@@ -95,6 +97,7 @@ function mapItem(item: {
     description: item.description,
     isFavorite: item.isFavorite,
     isPinned: item.isPinned,
+    fileUrl: item.fileUrl,
     updatedAt: item.updatedAt,
     tags: item.tags.map((t) => t.tag.name),
     itemType: item.itemType,

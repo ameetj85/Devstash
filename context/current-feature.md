@@ -1,25 +1,18 @@
-# Current Feature: File & Image Upload with Cloudflare R2
+# Current Feature: Image Gallery View
 
 ## Status
 
-Complete
+In Progress
 
 ## Goals
 
+- Create an image thumbnail card to replace the current item card on the images page
+- Show an image grid/gallery with 3 columns
+- Display image thumbnails with 16:9 aspect ratio (`aspect-video`)
+- Use `object-cover` to fill the card (may crop edges)
+- Add a subtle hover zoom effect (5% scale with 300ms transition)
 
 ## Notes
-
-**File constraints:**
-
-| Type   | Max Size | Extensions |
-| ------ | -------- | ---------- |
-| Images | 5 MB     | `.png`, `.jpg`, `.jpeg`, `.gif`, `.webp`, `.svg` |
-| Files  | 10 MB    | `.pdf`, `.txt`, `.md`, `.json`, `.yaml`, `.yml`, `.xml`, `.csv`, `.toml`, `.ini` |
-
-**Allowed MIME types:**
-
-- Images: `image/png`, `image/jpeg`, `image/gif`, `image/webp`, `image/svg+xml`
-- Files: `application/pdf`, `text/plain`, `text/markdown`, `application/json`, `application/x-yaml`, `text/yaml`, `application/xml`, `text/xml`, `text/csv`, `application/toml`
 
 ## History
 
