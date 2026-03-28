@@ -1,20 +1,10 @@
-# Current Feature: Item-to-Collection Assignment
+# Current Feature
 
 ## Status
-In Progress
 
 ## Goals
-- Add a multi-select collection picker to the Create Item dialog so users can assign an item to one or more collections on creation
-- Add a multi-select collection picker to the Item Drawer edit mode so users can update collection assignments when editing
-- Wire up the backend: createItem and updateItem server actions/DB queries handle collection linking (ItemCollection join table)
-- Fetch the user's collections list for the picker dropdown
 
 ## Notes
-- Items and Collections have a many-to-many relationship via the `ItemCollection` join table
-- The `createItem` DB query already creates items but doesn't link to collections yet
-- The `updateItem` DB query already handles tag replacement; collection replacement should follow a similar pattern (deleteMany + create)
-- Don't worry about collection detail pages yet — just the assignment UI in create/edit forms
-- Use existing shadcn/ui components for the multi-select (e.g., Popover + Command or similar pattern)
 
 ## History
 
@@ -50,3 +40,4 @@ In Progress
 - 2026-03-23: Hydration warning fix — added `suppressHydrationWarning` to `<body>` in `src/app/layout.tsx` to suppress browser-extension-caused attribute mismatch warnings (password managers, Grammarly, etc. injecting attributes into inputs).
 - 2026-03-23: Code audit fixes — Applied security, performance, and code quality fixes from a codebase audit: (1) Added rate limiting to `POST /api/profile/change-password` (5 req/15min by user ID). (2) R2 orphan cleanup: delete uploaded file if `createItem` DB call fails. (3) Optimized `getCollections` to use Prisma `_count` + selective `select` instead of fetching full item records for each collection. (4) Collapsed `updateItem` from 2 DB round-trips to 1 by using `where: { id, userId }` with P2025 error catch. (5) Added `max()` Zod constraints to `createItem`/`updateItem` schemas. (6) Extracted shared `iconMap`/`getItemIcon()` to `src/lib/item-type-icons.ts` (was duplicated across 5 components). (7) Extracted shared type-classification arrays to `src/lib/item-type-config.ts` (was duplicated in 2 components). (8) Extracted `extractFileKey()` to `src/lib/file-utils.ts` (was duplicated in 3 places).
 - 2026-03-23: Collection Create — added "New Collection" button to the top bar that opens a shadcn `Dialog` modal with name (required) and description (optional) fields. Created `createCollection` DB query in `src/lib/db/collections.ts`, `createCollection` server action in `src/actions/collections.ts` (Zod validation, auth check, `{ success, data, error }` pattern), and `CreateCollectionDialog` component in `src/components/collections/create-collection-dialog.tsx`. On success: toast shown, modal closed, `router.refresh()` updates sidebar and dashboard. 8 unit tests added across DB query and server action (43 total passing).
+- 2026-03-28: Item-to-Collection Assignment — added multi-select collection picker to both `CreateItemDialog` and `ItemDrawer` edit mode. Installed shadcn `Popover` and `Checkbox` components. Created `CollectionPicker` component (`src/components/items/collection-picker.tsx`) with popover dropdown and checkmark-based multi-select. Added `getUserCollections()` query to `src/lib/db/collections.ts` returning simple `{id, name}` list. Updated `createItem` and `updateItem` DB queries and server actions to accept `collectionIds` — create links `ItemCollection` records on insert, update does full replacement (deleteMany + create). Collections list threaded from server pages through `DashboardShell` → `TopBar` → `CreateItemDialog`, and through `ItemsClientWrapper`/`DashboardItemRows` → `ItemDrawer`. Existing tests updated with `collectionIds` field (43 total passing).
