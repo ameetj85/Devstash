@@ -11,9 +11,10 @@ import type { ItemWithType } from '@/lib/db/items'
 interface ItemsClientWrapperProps {
   items: ItemWithType[]
   layout?: 'grid' | 'gallery' | 'list'
+  collections?: { id: string; name: string }[]
 }
 
-export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid' }: ItemsClientWrapperProps) {
+export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid', collections = [] }: ItemsClientWrapperProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [layout, setLayout] = useState(initialLayout)
@@ -82,6 +83,7 @@ export default function ItemsClientWrapper({ items, layout: initialLayout = 'gri
         itemId={selectedId}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
+        allCollections={collections}
       />
     </>
   )

@@ -28,6 +28,20 @@ export async function createCollection(
   })
 }
 
+export type CollectionOption = {
+  id: string
+  name: string
+}
+
+/** Returns a simple id+name list of collections for the current user (for pickers). */
+export async function getUserCollections(userId: string): Promise<CollectionOption[]> {
+  return prisma.collection.findMany({
+    where: { userId },
+    select: { id: true, name: true },
+    orderBy: { name: 'asc' },
+  })
+}
+
 export type CollectionWithMeta = {
   id: string
   name: string

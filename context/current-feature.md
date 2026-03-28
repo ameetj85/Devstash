@@ -1,10 +1,20 @@
-# Current Feature
+# Current Feature: Item-to-Collection Assignment
 
 ## Status
+In Progress
 
 ## Goals
+- Add a multi-select collection picker to the Create Item dialog so users can assign an item to one or more collections on creation
+- Add a multi-select collection picker to the Item Drawer edit mode so users can update collection assignments when editing
+- Wire up the backend: createItem and updateItem server actions/DB queries handle collection linking (ItemCollection join table)
+- Fetch the user's collections list for the picker dropdown
 
 ## Notes
+- Items and Collections have a many-to-many relationship via the `ItemCollection` join table
+- The `createItem` DB query already creates items but doesn't link to collections yet
+- The `updateItem` DB query already handles tag replacement; collection replacement should follow a similar pattern (deleteMany + create)
+- Don't worry about collection detail pages yet — just the assignment UI in create/edit forms
+- Use existing shadcn/ui components for the multi-select (e.g., Popover + Command or similar pattern)
 
 ## History
 

@@ -12,6 +12,7 @@ const updateItemSchema = z.object({
   url: z.union([z.string().url('Must be a valid URL'), z.null()]).optional(),
   language: z.string().max(100).nullable().optional(),
   tags: z.array(z.string().trim().min(1).max(100)).max(50),
+  collectionIds: z.array(z.string().min(1)).max(50).optional(),
 })
 
 type UpdateItemInput = z.infer<typeof updateItemSchema>
@@ -27,7 +28,7 @@ export async function updateItem(itemId: string, data: UpdateItemInput) {
     return { success: false as const, error: parsed.error.flatten().fieldErrors }
   }
 
-  const { title, description, content, url, language, tags } = parsed.data
+  const { title, description, content, url, language, tags, collectionIds } = parsed.data
 
   const updated = await updateItemQuery(session.user.id, itemId, {
     title,
@@ -36,6 +37,7 @@ export async function updateItem(itemId: string, data: UpdateItemInput) {
     url: url ?? null,
     language: language ?? null,
     tags,
+    collectionIds: collectionIds ?? [],
   })
 
   if (!updated) {
@@ -58,6 +60,7 @@ const createItemSchema = z.object({
   fileUrl: z.string().nullable().optional(),
   fileName: z.string().nullable().optional(),
   fileSize: z.number().nullable().optional(),
+  collectionIds: z.array(z.string().min(1)).max(50).optional(),
 }).superRefine((data, ctx) => {
   if (data.typeName === 'link' && !data.url) {
     ctx.addIssue({ code: 'custom', message: 'URL is required for links', path: ['url'] })
@@ -80,7 +83,7 @@ export async function createItem(data: CreateItemInput) {
     return { success: false as const, error: parsed.error.flatten().fieldErrors }
   }
 
-  const { title, typeName, description, content, url, language, tags, fileUrl, fileName, fileSize } = parsed.data
+  const { title, typeName, description, content, url, language, tags, fileUrl, fileName, fileSize, collectionIds } = parsed.data
 
   const created = await createItemQuery(session.user.id, {
     title,
@@ -90,6 +93,7 @@ export async function createItem(data: CreateItemInput) {
     url: url || null,
     language: language ?? null,
     tags,
+    collectionIds: collectionIds ?? [],
     fileUrl: fileUrl ?? null,
     fileName: fileName ?? null,
     fileSize: fileSize ?? null,

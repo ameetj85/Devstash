@@ -4,7 +4,7 @@ import ItemsClientWrapper from '@/components/items/items-client-wrapper'
 import CreateItemDialog from '@/components/items/create-item-dialog'
 import { auth } from '@/auth'
 import { getItemsByType, getItemTypesWithCounts } from '@/lib/db/items'
-import { getCollections } from '@/lib/db/collections'
+import { getCollections, getUserCollections } from '@/lib/db/collections'
 
 interface ItemsPageProps {
   params: Promise<{ type: string }>
@@ -20,10 +20,11 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
   // sidebar links as `${name}s` — strip the trailing 's' to get the DB name
   const typeName = typeSlug.endsWith('s') ? typeSlug.slice(0, -1) : typeSlug
 
-  const [{ items, itemType }, itemTypes, collections] = await Promise.all([
+  const [{ items, itemType }, itemTypes, collections, collectionOptions] = await Promise.all([
     getItemsByType(userId, typeName),
     getItemTypesWithCounts(userId),
     getCollections(userId),
+    getUserCollections(userId),
   ])
 
   if (!itemType) notFound()
@@ -40,18 +41,19 @@ export default async function ItemsPage({ params }: ItemsPageProps) {
               {items.length} {items.length === 1 ? 'item' : 'items'}
             </p>
           </div>
-          <CreateItemDialog defaultType={typeName} />
+          <CreateItemDialog defaultType={typeName} collections={collectionOptions} />
         </div>
 
         {items.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
             <p className="text-muted-foreground text-sm">No {typeSlug} yet.</p>
-            <CreateItemDialog defaultType={typeName} />
+            <CreateItemDialog defaultType={typeName} collections={collectionOptions} />
           </div>
         ) : (
           <ItemsClientWrapper
             items={items}
             layout={typeName === 'image' ? 'gallery' : typeName === 'file' ? 'list' : 'grid'}
+            collections={collectionOptions}
           />
         )}
       </main>

@@ -7,9 +7,10 @@ import CreateCollectionDialog from '@/components/collections/create-collection-d
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void
+  collections?: { id: string; name: string }[]
 }
 
-export default function TopBar({ onMobileMenuToggle }: TopBarProps) {
+export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarProps) {
   return (
     <header className="flex items-center gap-4 px-4 h-14 border-b border-border shrink-0">
       {/* Mobile hamburger */}
@@ -41,7 +42,7 @@ export default function TopBar({ onMobileMenuToggle }: TopBarProps) {
 
       <div className="flex items-center gap-2 ml-auto">
         <CreateCollectionDialog />
-        <CreateItemDialog />
+        <CreateItemDialog collections={collections} />
       </div>
     </header>
   )

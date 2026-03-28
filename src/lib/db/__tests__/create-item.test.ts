@@ -58,6 +58,7 @@ describe('createItem', () => {
       fileUrl: null,
       fileName: null,
       fileSize: null,
+      collectionIds: [],
     })
 
     expect(result).toBeNull()
@@ -79,6 +80,7 @@ describe('createItem', () => {
       fileUrl: null,
       fileName: null,
       fileSize: null,
+      collectionIds: [],
     })
 
     expect(result).not.toBeNull()
@@ -102,6 +104,7 @@ describe('createItem', () => {
       fileUrl: null,
       fileName: null,
       fileSize: null,
+      collectionIds: [],
     })
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -127,6 +130,7 @@ describe('createItem', () => {
       fileUrl: 'https://r2.example.com/file.pdf',
       fileName: 'file.pdf',
       fileSize: 1024,
+      collectionIds: [],
     })
 
     expect(mockCreate).toHaveBeenCalledWith(
@@ -150,6 +154,7 @@ describe('createItem', () => {
       fileUrl: null,
       fileName: null,
       fileSize: null,
+      collectionIds: [],
     })
 
     expect(mockFindFirst).toHaveBeenCalledWith({

@@ -152,6 +152,7 @@ export default function MainContent({
           tags: item.tags,
           itemType: item.itemType,
         }))}
+        collections={collections.map((c) => ({ id: c.id, name: c.name }))}
       />
     </main>
   )

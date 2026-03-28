@@ -19,6 +19,7 @@ import { createItem } from '@/actions/items'
 import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
 import FileUpload, { type UploadedFile } from '@/components/items/file-upload'
+import CollectionPicker from '@/components/items/collection-picker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,9 +60,10 @@ import { CONTENT_TYPES, LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib
 
 interface CreateItemDialogProps {
   defaultType?: string
+  collections?: { id: string; name: string }[]
 }
 
-export default function CreateItemDialog({ defaultType }: CreateItemDialogProps) {
+export default function CreateItemDialog({ defaultType, collections = [] }: CreateItemDialogProps) {
   const router = useRouter()
   const initialType: ItemType =
     defaultType && (ITEM_TYPES as readonly string[]).includes(defaultType)
@@ -70,6 +72,7 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
   const [open, setOpen] = useState(false)
   const [selectedType, setSelectedType] = useState<ItemType>(initialType)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([])
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -79,6 +82,7 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
     if (!isOpen) {
       setForm(EMPTY_FORM)
       setSelectedType(initialType)
+      setSelectedCollections([])
       setUploadedFile(null)
     }
   }
@@ -113,6 +117,7 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
       url: form.url.trim() || null,
       language: form.language.trim() || null,
       tags,
+      collectionIds: selectedCollections,
       fileUrl: uploadedFile?.fileUrl ?? null,
       fileName: uploadedFile?.fileName ?? null,
       fileSize: uploadedFile?.fileSize ?? null,
@@ -307,6 +312,20 @@ export default function CreateItemDialog({ defaultType }: CreateItemDialogProps)
             />
             <p className="text-xs text-muted-foreground">Comma-separated</p>
           </div>
+
+          {/* Collections */}
+          {collections.length > 0 && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Collections
+              </Label>
+              <CollectionPicker
+                collections={collections}
+                selected={selectedCollections}
+                onChange={setSelectedCollections}
+              />
+            </div>
+          )}
 
           <DialogFooter>
             <Button

@@ -194,6 +194,7 @@ export type UpdateItemData = {
   url: string | null
   language: string | null
   tags: string[]
+  collectionIds: string[]
 }
 
 function isPrismaNotFoundError(e: unknown): boolean {
@@ -224,6 +225,12 @@ export async function updateItem(userId: string, itemId: string, data: UpdateIte
                 create: { name },
               },
             },
+          })),
+        },
+        collections: {
+          deleteMany: {},
+          create: data.collectionIds.map((collectionId) => ({
+            collectionId,
           })),
         },
       },
@@ -270,6 +277,7 @@ export type CreateItemData = {
   language: string | null
   typeName: string
   tags: string[]
+  collectionIds: string[]
   fileUrl: string | null
   fileName: string | null
   fileSize: number | null
@@ -307,11 +315,16 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
           },
         })),
       },
+      collections: {
+        create: data.collectionIds.map((collectionId) => ({
+          collectionId,
+        })),
+      },
     },
     include: {
       itemType: true,
       tags: { include: { tag: true } },
-      collections: { include: { collection: true } },
+      collections: { include: { collection: { select: { id: true, name: true } } } },
     },
   })
 

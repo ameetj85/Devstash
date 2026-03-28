@@ -41,6 +41,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
+import CollectionPicker from '@/components/items/collection-picker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -129,15 +130,17 @@ interface ItemDrawerProps {
   itemId: string | null
   open: boolean
   onClose: () => void
+  allCollections?: { id: string; name: string }[]
 }
 
-export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
+export default function ItemDrawer({ itemId, open, onClose, allCollections = [] }: ItemDrawerProps) {
   const router = useRouter()
   const [item, setItem] = useState<ItemDetailResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [selectedCollections, setSelectedCollections] = useState<string[]>([])
   const [form, setForm] = useState<EditFormState>({
     title: '',
     description: '',
@@ -160,6 +163,7 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
       .then((data) => {
         setItem(data)
         setForm(itemToFormState(data))
+        setSelectedCollections(data.collections.map((c: { id: string }) => c.id))
       })
       .catch(() => toast.error('Failed to load item'))
       .finally(() => setLoading(false))
@@ -176,12 +180,18 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
   }
 
   function handleEditToggle() {
-    if (item) setForm(itemToFormState(item))
+    if (item) {
+      setForm(itemToFormState(item))
+      setSelectedCollections(item.collections.map((c) => c.id))
+    }
     setIsEditing(true)
   }
 
   function handleCancel() {
-    if (item) setForm(itemToFormState(item))
+    if (item) {
+      setForm(itemToFormState(item))
+      setSelectedCollections(item.collections.map((c) => c.id))
+    }
     setIsEditing(false)
   }
 
@@ -201,6 +211,7 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
       url: form.url.trim() || null,
       language: form.language.trim() || null,
       tags,
+      collectionIds: selectedCollections,
     })
 
     setSaving(false)
@@ -413,23 +424,18 @@ export default function ItemDrawer({ itemId, open, onClose }: ItemDrawerProps) {
                   <p className="text-xs text-muted-foreground">Comma-separated</p>
                 </div>
 
-                {/* Non-editable: Collections */}
-                {item.collections.length > 0 && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
+                {/* Collections */}
+                {allCollections.length > 0 && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                       Collections
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.collections.map((col) => (
-                        <span
-                          key={col.id}
-                          className="text-xs px-2 py-1 rounded border border-border bg-card text-foreground/80"
-                        >
-                          {col.name}
-                        </span>
-                      ))}
-                    </div>
-                  </section>
+                    </Label>
+                    <CollectionPicker
+                      collections={allCollections}
+                      selected={selectedCollections}
+                      onChange={setSelectedCollections}
+                    />
+                  </div>
                 )}
 
                 {/* Non-editable: Details */}

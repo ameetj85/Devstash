@@ -25,7 +25,10 @@ export default function DashboardShell({ children, itemTypes, collections, user 
 
   return (
     <div className="flex flex-col h-screen bg-background">
-      <TopBar onMobileMenuToggle={() => setIsMobileOpen(true)} />
+      <TopBar
+        onMobileMenuToggle={() => setIsMobileOpen(true)}
+        collections={collections.map((c) => ({ id: c.id, name: c.name }))}
+      />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar
           isCollapsed={isCollapsed}
