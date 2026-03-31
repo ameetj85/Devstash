@@ -42,6 +42,27 @@ export async function getUserCollections(userId: string): Promise<CollectionOpti
   })
 }
 
+export type CollectionDetail = {
+  id: string
+  name: string
+  description: string | null
+  isFavorite: boolean
+  createdAt: Date
+}
+
+export async function getCollectionById(userId: string, collectionId: string): Promise<CollectionDetail | null> {
+  return prisma.collection.findFirst({
+    where: { id: collectionId, userId },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      createdAt: true,
+    },
+  })
+}
+
 export type CollectionWithMeta = {
   id: string
   name: string

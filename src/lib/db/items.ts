@@ -167,6 +167,22 @@ export type ItemTypeInfo = {
   color: string
 }
 
+export async function getItemsByCollection(userId: string, collectionId: string): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: {
+      userId,
+      collections: { some: { collectionId } },
+    },
+    include: {
+      itemType: true,
+      tags: { include: { tag: true } },
+    },
+    orderBy: { updatedAt: 'desc' },
+  })
+
+  return items.map(mapItem)
+}
+
 export async function getItemsByType(userId: string, typeName: string): Promise<{ items: ItemWithType[]; itemType: ItemTypeInfo | null }> {
   const itemType = await prisma.itemType.findFirst({
     where: { name: typeName, isSystem: true },
