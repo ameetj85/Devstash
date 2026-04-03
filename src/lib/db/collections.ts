@@ -73,6 +73,36 @@ export type CollectionWithMeta = {
   typeIcons: { icon: string; color: string; name: string }[]
 }
 
+export async function updateCollection(
+  userId: string,
+  collectionId: string,
+  data: { name: string; description?: string | null },
+): Promise<CollectionDetail> {
+  return prisma.collection.update({
+    where: { id: collectionId, userId },
+    data: {
+      name: data.name,
+      description: data.description ?? null,
+    },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      isFavorite: true,
+      createdAt: true,
+    },
+  })
+}
+
+export async function deleteCollection(
+  userId: string,
+  collectionId: string,
+): Promise<void> {
+  await prisma.collection.delete({
+    where: { id: collectionId, userId },
+  })
+}
+
 export async function getCollections(userId: string): Promise<CollectionWithMeta[]> {
   const collections = await prisma.collection.findMany({
     where: { userId },

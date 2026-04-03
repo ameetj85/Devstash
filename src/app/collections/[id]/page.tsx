@@ -4,6 +4,7 @@ import ItemsClientWrapper from '@/components/items/items-client-wrapper'
 import { auth } from '@/auth'
 import { getCollections, getCollectionById, getUserCollections } from '@/lib/db/collections'
 import { getItemsByCollection, getItemTypesWithCounts } from '@/lib/db/items'
+import CollectionDetailActions from '@/components/collections/collection-detail-actions'
 
 interface CollectionDetailPageProps {
   params: Promise<{ id: string }>
@@ -32,16 +33,19 @@ export default async function CollectionDetailPage({ params }: CollectionDetailP
   return (
     <DashboardShell itemTypes={itemTypes} collections={collections} user={user}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">{collection.name}</h1>
-          {collection.description && (
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">{collection.name}</h1>
+            {collection.description && (
+              <p className="text-sm text-muted-foreground mt-0.5">
+                {collection.description}
+              </p>
+            )}
             <p className="text-sm text-muted-foreground mt-0.5">
-              {collection.description}
+              {items.length} {items.length === 1 ? 'item' : 'items'}
             </p>
-          )}
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {items.length} {items.length === 1 ? 'item' : 'items'}
-          </p>
+          </div>
+          <CollectionDetailActions collection={collection} />
         </div>
 
         {items.length === 0 ? (
