@@ -1,9 +1,10 @@
 'use client'
 
-import { Input } from '@/components/ui/input'
+import { useState } from 'react'
 import { Search, Menu } from 'lucide-react'
 import CreateItemDialog from '@/components/items/create-item-dialog'
 import CreateCollectionDialog from '@/components/collections/create-collection-dialog'
+import CommandPalette from '@/components/search/command-palette'
 
 interface TopBarProps {
   onMobileMenuToggle?: () => void
@@ -11,6 +12,8 @@ interface TopBarProps {
 }
 
 export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarProps) {
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
   return (
     <header className="flex items-center gap-4 px-4 h-14 border-b border-border shrink-0">
       {/* Mobile hamburger */}
@@ -29,16 +32,18 @@ export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarP
         <span className="font-semibold text-sm">DevStash</span>
       </div>
 
-      <div className="flex-1 max-w-xl relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <Input
-          placeholder="Search items..."
-          className="pl-9 bg-muted/50 border-border h-9 text-sm"
-        />
-        <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded font-mono">
+      <button
+        onClick={() => setPaletteOpen(true)}
+        className="flex-1 max-w-xl relative flex items-center h-9 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+      >
+        <Search className="w-4 h-4 mr-2 shrink-0" />
+        <span>Search items...</span>
+        <kbd className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
           ⌘K
         </kbd>
-      </div>
+      </button>
+
+      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
 
       <div className="flex items-center gap-2 ml-auto">
         <CreateCollectionDialog />

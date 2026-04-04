@@ -379,6 +379,34 @@ export async function deleteItem(userId: string, itemId: string): Promise<{ file
   return item
 }
 
+export type SearchItem = {
+  id: string
+  title: string
+  typeName: string
+  typeIcon: string
+  typeColor: string
+}
+
+export async function getSearchItems(userId: string): Promise<SearchItem[]> {
+  const items = await prisma.item.findMany({
+    where: { userId },
+    select: {
+      id: true,
+      title: true,
+      itemType: { select: { name: true, icon: true, color: true } },
+    },
+    orderBy: { updatedAt: 'desc' },
+  })
+
+  return items.map((item) => ({
+    id: item.id,
+    title: item.title,
+    typeName: item.itemType.name,
+    typeIcon: item.itemType.icon,
+    typeColor: item.itemType.color,
+  }))
+}
+
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },

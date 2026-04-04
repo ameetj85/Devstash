@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { LayoutGrid, LayoutList } from 'lucide-react'
 import ItemCard from './item-card'
 import ImageThumbnailCard from './image-thumbnail-card'
@@ -15,9 +16,19 @@ interface ItemsClientWrapperProps {
 }
 
 export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid', collections = [] }: ItemsClientWrapperProps) {
+  const searchParams = useSearchParams()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [layout, setLayout] = useState(initialLayout)
+
+  // Auto-open drawer from ?item= query param (e.g. from command palette)
+  useEffect(() => {
+    const itemId = searchParams.get('item')
+    if (itemId) {
+      setSelectedId(itemId)
+      setDrawerOpen(true)
+    }
+  }, [searchParams])
 
   function handleItemClick(id: string) {
     setSelectedId(id)
