@@ -1,27 +1,10 @@
-# Current Feature: Global Search / Command Palette
+# Current Feature
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Open command palette with Cmd+K (Mac) / Ctrl+K (Windows)
-- Fuzzy search across all items and collections
-- Grouped results: Items section, Collections section
-- Keyboard navigation (arrow keys, Enter to select)
-- Show item type icon and collection item count in results
-- Navigate to item drawer or collection page on select
-- TopBar search input opens palette on click
-- Show ⌘K hint in search input placeholder
-
 ## Notes
-
-- Use shadcn `cmdk` component (Command)
-- Client-side fuzzy search (no server round-trips)
-- Pre-fetch searchable data on app load
-- Search data: items (id, title, type, content preview), collections (id, name, itemCount)
-- Reuse existing data fetching functions
 
 ## History
 
@@ -60,3 +43,4 @@ In Progress
 - 2026-03-28: Item-to-Collection Assignment — added multi-select collection picker to both `CreateItemDialog` and `ItemDrawer` edit mode. Installed shadcn `Popover` and `Checkbox` components. Created `CollectionPicker` component (`src/components/items/collection-picker.tsx`) with popover dropdown and checkmark-based multi-select. Added `getUserCollections()` query to `src/lib/db/collections.ts` returning simple `{id, name}` list. Updated `createItem` and `updateItem` DB queries and server actions to accept `collectionIds` — create links `ItemCollection` records on insert, update does full replacement (deleteMany + create). Collections list threaded from server pages through `DashboardShell` → `TopBar` → `CreateItemDialog`, and through `ItemsClientWrapper`/`DashboardItemRows` → `ItemDrawer`. Existing tests updated with `collectionIds` field (43 total passing).
 - 2026-03-31: Collections Pages — created `/collections` page showing all user collections in a responsive 3-column grid with the same card styling as the dashboard (colored accent bar, type icon badges, item counts, favorite stars), plus a "New Collection" button. Created `/collections/[id]` page showing all items in a specific collection using the existing `ItemsClientWrapper` (reuses `ItemCard`, item drawer, etc.). Added `getCollectionById()` query to `src/lib/db/collections.ts` (ownership-scoped lookup) and `getItemsByCollection()` query to `src/lib/db/items.ts` (filters items by collection membership). Added `/collections` to protected routes in `src/proxy.ts`. Sidebar "View all collections →" link and all collection card links (dashboard + sidebar) already pointed to these routes. 7 unit tests added for the two new DB queries (50 total passing).
 - 2026-04-03: Collection Management — added edit, delete, and favorite (UI-only) actions for collections. `/collections/[id]` header now shows edit (pencil), delete (trash), and favorite (star, disabled) buttons via `CollectionDetailActions` component. `EditCollectionDialog` opens a modal to update name and description. `DeleteCollectionDialog` shows an AlertDialog confirmation; deleting a collection does NOT delete its items. Collection cards on `/collections` and dashboard replaced with reusable `CollectionCard` component featuring a 3-dot `CollectionCardMenu` dropdown (edit, delete, favorite) — clicking elsewhere on the card navigates to the collection page. Added `updateCollection` and `deleteCollection` DB queries (`src/lib/db/collections.ts`) with ownership scoping, and matching server actions (`src/actions/collections.ts`) with Zod validation. 16 unit tests added across DB queries and server actions (66 total passing).
+- 2026-04-04: Global Search / Command Palette — installed shadcn `cmdk` (Command) component. Created `CommandPalette` component (`src/components/search/command-palette.tsx`) using `CommandDialog` with grouped results: Items (with type-colored icons and type label) and Collections (with folder icon and item count). Cmd+K / Ctrl+K opens the palette from anywhere; clicking the TopBar search input also opens it. Search data fetched once via `GET /api/search` route (`src/app/api/search/route.ts`) on first open, then filtered client-side by cmdk's built-in fuzzy search. Added `getSearchItems()` to `src/lib/db/items.ts` (lightweight: id, title, type info) and `getSearchCollections()` to `src/lib/db/collections.ts` (id, name, item count). Selecting an item navigates to `/items/{type}s?item={id}` — `ItemsClientWrapper` reads the `?item=` query param and auto-opens the drawer. Selecting a collection navigates to `/collections/{id}`. TopBar search input replaced with a styled button showing the ⌘K hint. 6 unit tests added for the two new DB queries (72 total passing).
