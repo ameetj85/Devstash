@@ -1,10 +1,24 @@
-# Current Feature
+# Current Feature: Pagination
 
 ## Status
 
+In Progress
+
 ## Goals
 
+- Add pagination to `/items/[type]` pages (e.g. `/items/snippets`, `/items/commands`)
+- Add pagination to `/collections/[id]` pages (items within a collection)
+- Pagination controls at the bottom with numbered page links and prev/next buttons
+- Prev/next buttons disabled (greyed out) when on first/last page
+- Use constants: `ITEMS_PER_PAGE = 21`, `COLLECTIONS_PER_PAGE = 21`
+- Dashboard limits: `DASHBOARD_COLLECTIONS_LIMIT = 6`, `DASHBOARD_RECENT_ITEMS_LIMIT = 10`
+- Only fetch the resources needed for the current page (no fetching all at once)
+
 ## Notes
+
+- Spec file: `context/features/pagination-spec.md`
+- Pagination is server-side — DB queries need `skip`/`take` and total count for page calculation
+- URL-based page state (e.g. `?page=2`) so pages are shareable/bookmarkable
 
 ## History
 

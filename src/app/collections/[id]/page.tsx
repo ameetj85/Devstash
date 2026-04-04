@@ -1,26 +1,31 @@
 import { notFound, redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import ItemsClientWrapper from '@/components/items/items-client-wrapper'
+import Pagination from '@/components/pagination'
 import { auth } from '@/auth'
 import { getCollections, getCollectionById, getUserCollections } from '@/lib/db/collections'
 import { getItemsByCollection, getItemTypesWithCounts } from '@/lib/db/items'
 import CollectionDetailActions from '@/components/collections/collection-detail-actions'
+import { ITEMS_PER_PAGE } from '@/lib/constants'
 
 interface CollectionDetailPageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ page?: string }>
 }
 
-export default async function CollectionDetailPage({ params }: CollectionDetailPageProps) {
+export default async function CollectionDetailPage({ params, searchParams }: CollectionDetailPageProps) {
   const session = await auth()
   const userId = session?.user?.id
 
   if (!userId) redirect('/sign-in')
 
   const { id } = await params
+  const { page: pageParam } = await searchParams
+  const currentPage = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
-  const [collection, items, itemTypes, collections, collectionOptions] = await Promise.all([
+  const [collection, { items, totalCount }, itemTypes, { collections }, collectionOptions] = await Promise.all([
     getCollectionById(userId, id),
-    getItemsByCollection(userId, id),
+    getItemsByCollection(userId, id, currentPage, ITEMS_PER_PAGE),
     getItemTypesWithCounts(userId),
     getCollections(userId),
     getUserCollections(userId),
@@ -28,6 +33,7 @@ export default async function CollectionDetailPage({ params }: CollectionDetailP
 
   if (!collection) notFound()
 
+  const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE)
   const user = session.user ?? {}
 
   return (
@@ -42,18 +48,25 @@ export default async function CollectionDetailPage({ params }: CollectionDetailP
               </p>
             )}
             <p className="text-sm text-muted-foreground mt-0.5">
-              {items.length} {items.length === 1 ? 'item' : 'items'}
+              {totalCount} {totalCount === 1 ? 'item' : 'items'}
             </p>
           </div>
           <CollectionDetailActions collection={collection} />
         </div>
 
-        {items.length === 0 ? (
+        {items.length === 0 && currentPage === 1 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
             <p className="text-muted-foreground text-sm">No items in this collection yet.</p>
           </div>
         ) : (
-          <ItemsClientWrapper items={items} collections={collectionOptions} />
+          <>
+            <ItemsClientWrapper items={items} collections={collectionOptions} />
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              basePath={`/collections/${id}`}
+            />
+          </>
         )}
       </main>
     </DashboardShell>

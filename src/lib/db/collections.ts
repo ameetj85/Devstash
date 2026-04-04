@@ -127,28 +127,40 @@ export async function getSearchCollections(userId: string): Promise<SearchCollec
   }))
 }
 
-export async function getCollections(userId: string): Promise<CollectionWithMeta[]> {
-  const collections = await prisma.collection.findMany({
-    where: { userId },
-    include: {
-      _count: { select: { items: true } },
-      items: {
-        select: {
-          item: {
-            select: {
-              itemType: {
-                select: { id: true, icon: true, color: true, name: true },
+export async function getCollections(
+  userId: string,
+  options?: { limit?: number; page?: number; perPage?: number },
+): Promise<{ collections: CollectionWithMeta[]; totalCount: number }> {
+  const { limit, page, perPage } = options ?? {}
+
+  const skip = page && perPage ? (page - 1) * perPage : undefined
+  const take = page && perPage ? perPage : limit ?? undefined
+
+  const [rawCollections, totalCount] = await Promise.all([
+    prisma.collection.findMany({
+      where: { userId },
+      include: {
+        _count: { select: { items: true } },
+        items: {
+          select: {
+            item: {
+              select: {
+                itemType: {
+                  select: { id: true, icon: true, color: true, name: true },
+                },
               },
             },
           },
         },
       },
-    },
-    orderBy: { createdAt: 'desc' },
-  })
+      orderBy: { createdAt: 'desc' },
+      ...(skip !== undefined ? { skip } : {}),
+      ...(take !== undefined ? { take } : {}),
+    }),
+    prisma.collection.count({ where: { userId } }),
+  ])
 
-  return collections.map((col) => {
-    // Count items per type to find dominant and unique types
+  const collections = rawCollections.map((col) => {
     const typeCounts: Record<
       string,
       { count: number; icon: string; color: string; name: string }
@@ -176,4 +188,6 @@ export async function getCollections(userId: string): Promise<CollectionWithMeta
       typeIcons,
     }
   })
+
+  return { collections, totalCount }
 }

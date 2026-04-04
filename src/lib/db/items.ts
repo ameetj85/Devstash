@@ -167,40 +167,64 @@ export type ItemTypeInfo = {
   color: string
 }
 
-export async function getItemsByCollection(userId: string, collectionId: string): Promise<ItemWithType[]> {
-  const items = await prisma.item.findMany({
-    where: {
-      userId,
-      collections: { some: { collectionId } },
-    },
-    include: {
-      itemType: true,
-      tags: { include: { tag: true } },
-    },
-    orderBy: { updatedAt: 'desc' },
-  })
+export async function getItemsByCollection(
+  userId: string,
+  collectionId: string,
+  page = 1,
+  perPage = 21,
+): Promise<{ items: ItemWithType[]; totalCount: number }> {
+  const where = {
+    userId,
+    collections: { some: { collectionId } },
+  }
 
-  return items.map(mapItem)
+  const [items, totalCount] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      include: {
+        itemType: true,
+        tags: { include: { tag: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.item.count({ where }),
+  ])
+
+  return { items: items.map(mapItem), totalCount }
 }
 
-export async function getItemsByType(userId: string, typeName: string): Promise<{ items: ItemWithType[]; itemType: ItemTypeInfo | null }> {
+export async function getItemsByType(
+  userId: string,
+  typeName: string,
+  page = 1,
+  perPage = 21,
+): Promise<{ items: ItemWithType[]; itemType: ItemTypeInfo | null; totalCount: number }> {
   const itemType = await prisma.itemType.findFirst({
     where: { name: typeName, isSystem: true },
     select: { id: true, name: true, icon: true, color: true },
   })
 
-  if (!itemType) return { items: [], itemType: null }
+  if (!itemType) return { items: [], itemType: null, totalCount: 0 }
 
-  const items = await prisma.item.findMany({
-    where: { userId, itemTypeId: itemType.id },
-    include: {
-      itemType: true,
-      tags: { include: { tag: true } },
-    },
-    orderBy: { updatedAt: 'desc' },
-  })
+  const where = { userId, itemTypeId: itemType.id }
 
-  return { items: items.map(mapItem), itemType }
+  const [items, totalCount] = await Promise.all([
+    prisma.item.findMany({
+      where,
+      include: {
+        itemType: true,
+        tags: { include: { tag: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.item.count({ where }),
+  ])
+
+  return { items: items.map(mapItem), itemType, totalCount }
 }
 
 export type UpdateItemData = {

@@ -4,6 +4,7 @@ import MainContent from '@/components/dashboard/main-content'
 import { auth } from '@/auth'
 import { getCollections } from '@/lib/db/collections'
 import { getPinnedItems, getRecentItems, getItemStats, getItemTypesWithCounts } from '@/lib/db/items'
+import { DASHBOARD_COLLECTIONS_LIMIT, DASHBOARD_RECENT_ITEMS_LIMIT } from '@/lib/constants'
 
 export default async function DashboardPage() {
   const session = await auth()
@@ -11,10 +12,10 @@ export default async function DashboardPage() {
 
   if (!userId) redirect('/sign-in')
 
-  const [collections, pinnedItems, recentItems, itemStats, itemTypes] = await Promise.all([
-    getCollections(userId),
+  const [{ collections }, pinnedItems, recentItems, itemStats, itemTypes] = await Promise.all([
+    getCollections(userId, { limit: DASHBOARD_COLLECTIONS_LIMIT }),
     getPinnedItems(userId),
-    getRecentItems(userId),
+    getRecentItems(userId, DASHBOARD_RECENT_ITEMS_LIMIT),
     getItemStats(userId),
     getItemTypesWithCounts(userId),
   ])
