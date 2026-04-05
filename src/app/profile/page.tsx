@@ -2,8 +2,6 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getProfileData } from '@/lib/db/profile'
 import UserAvatar from '@/components/user-avatar'
-import ChangePasswordForm from '@/components/profile/change-password-form'
-import DeleteAccountDialog from '@/components/profile/delete-account-dialog'
 import { Layers, Folders } from 'lucide-react'
 
 function formatDate(date: Date) {
@@ -90,27 +88,6 @@ export default async function ProfilePage() {
               ))}
             </div>
           </div>
-        </section>
-
-        {/* Change Password */}
-        {profile.hasPassword && (
-          <section className="rounded-lg border border-border bg-card p-6 space-y-4">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
-              Change Password
-            </h2>
-            <ChangePasswordForm />
-          </section>
-        )}
-
-        {/* Danger Zone */}
-        <section className="rounded-lg border border-destructive/40 bg-card p-6 space-y-4">
-          <h2 className="text-sm font-semibold text-destructive uppercase tracking-wide">
-            Danger Zone
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Permanently delete your account and all associated data. This cannot be undone.
-          </p>
-          <DeleteAccountDialog />
         </section>
 
       </div>

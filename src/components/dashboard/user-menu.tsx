@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { signOut } from 'next-auth/react'
-import { LogOut } from 'lucide-react'
+import { LogOut, Settings, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import UserAvatar from '@/components/user-avatar'
 
@@ -54,10 +54,19 @@ export default function UserMenu({ name, email, image, isCollapsed }: UserMenuPr
         <div className="absolute bottom-full left-0 mb-1 w-48 rounded-md border border-border bg-popover text-popover-foreground shadow-md py-1 z-50">
           <a
             href="/profile"
-            className="flex items-center px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
             onClick={() => setOpen(false)}
           >
+            <User className="w-4 h-4" />
             Profile
+          </a>
+          <a
+            href="/settings"
+            className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+            onClick={() => setOpen(false)}
+          >
+            <Settings className="w-4 h-4" />
+            Settings
           </a>
           <button
             className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-destructive hover:bg-accent hover:text-destructive transition-colors"

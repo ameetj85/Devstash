@@ -11,7 +11,8 @@ export const proxy = auth(function proxy(req) {
     nextUrl.pathname.startsWith('/dashboard') ||
     nextUrl.pathname.startsWith('/profile') ||
     nextUrl.pathname.startsWith('/items') ||
-    nextUrl.pathname.startsWith('/collections')
+    nextUrl.pathname.startsWith('/collections') ||
+    nextUrl.pathname.startsWith('/settings')
 
   if (isProtected && !isLoggedIn) {
     return Response.redirect(new URL('/sign-in', nextUrl))
