@@ -1,27 +1,10 @@
-# Current Feature: Favorites Page
+# Current Feature
 
 ## Status
-In Progress
 
 ## Goals
-- Add star icon button to TopBar linking to /favorites
-- Create /favorites route with route protection
-- Fetch all user favorited items and collections from DB
-- Compact list view (VS Code/terminal style, not cards) — monospace font, minimal padding, high density
-- Each row: type icon, title, type badge, date added
-- Separate sections for items and collections with counts
-- Click item opens ItemDrawer, click collection navigates to /collections/[id]
-- Empty state when no favorites
-- Sort by most recently favorited (updatedAt)
-- Clean lines only — no cards or heavy borders, subtle hover states
 
 ## Notes
-- UI should feel like a dev tool: VS Code sidebar / terminal style
-- Monospace or semi-monospace font for the list
-- Minimal padding, high density layout
-- Items and collections need separate DB queries for favorites (isFavorite = true)
-- ItemDrawer integration needed for item clicks (reuse existing ItemsClientWrapper pattern)
-- Collection clicks navigate to /collections/[id]
 
 ## History
 
@@ -64,3 +47,4 @@ In Progress
 - 2026-04-04: Pagination — added server-side pagination to `/items/[type]`, `/collections/[id]`, and `/collections` pages. Created `src/lib/constants.ts` with `ITEMS_PER_PAGE` (21), `COLLECTIONS_PER_PAGE` (21), `DASHBOARD_COLLECTIONS_LIMIT` (6), and `DASHBOARD_RECENT_ITEMS_LIMIT` (10). Updated `getItemsByType()` and `getItemsByCollection()` in `src/lib/db/items.ts` to accept `page`/`perPage` params with `skip`/`take` and return `{ items, totalCount }`. Updated `getCollections()` in `src/lib/db/collections.ts` to accept optional `{ limit, page, perPage }` options and return `{ collections, totalCount }`. Dashboard page now uses the limit constants for collections and recent items. Created `src/components/pagination.tsx` — server component with numbered page links (with ellipsis for large ranges), prev/next buttons that are greyed out on first/last page. All three paginated pages read `?page=` search param for URL-based page state. Updated `getItemsByCollection` tests for new return shape (73 total passing).
 - 2026-04-05: Settings Page — created `/settings` route (`src/app/settings/page.tsx`) with Change Password and Delete Account sections moved from the profile page. Added `/settings` to protected routes in `src/proxy.ts`. Added Settings link (with gear icon) and Profile icon (User icon) to the `UserMenu` dropdown in the sidebar. Profile page (`src/app/profile/page.tsx`) now shows only user info (avatar, name, email, member since) and usage stats (total items, collections, per-type breakdown). No new server actions or DB queries — settings page reuses existing `ChangePasswordForm` and `DeleteAccountDialog` components and fetches data via existing `getProfileData()`. All 73 tests passing.
 - 2026-04-09: Editor Preferences Settings — added `editorPreferences` JSON column to User model with Prisma migration. Created `src/lib/editor-preferences.ts` with types, defaults, and parser. Created `updateEditorPreferences` server action (`src/actions/settings.ts`) with Zod validation. Created `EditorPreferencesContext` (`src/contexts/editor-preferences-context.tsx`) with auto-save on change, optimistic updates, and rollback on failure. Added Editor Preferences section to settings page with font size dropdown, tab size dropdown, theme dropdown (vs-dark, monokai, github-dark), word wrap toggle, and minimap toggle — all auto-save with success toast. Updated `CodeEditor` component to consume preferences for fontSize, tabSize, wordWrap, minimap, and theme. Defined custom monokai and github-dark Monaco themes via `beforeMount`. Installed shadcn `Select` and `Switch` components. Threaded `editorPreferences` from DB through all 4 pages using `DashboardShell`. 13 unit tests added (7 for parser, 6 for server action, 86 total passing).
+- 2026-04-09: Favorites Page — added `/favorites` route with compact, dev-focused list view. Star icon button added to TopBar linking to `/favorites`. Route protected via `src/proxy.ts`. Created `getFavoriteItems()` query in `src/lib/db/items.ts` and `getFavoriteCollections()` query in `src/lib/db/collections.ts` (both filter `isFavorite: true`, sorted by `updatedAt desc`). Created `FavoritesList` client component (`src/components/favorites/favorites-list.tsx`) with monospace font, minimal padding, high-density rows — each row shows type-colored icon, title, type badge, and date. Separate Items and Collections sections with counts. Item clicks open `ItemDrawer`, collection clicks navigate to `/collections/[id]`. Empty state with star icon and helper text. Server page (`src/app/favorites/page.tsx`) fetches all data in parallel and wraps in `DashboardShell`.
