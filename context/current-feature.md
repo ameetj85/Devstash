@@ -1,28 +1,10 @@
-# Current Feature: Editor Preferences Settings
+# Current Feature
 
 ## Status
 
-In Progress
-
 ## Goals
 
-- Add font size dropdown to settings page
-- Add tab size dropdown to settings page
-- Add word wrap toggle (default: on)
-- Add minimap toggle (default: off)
-- Add theme dropdown with vs-dark, monokai, github-dark options (default: vs-dark)
-- Store preferences in JSON column `editorPreferences` on User model
-- Create and run a Prisma migration for the new column
-- Create server action to update editor preferences
-- Apply saved settings to Monaco editor component via EditorPreferencesContext
-- Auto-save on change (no save button) with success toast
-
 ## Notes
-
-- Preferences stored as JSON on User model, not a separate table
-- No save button — each change auto-saves immediately
-- EditorPreferencesContext provides settings to all client components that use Monaco
-- Theme options: vs-dark, monokai, github-dark
 
 ## History
 
@@ -64,3 +46,4 @@ In Progress
 - 2026-04-04: Global Search / Command Palette — installed shadcn `cmdk` (Command) component. Created `CommandPalette` component (`src/components/search/command-palette.tsx`) using `CommandDialog` with grouped results: Items (with type-colored icons and type label) and Collections (with folder icon and item count). Cmd+K / Ctrl+K opens the palette from anywhere; clicking the TopBar search input also opens it. Search data fetched once via `GET /api/search` route (`src/app/api/search/route.ts`) on first open, then filtered client-side by cmdk's built-in fuzzy search. Added `getSearchItems()` to `src/lib/db/items.ts` (lightweight: id, title, type info) and `getSearchCollections()` to `src/lib/db/collections.ts` (id, name, item count). Selecting an item navigates to `/items/{type}s?item={id}` — `ItemsClientWrapper` reads the `?item=` query param and auto-opens the drawer. Selecting a collection navigates to `/collections/{id}`. TopBar search input replaced with a styled button showing the ⌘K hint. 6 unit tests added for the two new DB queries (72 total passing).
 - 2026-04-04: Pagination — added server-side pagination to `/items/[type]`, `/collections/[id]`, and `/collections` pages. Created `src/lib/constants.ts` with `ITEMS_PER_PAGE` (21), `COLLECTIONS_PER_PAGE` (21), `DASHBOARD_COLLECTIONS_LIMIT` (6), and `DASHBOARD_RECENT_ITEMS_LIMIT` (10). Updated `getItemsByType()` and `getItemsByCollection()` in `src/lib/db/items.ts` to accept `page`/`perPage` params with `skip`/`take` and return `{ items, totalCount }`. Updated `getCollections()` in `src/lib/db/collections.ts` to accept optional `{ limit, page, perPage }` options and return `{ collections, totalCount }`. Dashboard page now uses the limit constants for collections and recent items. Created `src/components/pagination.tsx` — server component with numbered page links (with ellipsis for large ranges), prev/next buttons that are greyed out on first/last page. All three paginated pages read `?page=` search param for URL-based page state. Updated `getItemsByCollection` tests for new return shape (73 total passing).
 - 2026-04-05: Settings Page — created `/settings` route (`src/app/settings/page.tsx`) with Change Password and Delete Account sections moved from the profile page. Added `/settings` to protected routes in `src/proxy.ts`. Added Settings link (with gear icon) and Profile icon (User icon) to the `UserMenu` dropdown in the sidebar. Profile page (`src/app/profile/page.tsx`) now shows only user info (avatar, name, email, member since) and usage stats (total items, collections, per-type breakdown). No new server actions or DB queries — settings page reuses existing `ChangePasswordForm` and `DeleteAccountDialog` components and fetches data via existing `getProfileData()`. All 73 tests passing.
+- 2026-04-09: Editor Preferences Settings — added `editorPreferences` JSON column to User model with Prisma migration. Created `src/lib/editor-preferences.ts` with types, defaults, and parser. Created `updateEditorPreferences` server action (`src/actions/settings.ts`) with Zod validation. Created `EditorPreferencesContext` (`src/contexts/editor-preferences-context.tsx`) with auto-save on change, optimistic updates, and rollback on failure. Added Editor Preferences section to settings page with font size dropdown, tab size dropdown, theme dropdown (vs-dark, monokai, github-dark), word wrap toggle, and minimap toggle — all auto-save with success toast. Updated `CodeEditor` component to consume preferences for fontSize, tabSize, wordWrap, minimap, and theme. Defined custom monokai and github-dark Monaco themes via `beforeMount`. Installed shadcn `Select` and `Switch` components. Threaded `editorPreferences` from DB through all 4 pages using `DashboardShell`. 13 unit tests added (7 for parser, 6 for server action, 86 total passing).
