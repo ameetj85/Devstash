@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { type EditorPreferences, parseEditorPreferences } from '@/lib/editor-preferences'
 
 export type ProfileData = {
   id: string
@@ -55,4 +56,13 @@ export async function getProfileData(userId: string): Promise<ProfileData | null
       count: t._count.items,
     })),
   }
+}
+
+export async function getEditorPreferences(userId: string): Promise<EditorPreferences> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { editorPreferences: true },
+  })
+
+  return parseEditorPreferences(user?.editorPreferences)
 }

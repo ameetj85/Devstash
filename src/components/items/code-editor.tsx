@@ -1,10 +1,11 @@
 'use client'
 
-import { useMemo } from 'react'
-import Editor from '@monaco-editor/react'
+import { useMemo, useRef } from 'react'
+import Editor, { type Monaco } from '@monaco-editor/react'
 import { Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
+import { useEditorPreferences } from '@/contexts/editor-preferences-context'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -17,10 +18,55 @@ interface CodeEditorProps {
 
 // ─── Constants ─────────────────────────────────────────────────────────────
 
-const LINE_HEIGHT = 20
 const PADDING_VERTICAL = 24
 const MAX_HEIGHT = 400
 const MIN_HEIGHT = 80
+
+// ─── Custom Themes ────────────────────────────────────────────────────────
+
+function defineCustomThemes(monaco: Monaco) {
+  monaco.editor.defineTheme('monokai', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '75715E', fontStyle: 'italic' },
+      { token: 'keyword', foreground: 'F92672' },
+      { token: 'string', foreground: 'E6DB74' },
+      { token: 'number', foreground: 'AE81FF' },
+      { token: 'type', foreground: '66D9EF', fontStyle: 'italic' },
+      { token: 'function', foreground: 'A6E22E' },
+      { token: 'variable', foreground: 'F8F8F2' },
+    ],
+    colors: {
+      'editor.background': '#272822',
+      'editor.foreground': '#F8F8F2',
+      'editor.lineHighlightBackground': '#3E3D32',
+      'editorCursor.foreground': '#F8F8F0',
+      'editor.selectionBackground': '#49483E',
+    },
+  })
+
+  monaco.editor.defineTheme('github-dark', {
+    base: 'vs-dark',
+    inherit: true,
+    rules: [
+      { token: 'comment', foreground: '8B949E', fontStyle: 'italic' },
+      { token: 'keyword', foreground: 'FF7B72' },
+      { token: 'string', foreground: 'A5D6FF' },
+      { token: 'number', foreground: '79C0FF' },
+      { token: 'type', foreground: 'FFA657' },
+      { token: 'function', foreground: 'D2A8FF' },
+      { token: 'variable', foreground: 'C9D1D9' },
+    ],
+    colors: {
+      'editor.background': '#0D1117',
+      'editor.foreground': '#C9D1D9',
+      'editor.lineHighlightBackground': '#161B22',
+      'editorCursor.foreground': '#C9D1D9',
+      'editor.selectionBackground': '#264F78',
+    },
+  })
+}
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
@@ -31,16 +77,26 @@ export default function CodeEditor({
   readonly = false,
 }: CodeEditorProps) {
   const lang = language?.trim().toLowerCase() || 'plaintext'
+  const { preferences } = useEditorPreferences()
+  const themesDefinedRef = useRef(false)
 
+  const lineHeight = preferences.fontSize + 8
   const editorHeight = useMemo(() => {
     const lineCount = (value || '').split('\n').length
-    const computed = lineCount * LINE_HEIGHT + PADDING_VERTICAL
+    const computed = lineCount * lineHeight + PADDING_VERTICAL
     return Math.min(Math.max(computed, MIN_HEIGHT), MAX_HEIGHT)
-  }, [value])
+  }, [value, lineHeight])
 
   function handleCopy() {
     navigator.clipboard.writeText(value || '')
     toast.success('Copied to clipboard')
+  }
+
+  function handleBeforeMount(monaco: Monaco) {
+    if (!themesDefinedRef.current) {
+      defineCustomThemes(monaco)
+      themesDefinedRef.current = true
+    }
   }
 
   return (
@@ -79,14 +135,16 @@ export default function CodeEditor({
         value={value}
         onChange={(v) => onChange?.(v ?? '')}
         language={lang}
-        theme="vs-dark"
+        theme={preferences.theme}
         height={editorHeight}
+        beforeMount={handleBeforeMount}
         options={{
           readOnly: readonly,
-          minimap: { enabled: false },
+          minimap: { enabled: preferences.minimap },
           scrollBeyondLastLine: false,
-          fontSize: 12,
-          lineHeight: LINE_HEIGHT,
+          fontSize: preferences.fontSize,
+          tabSize: preferences.tabSize,
+          lineHeight,
           padding: { top: 12, bottom: 12 },
           scrollbar: {
             verticalScrollbarSize: 5,
@@ -95,7 +153,7 @@ export default function CodeEditor({
             horizontal: 'auto',
             useShadows: false,
           },
-          wordWrap: 'on',
+          wordWrap: preferences.wordWrap ? 'on' : 'off',
           lineNumbers: 'on',
           renderLineHighlight: readonly ? 'none' : 'line',
           contextmenu: false,

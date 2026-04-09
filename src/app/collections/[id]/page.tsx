@@ -5,6 +5,7 @@ import Pagination from '@/components/pagination'
 import { auth } from '@/auth'
 import { getCollections, getCollectionById, getUserCollections } from '@/lib/db/collections'
 import { getItemsByCollection, getItemTypesWithCounts } from '@/lib/db/items'
+import { getEditorPreferences } from '@/lib/db/profile'
 import CollectionDetailActions from '@/components/collections/collection-detail-actions'
 import { ITEMS_PER_PAGE } from '@/lib/constants'
 
@@ -23,12 +24,13 @@ export default async function CollectionDetailPage({ params, searchParams }: Col
   const { page: pageParam } = await searchParams
   const currentPage = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
-  const [collection, { items, totalCount }, itemTypes, { collections }, collectionOptions] = await Promise.all([
+  const [collection, { items, totalCount }, itemTypes, { collections }, collectionOptions, editorPreferences] = await Promise.all([
     getCollectionById(userId, id),
     getItemsByCollection(userId, id, currentPage, ITEMS_PER_PAGE),
     getItemTypesWithCounts(userId),
     getCollections(userId),
     getUserCollections(userId),
+    getEditorPreferences(userId),
   ])
 
   if (!collection) notFound()
@@ -37,7 +39,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Col
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>

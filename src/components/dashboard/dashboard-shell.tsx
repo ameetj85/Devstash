@@ -5,6 +5,8 @@ import TopBar from './top-bar'
 import Sidebar from './sidebar'
 import type { ItemTypeWithCount } from '@/lib/db/items'
 import type { CollectionWithMeta } from '@/lib/db/collections'
+import type { EditorPreferences } from '@/lib/editor-preferences'
+import { EditorPreferencesProvider } from '@/contexts/editor-preferences-context'
 
 interface DashboardUser {
   name?: string | null
@@ -17,30 +19,33 @@ interface DashboardShellProps {
   itemTypes: ItemTypeWithCount[]
   collections: CollectionWithMeta[]
   user: DashboardUser
+  editorPreferences: EditorPreferences
 }
 
-export default function DashboardShell({ children, itemTypes, collections, user }: DashboardShellProps) {
+export default function DashboardShell({ children, itemTypes, collections, user, editorPreferences }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      <TopBar
-        onMobileMenuToggle={() => setIsMobileOpen(true)}
-        collections={collections.map((c) => ({ id: c.id, name: c.name }))}
-      />
-      <div className="flex flex-1 overflow-hidden">
-        <Sidebar
-          isCollapsed={isCollapsed}
-          isMobileOpen={isMobileOpen}
-          onClose={() => setIsMobileOpen(false)}
-          onToggleCollapse={() => setIsCollapsed((v) => !v)}
-          itemTypes={itemTypes}
-          collections={collections}
-          user={user}
+    <EditorPreferencesProvider initialPreferences={editorPreferences}>
+      <div className="flex flex-col h-screen bg-background">
+        <TopBar
+          onMobileMenuToggle={() => setIsMobileOpen(true)}
+          collections={collections.map((c) => ({ id: c.id, name: c.name }))}
         />
-        {children}
+        <div className="flex flex-1 overflow-hidden">
+          <Sidebar
+            isCollapsed={isCollapsed}
+            isMobileOpen={isMobileOpen}
+            onClose={() => setIsMobileOpen(false)}
+            onToggleCollapse={() => setIsCollapsed((v) => !v)}
+            itemTypes={itemTypes}
+            collections={collections}
+            user={user}
+          />
+          {children}
+        </div>
       </div>
-    </div>
+    </EditorPreferencesProvider>
   )
 }

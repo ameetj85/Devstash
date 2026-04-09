@@ -6,6 +6,7 @@ import Pagination from '@/components/pagination'
 import { auth } from '@/auth'
 import { getItemsByType, getItemTypesWithCounts } from '@/lib/db/items'
 import { getCollections, getUserCollections } from '@/lib/db/collections'
+import { getEditorPreferences } from '@/lib/db/profile'
 import { ITEMS_PER_PAGE } from '@/lib/constants'
 
 interface ItemsPageProps {
@@ -25,11 +26,12 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
   const typeName = typeSlug.endsWith('s') ? typeSlug.slice(0, -1) : typeSlug
   const currentPage = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
-  const [{ items, itemType, totalCount }, itemTypes, { collections }, collectionOptions] = await Promise.all([
+  const [{ items, itemType, totalCount }, itemTypes, { collections }, collectionOptions, editorPreferences] = await Promise.all([
     getItemsByType(userId, typeName, currentPage, ITEMS_PER_PAGE),
     getItemTypesWithCounts(userId),
     getCollections(userId),
     getUserCollections(userId),
+    getEditorPreferences(userId),
   ])
 
   if (!itemType) notFound()
@@ -38,7 +40,7 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>

@@ -1,15 +1,20 @@
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
-import { getProfileData } from '@/lib/db/profile'
+import { getProfileData, getEditorPreferences } from '@/lib/db/profile'
 import ChangePasswordForm from '@/components/profile/change-password-form'
 import DeleteAccountDialog from '@/components/profile/delete-account-dialog'
+import EditorPreferencesForm from '@/components/settings/editor-preferences-form'
+import { EditorPreferencesProvider } from '@/contexts/editor-preferences-context'
 
 export default async function SettingsPage() {
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) redirect('/sign-in')
 
-  const profile = await getProfileData(userId)
+  const [profile, editorPreferences] = await Promise.all([
+    getProfileData(userId),
+    getEditorPreferences(userId),
+  ])
   if (!profile) redirect('/sign-in')
 
   return (
@@ -26,6 +31,19 @@ export default async function SettingsPage() {
           </a>
           <h1 className="text-2xl font-bold mt-4">Settings</h1>
         </div>
+
+        {/* Editor Preferences */}
+        <EditorPreferencesProvider initialPreferences={editorPreferences}>
+          <section className="rounded-lg border border-border bg-card p-6 space-y-4">
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+              Editor Preferences
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Customize the code editor appearance. Changes are saved automatically.
+            </p>
+            <EditorPreferencesForm />
+          </section>
+        </EditorPreferencesProvider>
 
         {/* Change Password */}
         {profile.hasPassword && (
