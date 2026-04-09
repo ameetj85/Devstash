@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Menu } from 'lucide-react'
+import { Search, Menu, Star } from 'lucide-react'
+import Link from 'next/link'
 import CreateItemDialog from '@/components/items/create-item-dialog'
 import CreateCollectionDialog from '@/components/collections/create-collection-dialog'
 import CommandPalette from '@/components/search/command-palette'
@@ -46,6 +47,13 @@ export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarP
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
 
       <div className="flex items-center gap-2 ml-auto">
+        <Link
+          href="/favorites"
+          className="p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          title="Favorites"
+        >
+          <Star className="w-4 h-4" />
+        </Link>
         <CreateCollectionDialog />
         <CreateItemDialog collections={collections} />
       </div>

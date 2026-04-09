@@ -1,10 +1,27 @@
-# Current Feature
+# Current Feature: Favorites Page
 
 ## Status
+In Progress
 
 ## Goals
+- Add star icon button to TopBar linking to /favorites
+- Create /favorites route with route protection
+- Fetch all user favorited items and collections from DB
+- Compact list view (VS Code/terminal style, not cards) — monospace font, minimal padding, high density
+- Each row: type icon, title, type badge, date added
+- Separate sections for items and collections with counts
+- Click item opens ItemDrawer, click collection navigates to /collections/[id]
+- Empty state when no favorites
+- Sort by most recently favorited (updatedAt)
+- Clean lines only — no cards or heavy borders, subtle hover states
 
 ## Notes
+- UI should feel like a dev tool: VS Code sidebar / terminal style
+- Monospace or semi-monospace font for the list
+- Minimal padding, high density layout
+- Items and collections need separate DB queries for favorites (isFavorite = true)
+- ItemDrawer integration needed for item clicks (reuse existing ItemsClientWrapper pattern)
+- Collection clicks navigate to /collections/[id]
 
 ## History
 

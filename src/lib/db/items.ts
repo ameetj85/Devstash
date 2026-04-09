@@ -431,6 +431,18 @@ export async function getSearchItems(userId: string): Promise<SearchItem[]> {
   }))
 }
 
+export async function getFavoriteItems(userId: string): Promise<ItemWithType[]> {
+  const items = await prisma.item.findMany({
+    where: { userId, isFavorite: true },
+    include: {
+      itemType: true,
+      tags: { include: { tag: true } },
+    },
+    orderBy: { updatedAt: 'desc' },
+  })
+  return items.map(mapItem)
+}
+
 export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWithCount[]> {
   const types = await prisma.itemType.findMany({
     where: { isSystem: true },
