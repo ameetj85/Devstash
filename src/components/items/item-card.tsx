@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import {
   Star,
+  Pin,
   Copy,
   Check,
 } from 'lucide-react'
@@ -51,9 +52,14 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-2">
             <p className="text-sm font-medium leading-snug truncate">{item.title}</p>
-            {item.isFavorite && (
-              <Star className="w-3.5 h-3.5 shrink-0 fill-yellow-400 text-yellow-400 mt-0.5" />
-            )}
+            <div className="flex items-center gap-1 shrink-0 mt-0.5">
+              {item.isPinned && (
+                <Pin className="w-3.5 h-3.5 fill-blue-500 text-blue-500" />
+              )}
+              {item.isFavorite && (
+                <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+              )}
+            </div>
           </div>
           {item.description && (
             <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{item.description}</p>

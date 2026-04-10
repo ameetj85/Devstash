@@ -185,7 +185,7 @@ export async function getItemsByCollection(
         itemType: true,
         tags: { include: { tag: true } },
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
       skip: (page - 1) * perPage,
       take: perPage,
     }),
@@ -217,7 +217,7 @@ export async function getItemsByType(
         itemType: true,
         tags: { include: { tag: true } },
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
       skip: (page - 1) * perPage,
       take: perPage,
     }),
@@ -404,6 +404,22 @@ export async function toggleItemFavorite(userId: string, itemId: string): Promis
     where: { id: itemId },
     data: { isFavorite: !item.isFavorite },
     select: { isFavorite: true },
+  })
+  return updated
+}
+
+/** Toggles isPinned on an item. Returns the new value or null if not found / not owned. */
+export async function toggleItemPin(userId: string, itemId: string): Promise<{ isPinned: boolean } | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { isPinned: true },
+  })
+  if (!item) return null
+
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: { isPinned: !item.isPinned },
+    select: { isPinned: true },
   })
   return updated
 }

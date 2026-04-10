@@ -68,7 +68,7 @@ describe('getItemsByCollection DB query', () => {
         itemType: true,
         tags: { include: { tag: true } },
       },
-      orderBy: { updatedAt: 'desc' },
+      orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
       skip: 0,
       take: 21,
     })

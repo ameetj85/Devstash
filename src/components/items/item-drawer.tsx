@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { updateItem, deleteItem, toggleItemFavorite } from '@/actions/items'
+import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from '@/actions/items'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -252,6 +252,20 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
       // Rollback
       setItem((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : prev)
       toast.error(result.error || 'Failed to update favorite')
+      return
+    }
+    router.refresh()
+  }
+
+  async function handlePin() {
+    if (!item) return
+    // Optimistic update
+    setItem((prev) => prev ? { ...prev, isPinned: !prev.isPinned } : prev)
+    const result = await toggleItemPin(item.id)
+    if (!result.success) {
+      // Rollback
+      setItem((prev) => prev ? { ...prev, isPinned: !prev.isPinned } : prev)
+      toast.error(result.error || 'Failed to update pin')
       return
     }
     router.refresh()
@@ -485,9 +499,17 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
                     />
                     Favorite
                   </Button>
-                  <Button variant="outline" size="sm" className="gap-1.5 text-xs">
-                    <Pin className="w-3.5 h-3.5" />
-                    Pin
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 text-xs"
+                    onClick={handlePin}
+                  >
+                    <Pin
+                      className="w-3.5 h-3.5"
+                      style={item.isPinned ? { fill: '#3b82f6', color: '#3b82f6' } : {}}
+                    />
+                    {item.isPinned ? 'Unpin' : 'Pin'}
                   </Button>
                   <Button
                     variant="outline"
