@@ -1,8 +1,10 @@
-# Current Feature
+# Current Feature: Homepage Mockup
 
 ## Status
+In Progress
 
 ## Goals
+
 
 ## Notes
 
@@ -52,3 +54,13 @@
 - 2026-04-10: Favorite Toggle — wired up existing favorite buttons across the app. Added `toggleItemFavorite` DB query (`src/lib/db/items.ts`) and `toggleCollectionFavorite` DB query (`src/lib/db/collections.ts`) — both read current `isFavorite`, flip it, and return the new value. Added matching server actions in `src/actions/items.ts` and `src/actions/collections.ts` with auth checks. Item drawer Favorite button now toggles `isFavorite` with optimistic UI (instant star fill/unfill, rollback on error). Collection card 3-dot menu Favorite item enabled — shows filled star when favorited, label toggles "Favorite"/"Unfavorite". Collection detail page (`CollectionDetailActions`) star button enabled with optimistic UI and filled star styling. All three locations call `router.refresh()` on success to update sidebar favorites, dashboard, and favorites page. 20 unit tests added across 4 test files (106 total passing).
 - 2026-04-10: Favorites Sorting — added client-side sorting to the favorites page with three sort options: Date (default, newest first), Name (alphabetical), and Type (grouped by item type name, then alphabetical within group). Sort controls rendered as pill-style toggle buttons with `ArrowUpDown` icon above the favorites lists. Sorting applies to both Items and Collections sections (collections sort by name when Type is selected since they have no single type). Extracted `sortItems`, `sortCollections`, `SortOption`, and `SORT_LABELS` to `src/lib/favorites-sort.ts` for testability. Component uses `useMemo` for sort performance. DevStash title in top bar now links to `/dashboard`. 11 unit tests added (117 total passing).
 - 2026-04-10: Pinned Items — wired up existing Pin button in ItemDrawer. Added `toggleItemPin` DB query (`src/lib/db/items.ts`) and matching server action (`src/actions/items.ts`) following the favorite toggle pattern. Pin button in ItemDrawer now toggles `isPinned` with optimistic UI (instant blue fill/unfill, rollback on error), label toggles "Pin"/"Unpin". Pinned items sort to top of item listings — `getItemsByType` and `getItemsByCollection` now use `orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }]`. `ItemCard` shows a filled blue pin icon next to the star for pinned items as a static indicator. Dashboard pinned section already powered by `getPinnedItems()`. 10 unit tests added (127 total passing).
+- 2026-04-10: Create a static marketing homepage for DevStash in `prototypes/homepage/` with `index.html`, `styles.css`, `script.js`
+Hero section with "chaos to order" concept: floating icons (left) → pulsing arrow (center) → dashboard preview (right)
+Chaos icons animate with requestAnimationFrame: drift, bounce off walls, repel from mouse cursor
+Fixed nav with logo, Features/Pricing links, Sign In/Get Started buttons
+Features grid: 6 cards (Code Snippets, AI Prompts, Instant Search, Commands, Files & Docs, Collections) with item type accent colors
+AI section: two columns with Pro badge, AI capabilities checklist, and code editor mockup with AI-generated tags demo
+Pricing section: Free vs Pro ($8/mo) with yearly toggle ($72/yr), Pro card highlighted
+CTA section and footer with link columns
+Scroll animations (fade in on scroll), navbar opacity on scroll
+Responsive: stack chaos/arrow/dashboard vertically on mobile, arrow rotates 90°, single-column grids
