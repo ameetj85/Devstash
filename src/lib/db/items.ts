@@ -392,6 +392,22 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
   }
 }
 
+/** Toggles isFavorite on an item. Returns the new value or null if not found / not owned. */
+export async function toggleItemFavorite(userId: string, itemId: string): Promise<{ isFavorite: boolean } | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { isFavorite: true },
+  })
+  if (!item) return null
+
+  const updated = await prisma.item.update({
+    where: { id: itemId },
+    data: { isFavorite: !item.isFavorite },
+    select: { isFavorite: true },
+  })
+  return updated
+}
+
 /** Returns the deleted item (with fileUrl) or null if not found / not owned. */
 export async function deleteItem(userId: string, itemId: string): Promise<{ fileUrl: string | null } | null> {
   const item = await prisma.item.findFirst({

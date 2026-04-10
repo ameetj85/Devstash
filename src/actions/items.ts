@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { auth } from '@/auth'
-import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createItem as createItemQuery } from '@/lib/db/items'
+import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createItem as createItemQuery, toggleItemFavorite as toggleItemFavoriteQuery } from '@/lib/db/items'
 import { deleteR2Object, keyFromUrl } from '@/lib/r2'
 
 const updateItemSchema = z.object({
@@ -134,4 +134,18 @@ export async function deleteItem(itemId: string) {
   }
 
   return { success: true as const }
+}
+
+export async function toggleItemFavorite(itemId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false as const, error: 'Unauthorized' }
+  }
+
+  const result = await toggleItemFavoriteQuery(session.user.id, itemId)
+  if (!result) {
+    return { success: false as const, error: 'Item not found or access denied' }
+  }
+
+  return { success: true as const, data: result }
 }

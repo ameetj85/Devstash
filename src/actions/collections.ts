@@ -6,6 +6,7 @@ import {
   createCollection as createCollectionQuery,
   updateCollection as updateCollectionQuery,
   deleteCollection as deleteCollectionQuery,
+  toggleCollectionFavorite as toggleCollectionFavoriteQuery,
 } from '@/lib/db/collections'
 
 const collectionSchema = z.object({
@@ -74,4 +75,18 @@ export async function deleteCollection(id: string) {
   } catch {
     return { success: false as const, error: 'Collection not found' }
   }
+}
+
+export async function toggleCollectionFavorite(collectionId: string) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false as const, error: 'Unauthorized' }
+  }
+
+  const result = await toggleCollectionFavoriteQuery(session.user.id, collectionId)
+  if (!result) {
+    return { success: false as const, error: 'Collection not found or access denied' }
+  }
+
+  return { success: true as const, data: result }
 }

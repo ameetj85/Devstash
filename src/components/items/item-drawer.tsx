@@ -25,7 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { updateItem, deleteItem } from '@/actions/items'
+import { updateItem, deleteItem, toggleItemFavorite } from '@/actions/items'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -240,6 +240,20 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
     })
     setIsEditing(false)
     toast.success('Item saved')
+    router.refresh()
+  }
+
+  async function handleFavorite() {
+    if (!item) return
+    // Optimistic update
+    setItem((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : prev)
+    const result = await toggleItemFavorite(item.id)
+    if (!result.success) {
+      // Rollback
+      setItem((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : prev)
+      toast.error(result.error || 'Failed to update favorite')
+      return
+    }
     router.refresh()
   }
 
@@ -463,6 +477,7 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
                     variant="outline"
                     size="sm"
                     className="gap-1.5 text-xs"
+                    onClick={handleFavorite}
                   >
                     <Star
                       className="w-3.5 h-3.5"
