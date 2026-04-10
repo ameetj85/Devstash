@@ -1,20 +1,10 @@
-# Current Feature: Pinned Items
+# Current Feature
 
 ## Status
-In Progress
 
 ## Goals
-- Create `toggleItemPin` DB query and server action (follow favorite toggle pattern)
-- Wire up Pin button in ItemDrawer with optimistic UI and toast notifications
-- Pinned items sort to top of item listings
-- Dashboard pinned items section reflects live data
-- Pin icon on ItemCard remains a static indicator (no click handler)
 
 ## Notes
-- Items only — no collection pinning
-- Follow the Favorite Button pattern for toggle logic, optimistic UI, and rollback
-- Pin button already exists in ItemDrawer but has no onClick handler
-- Dashboard already has a pinned items section powered by `getPinnedItems()` query
 
 
 ## History
@@ -61,3 +51,4 @@ In Progress
 - 2026-04-09: Favorites Page — added `/favorites` route with compact, dev-focused list view. Star icon button added to TopBar linking to `/favorites`. Route protected via `src/proxy.ts`. Created `getFavoriteItems()` query in `src/lib/db/items.ts` and `getFavoriteCollections()` query in `src/lib/db/collections.ts` (both filter `isFavorite: true`, sorted by `updatedAt desc`). Created `FavoritesList` client component (`src/components/favorites/favorites-list.tsx`) with monospace font, minimal padding, high-density rows — each row shows type-colored icon, title, type badge, and date. Separate Items and Collections sections with counts. Item clicks open `ItemDrawer`, collection clicks navigate to `/collections/[id]`. Empty state with star icon and helper text. Server page (`src/app/favorites/page.tsx`) fetches all data in parallel and wraps in `DashboardShell`.
 - 2026-04-10: Favorite Toggle — wired up existing favorite buttons across the app. Added `toggleItemFavorite` DB query (`src/lib/db/items.ts`) and `toggleCollectionFavorite` DB query (`src/lib/db/collections.ts`) — both read current `isFavorite`, flip it, and return the new value. Added matching server actions in `src/actions/items.ts` and `src/actions/collections.ts` with auth checks. Item drawer Favorite button now toggles `isFavorite` with optimistic UI (instant star fill/unfill, rollback on error). Collection card 3-dot menu Favorite item enabled — shows filled star when favorited, label toggles "Favorite"/"Unfavorite". Collection detail page (`CollectionDetailActions`) star button enabled with optimistic UI and filled star styling. All three locations call `router.refresh()` on success to update sidebar favorites, dashboard, and favorites page. 20 unit tests added across 4 test files (106 total passing).
 - 2026-04-10: Favorites Sorting — added client-side sorting to the favorites page with three sort options: Date (default, newest first), Name (alphabetical), and Type (grouped by item type name, then alphabetical within group). Sort controls rendered as pill-style toggle buttons with `ArrowUpDown` icon above the favorites lists. Sorting applies to both Items and Collections sections (collections sort by name when Type is selected since they have no single type). Extracted `sortItems`, `sortCollections`, `SortOption`, and `SORT_LABELS` to `src/lib/favorites-sort.ts` for testability. Component uses `useMemo` for sort performance. DevStash title in top bar now links to `/dashboard`. 11 unit tests added (117 total passing).
+- 2026-04-10: Pinned Items — wired up existing Pin button in ItemDrawer. Added `toggleItemPin` DB query (`src/lib/db/items.ts`) and matching server action (`src/actions/items.ts`) following the favorite toggle pattern. Pin button in ItemDrawer now toggles `isPinned` with optimistic UI (instant blue fill/unfill, rollback on error), label toggles "Pin"/"Unpin". Pinned items sort to top of item listings — `getItemsByType` and `getItemsByCollection` now use `orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }]`. `ItemCard` shows a filled blue pin icon next to the star for pinned items as a static indicator. Dashboard pinned section already powered by `getPinnedItems()`. 10 unit tests added (127 total passing).
