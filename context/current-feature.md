@@ -1,23 +1,10 @@
-# Current Feature: Favorite Toggle
+# Current Feature
 
 ## Status
-In Progress
 
 ## Goals
-- Wire up the existing Favorite button in the item drawer to toggle `isFavorite` on items via a server action
-- Wire up the existing disabled Favorite menu item in the collection card dropdown to toggle `isFavorite` on collections via a server action
-- Wire up the Favorite button in the collection detail page header (`CollectionDetailActions`) to toggle `isFavorite` on collections
-- Optimistic UI updates — star fills/unfills immediately on click without waiting for the server response
-- After toggling, `router.refresh()` so sidebar favorites, dashboard, and favorites page reflect the change
-- Unit tests for DB queries and server actions
 
 ## Notes
-- Item drawer already renders a Favorite button with star icon that reads `item.isFavorite` for styling — just needs an onClick handler
-- Collection card menu already renders a disabled "Favorite" menu item — needs to be enabled and wired up
-- Collection detail page (`CollectionDetailActions`) already has a star button — needs to be wired up
-- Both `Item` and `Collection` models already have `isFavorite` boolean fields in the schema
-- `/favorites` page and `getFavoriteItems`/`getFavoriteCollections` queries already exist — no changes needed there
-- Sidebar already shows favorite collections — will auto-update via `router.refresh()`
 
 ## History
 
