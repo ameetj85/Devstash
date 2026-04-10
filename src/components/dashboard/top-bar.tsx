@@ -26,12 +26,12 @@ export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarP
         <Menu className="w-5 h-5" />
       </button>
 
-      <div className="flex items-center gap-2 w-48 shrink-0">
+      <Link href="/dashboard" className="flex items-center gap-2 w-48 shrink-0">
         <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary text-primary-foreground text-sm font-bold">
           S
         </div>
         <span className="font-semibold text-sm">DevStash</span>
-      </div>
+      </Link>
 
       <button
         onClick={() => setPaletteOpen(true)}

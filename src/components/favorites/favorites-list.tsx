@@ -1,10 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Star, Folder } from 'lucide-react'
+import { Star, Folder, ArrowUpDown } from 'lucide-react'
 import { getItemIcon } from '@/lib/item-type-icons'
 import ItemDrawer from '@/components/items/item-drawer'
+import { sortItems, sortCollections, SORT_LABELS } from '@/lib/favorites-sort'
+import type { SortOption } from '@/lib/favorites-sort'
 import type { ItemWithType } from '@/lib/db/items'
 import type { FavoriteCollection } from '@/lib/db/collections'
 
@@ -25,6 +27,10 @@ export default function FavoritesList({ items, collections, allCollections }: Fa
   const router = useRouter()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [sort, setSort] = useState<SortOption>('date')
+
+  const sortedItems = useMemo(() => sortItems(items, sort), [items, sort])
+  const sortedCollections = useMemo(() => sortCollections(collections, sort), [collections, sort])
 
   function handleItemClick(id: string) {
     setSelectedId(id)
@@ -47,13 +53,32 @@ export default function FavoritesList({ items, collections, allCollections }: Fa
 
   return (
     <>
-      {items.length > 0 && (
+      <div className="flex items-center justify-end gap-2 mb-1">
+        <ArrowUpDown className="w-3.5 h-3.5 text-muted-foreground" />
+        <div className="flex gap-1">
+          {(Object.keys(SORT_LABELS) as SortOption[]).map((option) => (
+            <button
+              key={option}
+              onClick={() => setSort(option)}
+              className={`px-2 py-0.5 text-xs font-mono rounded transition-colors cursor-pointer ${
+                sort === option
+                  ? 'bg-muted text-foreground'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+              }`}
+            >
+              {SORT_LABELS[option]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {sortedItems.length > 0 && (
         <section>
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-            Items ({items.length})
+            Items ({sortedItems.length})
           </h2>
           <div className="border border-border rounded-md overflow-hidden">
-            {items.map((item, i) => {
+            {sortedItems.map((item, i) => {
               const Icon = getItemIcon(item.itemType.icon)
               return (
                 <button
@@ -89,13 +114,13 @@ export default function FavoritesList({ items, collections, allCollections }: Fa
         </section>
       )}
 
-      {collections.length > 0 && (
+      {sortedCollections.length > 0 && (
         <section>
           <h2 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2">
-            Collections ({collections.length})
+            Collections ({sortedCollections.length})
           </h2>
           <div className="border border-border rounded-md overflow-hidden">
-            {collections.map((col, i) => (
+            {sortedCollections.map((col, i) => (
               <button
                 key={col.id}
                 onClick={() => router.push(`/collections/${col.id}`)}
