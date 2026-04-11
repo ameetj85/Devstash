@@ -1,12 +1,27 @@
-# Current Feature: Homepage Mockup
+# Current Feature: Homepage
 
 ## Status
 In Progress
 
 ## Goals
+- Convert the static HTML/CSS/JS mockup in `prototypes/homepage/` (branch `feature/homepage-mockup`) into the real Next.js homepage at `src/app/page.tsx`
+- Replace the current placeholder `<h1>Devstash</h1>`
+- 7 sections: Navbar, Hero (with chaos-to-order animation), Features (6 cards), AI Section, Pricing (monthly/yearly toggle), Bottom CTA, Footer
+- Server components for static sections; client components for Navbar (scroll), ChaosVisual (rAF animation), PricingSection (toggle)
+- All Tailwind styling, dark theme, responsive (mobile/tablet/desktop)
+- Smooth scroll for anchor links, `next/link` for internal routes
+- Publicly accessible (not behind auth)
 
 
 ## Notes
+- Reference prototype: `prototypes/homepage/` on `feature/homepage-mockup` branch
+- Use existing shadcn `Button` component for all buttons
+- Chaos animation: 8 floating icon boxes with random velocity, wall bounce, mouse repel using `requestAnimationFrame`
+- Scroll fade-in via `IntersectionObserver` with staggered delays on feature cards
+- Navbar goes transparent → opaque on scroll (scrollY > 50)
+- Pricing: yearly $6/mo, monthly $8/mo; Free/Pro cards; Pro highlighted with "Most Popular"
+- Item type colors from project spec for feature card icons
+- No new dependencies needed — Lucide icons already installed
 
 
 ## History

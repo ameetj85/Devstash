@@ -124,6 +124,7 @@
     }
   html {
     @apply font-sans;
+    scroll-behavior: smooth;
     }
 }
 
@@ -251,3 +252,16 @@
 
 .markdown-preview strong { color: #e8e8e8; font-weight: 600; }
 .markdown-preview em { font-style: italic; }
+
+/* ─── Homepage Scroll Fade-In ──────────────────────────────────────────────── */
+
+.homepage-fade-in {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.homepage-fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
