@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Menu, Star, Plus, FolderPlus, FilePlus } from 'lucide-react'
+import { Search, Menu, Star, Plus, FolderPlus, FilePlus, FileCode2 } from 'lucide-react'
 import Link from 'next/link'
 import CreateItemDialog from '@/components/items/create-item-dialog'
 import CreateCollectionDialog from '@/components/collections/create-collection-dialog'
@@ -36,9 +36,7 @@ export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarP
 
       {/* Logo — icon always visible, text hidden on mobile */}
       <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-        <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary text-primary-foreground text-sm font-bold">
-          S
-        </div>
+        <FileCode2 className="size-7 text-primary" />
         <span className="hidden sm:inline font-semibold text-sm">DevStash</span>
       </Link>
 

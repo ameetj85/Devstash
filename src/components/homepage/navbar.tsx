@@ -23,19 +23,19 @@ export function Navbar() {
           : 'border-b border-transparent bg-[#0a0a0f]/60'
       }`}
     >
-      <a href="#" className="flex items-center gap-2 text-xl font-bold text-[#f0f0f5]">
+      <a href="/" className="flex items-center gap-2 text-xl font-bold text-[#f0f0f5]">
         <FileCode2 className="size-7" />
         DevStash
       </a>
 
       <ul className="hidden items-center gap-8 md:flex">
         <li>
-          <a href="#features" className="text-sm text-[#8888a0] transition-colors hover:text-[#f0f0f5]">
+          <a href="/#features" className="text-sm text-[#8888a0] transition-colors hover:text-[#f0f0f5]">
             Features
           </a>
         </li>
         <li>
-          <a href="#pricing" className="text-sm text-[#8888a0] transition-colors hover:text-[#f0f0f5]">
+          <a href="/#pricing" className="text-sm text-[#8888a0] transition-colors hover:text-[#f0f0f5]">
             Pricing
           </a>
         </li>
