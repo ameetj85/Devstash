@@ -46,6 +46,7 @@ export async function POST(request: NextRequest) {
     customer: stripeCustomerId,
     mode: 'subscription',
     line_items: [{ price: stripePlan.priceId, quantity: 1 }],
+    metadata: { userId: session.user.id },
     success_url: `${request.nextUrl.origin}/settings?checkout=success`,
     cancel_url: `${request.nextUrl.origin}/settings?checkout=cancelled`,
   })

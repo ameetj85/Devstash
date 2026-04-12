@@ -5,24 +5,35 @@ import { getProfileData, getEditorPreferences } from '@/lib/db/profile'
 import ChangePasswordForm from '@/components/profile/change-password-form'
 import DeleteAccountDialog from '@/components/profile/delete-account-dialog'
 import EditorPreferencesForm from '@/components/settings/editor-preferences-form'
+import SubscriptionSection from '@/components/settings/subscription-section'
+import CheckoutSuccessToast from '@/components/settings/checkout-success-toast'
 import { EditorPreferencesProvider } from '@/contexts/editor-preferences-context'
 
 export const metadata: Metadata = { title: 'Settings' }
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ checkout?: string }>
+}) {
   const session = await auth()
   const userId = session?.user?.id
   if (!userId) redirect('/sign-in')
 
-  const [profile, editorPreferences] = await Promise.all([
+  const [profile, editorPreferences, params] = await Promise.all([
     getProfileData(userId),
     getEditorPreferences(userId),
+    searchParams,
   ])
   if (!profile) redirect('/sign-in')
+
+  const checkoutSuccess = params.checkout === 'success'
 
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-12 space-y-10">
+
+        {checkoutSuccess && <CheckoutSuccessToast />}
 
         {/* Header */}
         <div>
@@ -34,6 +45,14 @@ export default async function SettingsPage() {
           </a>
           <h1 className="text-2xl font-bold mt-4">Settings</h1>
         </div>
+
+        {/* Subscription */}
+        <SubscriptionSection
+          isPro={profile.isPro}
+          hasSubscription={!!profile.stripeSubscriptionId}
+          totalItems={profile.totalItems}
+          totalCollections={profile.totalCollections}
+        />
 
         {/* Editor Preferences */}
         <EditorPreferencesProvider initialPreferences={editorPreferences}>

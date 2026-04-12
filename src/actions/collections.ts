@@ -8,6 +8,8 @@ import {
   deleteCollection as deleteCollectionQuery,
   toggleCollectionFavorite as toggleCollectionFavoriteQuery,
 } from '@/lib/db/collections'
+import { canCreateCollection } from '@/lib/subscription'
+import { FREE_LIMITS } from '@/lib/stripe-config'
 
 const collectionSchema = z.object({
   name: z.string().trim().min(1, 'Name is required').max(255),
@@ -30,6 +32,12 @@ export async function createCollection(data: CreateCollectionInput) {
   }
 
   const { name, description } = parsed.data
+
+  const isPro = session.user.isPro ?? false
+  const allowed = await canCreateCollection(session.user.id, isPro)
+  if (!allowed) {
+    return { success: false as const, error: `You've reached the free limit of ${FREE_LIMITS.collections} collections. Upgrade to Pro for unlimited collections.` }
+  }
 
   const created = await createCollectionQuery(session.user.id, {
     name,

@@ -4,6 +4,8 @@ import { z } from 'zod'
 import { auth } from '@/auth'
 import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createItem as createItemQuery, toggleItemFavorite as toggleItemFavoriteQuery, toggleItemPin as toggleItemPinQuery } from '@/lib/db/items'
 import { deleteR2Object, keyFromUrl } from '@/lib/r2'
+import { canCreateItem, canUseFileUpload } from '@/lib/subscription'
+import { FREE_LIMITS } from '@/lib/stripe-config'
 
 const updateItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(500),
@@ -84,6 +86,17 @@ export async function createItem(data: CreateItemInput) {
   }
 
   const { title, typeName, description, content, url, language, tags, fileUrl, fileName, fileSize, collectionIds } = parsed.data
+
+  const isPro = session.user.isPro ?? false
+
+  if ((typeName === 'file' || typeName === 'image') && !canUseFileUpload(isPro)) {
+    return { success: false as const, error: 'File and image types require a Pro subscription. Upgrade to Pro in Settings.' }
+  }
+
+  const allowed = await canCreateItem(session.user.id, isPro)
+  if (!allowed) {
+    return { success: false as const, error: `You've reached the free limit of ${FREE_LIMITS.items} items. Upgrade to Pro for unlimited items.` }
+  }
 
   const created = await createItemQuery(session.user.id, {
     title,

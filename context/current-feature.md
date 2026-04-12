@@ -1,11 +1,24 @@
-# Current Feature
+# Current Feature: Stripe Integration Phase 2
 
 ## Status
+In Progress
 
 ## Goals
-
+- Webhook handler (`POST /api/stripe/webhook`) that verifies Stripe signatures and handles `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events
+- Feature gating in server actions: free-tier item limit (50), collection limit (3), file/image type Pro-only gate, file upload Pro-only gate
+- Settings page subscription UI: Pro users see "Manage Subscription" (Stripe Portal), free users see monthly/yearly upgrade buttons (Stripe Checkout)
+- Profile page usage limits display (e.g., "12 / 50 items" for free, "Unlimited" for Pro)
+- Checkout success toast on redirect back to settings
+- Homepage pricing buttons link to `/settings` for logged-in users
+- Upgrade prompts in error toasts when free users hit limits
 
 ## Notes
+- Webhook route must read raw request body (not parsed JSON) for signature verification
+- `updateMany` used for customer-based lookups for idempotency/webhook replay safety
+- JWT callback from Phase 1 picks up `isPro` changes on next session validation — page reload sufficient
+- Stripe CLI required for local webhook testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
+- New files: `src/app/api/stripe/webhook/route.ts`, `src/components/settings/subscription-section.tsx`
+- Modified files: `src/actions/items.ts`, `src/actions/collections.ts`, `src/app/api/upload/route.ts`, `src/app/settings/page.tsx`, `src/lib/db/profile.ts`, `src/app/profile/page.tsx`, `src/components/homepage/pricing-section.tsx`
 
 
 

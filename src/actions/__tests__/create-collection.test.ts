@@ -9,6 +9,10 @@ vi.mock('@/lib/db/collections', () => ({
   getCollections: vi.fn(),
 }))
 
+vi.mock('@/lib/subscription', () => ({
+  canCreateCollection: vi.fn().mockResolvedValue(true),
+}))
+
 import { auth } from '@/auth'
 import { createCollection as createCollectionQuery } from '@/lib/db/collections'
 import { createCollection } from '@/actions/collections'
@@ -53,7 +57,7 @@ describe('createCollection server action', () => {
   })
 
   it('returns validation error when name is empty', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
 
     const result = await createCollection({ name: '  ', description: null })
 
@@ -63,7 +67,7 @@ describe('createCollection server action', () => {
   })
 
   it('returns validation error when name exceeds max length', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
 
     const result = await createCollection({ name: 'a'.repeat(256), description: null })
 
@@ -72,7 +76,7 @@ describe('createCollection server action', () => {
   })
 
   it('returns success with the created collection', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
     mockCreateCollectionQuery.mockResolvedValue(fakeCreated)
 
     const result = await createCollection(validInput)
@@ -85,7 +89,7 @@ describe('createCollection server action', () => {
   })
 
   it('creates collection without description', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
     mockCreateCollectionQuery.mockResolvedValue({ ...fakeCreated, description: null })
 
     const result = await createCollection({ name: 'No Desc' })

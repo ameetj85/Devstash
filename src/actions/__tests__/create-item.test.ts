@@ -10,6 +10,11 @@ vi.mock('@/lib/db/items', () => ({
   deleteItem: vi.fn(),
 }))
 
+vi.mock('@/lib/subscription', () => ({
+  canCreateItem: vi.fn().mockResolvedValue(true),
+  canUseFileUpload: vi.fn().mockReturnValue(true),
+}))
+
 import { auth } from '@/auth'
 import { createItem as createItemQuery } from '@/lib/db/items'
 import { createItem } from '@/actions/items'
@@ -69,7 +74,7 @@ describe('createItem server action', () => {
   })
 
   it('returns validation error when title is empty', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
 
     const result = await createItem({ ...validInput, title: '  ' })
 
@@ -79,7 +84,7 @@ describe('createItem server action', () => {
   })
 
   it('returns validation error when link type has no URL', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
 
     const result = await createItem({
       ...validInput,
@@ -92,7 +97,7 @@ describe('createItem server action', () => {
   })
 
   it('returns error when item type is not found in DB', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
     mockCreateItemQuery.mockResolvedValue(null)
 
     const result = await createItem(validInput)
@@ -101,7 +106,7 @@ describe('createItem server action', () => {
   })
 
   it('returns success with created item', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
     mockCreateItemQuery.mockResolvedValue(fakeItem)
 
     const result = await createItem(validInput)
@@ -115,7 +120,7 @@ describe('createItem server action', () => {
   })
 
   it('returns validation error when file type has no fileUrl', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
 
     const result = await createItem({
       ...validInput,
@@ -130,7 +135,7 @@ describe('createItem server action', () => {
   })
 
   it('returns validation error when image type has no fileUrl', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
 
     const result = await createItem({
       ...validInput,
@@ -145,7 +150,7 @@ describe('createItem server action', () => {
   })
 
   it('passes valid file item through successfully', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
     mockCreateItemQuery.mockResolvedValue({ ...fakeItem, typeName: 'file' } as never)
 
     const result = await createItem({
@@ -165,7 +170,7 @@ describe('createItem server action', () => {
   })
 
   it('passes valid link item through successfully', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1' } } as never)
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
     mockCreateItemQuery.mockResolvedValue({ ...fakeItem, typeName: 'link' } as never)
 
     const result = await createItem({
