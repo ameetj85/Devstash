@@ -3,6 +3,7 @@ import { notFound, redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import ItemsClientWrapper from '@/components/items/items-client-wrapper'
 import CreateItemDialog from '@/components/items/create-item-dialog'
+import ProUpgradeGate from '@/components/pro-upgrade-gate'
 import Pagination from '@/components/pagination'
 import { auth } from '@/auth'
 import { getItemsByType, getItemTypesWithCounts, hasFavorites as checkHasFavorites } from '@/lib/db/items'
@@ -32,6 +33,26 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
   const { page: pageParam } = await searchParams
   // sidebar links as `${name}s` — strip the trailing 's' to get the DB name
   const typeName = typeSlug.endsWith('s') ? typeSlug.slice(0, -1) : typeSlug
+  const isPro = session.user?.isPro ?? false
+
+  // Pro-only types: show upgrade gate for free users
+  const proOnlyTypes = ['file', 'image']
+  if (proOnlyTypes.includes(typeName) && !isPro) {
+    const [itemTypes, { collections }, editorPreferences, userHasFavorites] = await Promise.all([
+      getItemTypesWithCounts(userId),
+      getCollections(userId),
+      getEditorPreferences(userId),
+      checkHasFavorites(userId),
+    ])
+    const user = session.user ?? {}
+
+    return (
+      <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites}>
+        <ProUpgradeGate typeName={typeName} />
+      </DashboardShell>
+    )
+  }
+
   const currentPage = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
   const [{ items, itemType, totalCount }, itemTypes, { collections }, collectionOptions, editorPreferences, userHasFavorites] = await Promise.all([

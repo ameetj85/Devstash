@@ -36,7 +36,20 @@ async function main() {
   await prisma.verificationToken.deleteMany({ where: { identifier: { in: users.map((u) => u.email!).filter(Boolean) } } })
   await prisma.user.deleteMany({ where: { id: { in: userIds } } })
 
-  console.log('Done.')
+  console.log('Non-demo users deleted.')
+
+  // Clean demo user's data so seed can recreate it fresh
+  const demoUser = await prisma.user.findUnique({ where: { email: KEEP_EMAIL }, select: { id: true } })
+  if (demoUser) {
+    console.log('Cleaning demo user data...')
+    await prisma.itemTag.deleteMany({ where: { item: { userId: demoUser.id } } })
+    await prisma.itemCollection.deleteMany({ where: { item: { userId: demoUser.id } } })
+    await prisma.item.deleteMany({ where: { userId: demoUser.id } })
+    await prisma.collection.deleteMany({ where: { userId: demoUser.id } })
+    console.log('Demo user data cleaned.')
+  }
+
+  console.log('Done. Run `npx prisma db seed` to re-seed demo data.')
 }
 
 main()
