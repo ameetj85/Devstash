@@ -17,9 +17,17 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { createCollection } from '@/actions/collections'
 
-export default function CreateCollectionDialog() {
+interface CreateCollectionDialogProps {
+  externalOpen?: boolean
+  onExternalOpenChange?: (open: boolean) => void
+}
+
+export default function CreateCollectionDialog({ externalOpen, onExternalOpenChange }: CreateCollectionDialogProps = {}) {
   const router = useRouter()
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = externalOpen !== undefined
+  const open = isControlled ? externalOpen : internalOpen
+  const setOpen = isControlled ? (v: boolean) => onExternalOpenChange?.(v) : setInternalOpen
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
   const [saving, setSaving] = useState(false)
@@ -63,15 +71,17 @@ export default function CreateCollectionDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button
-        variant="outline"
-        size="sm"
-        className="gap-1.5 hidden sm:flex"
-        onClick={() => setOpen(true)}
-      >
-        <FolderPlus className="w-4 h-4" />
-        New Collection
-      </Button>
+      {!isControlled && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-1.5 hidden sm:flex"
+          onClick={() => setOpen(true)}
+        >
+          <FolderPlus className="w-4 h-4" />
+          New Collection
+        </Button>
+      )}
 
       <DialogContent className="sm:max-w-md">
         <DialogHeader>

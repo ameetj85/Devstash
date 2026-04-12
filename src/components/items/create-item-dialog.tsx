@@ -61,15 +61,20 @@ import { CONTENT_TYPES, LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib
 interface CreateItemDialogProps {
   defaultType?: string
   collections?: { id: string; name: string }[]
+  externalOpen?: boolean
+  onExternalOpenChange?: (open: boolean) => void
 }
 
-export default function CreateItemDialog({ defaultType, collections = [] }: CreateItemDialogProps) {
+export default function CreateItemDialog({ defaultType, collections = [], externalOpen, onExternalOpenChange }: CreateItemDialogProps) {
   const router = useRouter()
   const initialType: ItemType =
     defaultType && (ITEM_TYPES as readonly string[]).includes(defaultType)
       ? (defaultType as ItemType)
       : 'snippet'
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const isControlled = externalOpen !== undefined
+  const open = isControlled ? externalOpen : internalOpen
+  const setOpen = isControlled ? (v: boolean) => onExternalOpenChange?.(v) : setInternalOpen
   const [selectedType, setSelectedType] = useState<ItemType>(initialType)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [selectedCollections, setSelectedCollections] = useState<string[]>([])
@@ -156,14 +161,16 @@ export default function CreateItemDialog({ defaultType, collections = [] }: Crea
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button
-        size="sm"
-        className="gap-1.5"
-        onClick={() => setOpen(true)}
-      >
-        <Plus className="w-4 h-4" />
-        <span className="hidden sm:inline">New Item</span>
-      </Button>
+      {!isControlled && (
+        <Button
+          size="sm"
+          className="gap-1.5"
+          onClick={() => setOpen(true)}
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">New Item</span>
+        </Button>
+      )}
 
       <DialogContent className="sm:max-w-lg overflow-y-auto max-h-[90dvh]">
         <DialogHeader>

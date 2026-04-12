@@ -1,11 +1,20 @@
 # Current Feature
 
 ## Status
+In Progress
 
 ## Goals
+Make the dashboard top bar responsive on small screens (< 768px). Currently it crams 6 elements into a single row — hamburger, logo+text, search bar, star, "New Collection", and "New Item" — and at 375px and below, elements overflow or get cut off.
 
+Changes:
+1. Hide logo text on mobile, show only the "S" icon (remove fixed `w-48` width)
+2. Collapse search bar to a search icon button on mobile — tapping opens the Command Palette
+3. Merge "New Collection" and "New Item" into a single "+" dropdown menu on mobile
 
 ## Notes
+- Only modifies `src/components/dashboard/top-bar.tsx`
+- No new dependencies needed — uses existing shadcn DropdownMenu
+- Desktop layout unchanged
 
 
 ## History
