@@ -1,24 +1,11 @@
-# Current Feature: Stripe Integration Phase 2
+# Current Feature
 
 ## Status
-In Progress
 
 ## Goals
-- Webhook handler (`POST /api/stripe/webhook`) that verifies Stripe signatures and handles `checkout.session.completed`, `customer.subscription.updated`, and `customer.subscription.deleted` events
-- Feature gating in server actions: free-tier item limit (50), collection limit (3), file/image type Pro-only gate, file upload Pro-only gate
-- Settings page subscription UI: Pro users see "Manage Subscription" (Stripe Portal), free users see monthly/yearly upgrade buttons (Stripe Checkout)
-- Profile page usage limits display (e.g., "12 / 50 items" for free, "Unlimited" for Pro)
-- Checkout success toast on redirect back to settings
-- Homepage pricing buttons link to `/settings` for logged-in users
-- Upgrade prompts in error toasts when free users hit limits
+
 
 ## Notes
-- Webhook route must read raw request body (not parsed JSON) for signature verification
-- `updateMany` used for customer-based lookups for idempotency/webhook replay safety
-- JWT callback from Phase 1 picks up `isPro` changes on next session validation — page reload sufficient
-- Stripe CLI required for local webhook testing: `stripe listen --forward-to localhost:3000/api/stripe/webhook`
-- New files: `src/app/api/stripe/webhook/route.ts`, `src/components/settings/subscription-section.tsx`
-- Modified files: `src/actions/items.ts`, `src/actions/collections.ts`, `src/app/api/upload/route.ts`, `src/app/settings/page.tsx`, `src/lib/db/profile.ts`, `src/app/profile/page.tsx`, `src/components/homepage/pricing-section.tsx`
 
 
 
@@ -73,3 +60,4 @@ In Progress
 - 2026-04-12: Auth Pages Navbar & Dashboard Logo — added the homepage `Navbar` component to `/sign-in` and `/register` pages with `pt-20` padding for fixed nav offset. Replaced dashboard top bar logo (blue "S" box) with `FileCode2` Lucide icon matching the homepage branding. Updated navbar anchor links from `#features`/`#pricing` to `/#features`/`/#pricing` so they work from any page, and logo link from `#` to `/`.
 - 2026-04-12: Search Bar Centering & Favorites Star Indicator — restructured dashboard top bar into 3-section flex layout (left `flex-1`, center, right `flex-1 justify-end`) to center the search bar. Added `hasFavorites` DB query to `src/lib/db/items.ts` (checks both items and collections via `findFirst`). Threaded `hasFavorites` boolean through all 5 `DashboardShell` pages → `TopBar`. Favorites star now turns yellow with fill when user has any favorites, stays muted otherwise.
 - 2026-04-12: Stripe Integration Phase 1 — installed `stripe` package. Created Stripe client singleton (`src/lib/stripe.ts`) and plan/limit constants (`src/lib/stripe-config.ts`) with `STRIPE_PLANS` (monthly $8/yearly $72) and `FREE_LIMITS` (50 items, 3 collections). Exposed `isPro` on NextAuth session via `jwt` callback that queries DB on every token refresh (`src/auth.ts`), added `isPro: boolean` to Session type (`src/types/next-auth.d.ts`). Created `POST /api/stripe/checkout` route — auth-protected, accepts `{ plan: 'monthly' | 'yearly' }`, creates/reuses Stripe customer, creates Checkout session with success/cancel URLs to `/settings`. Created `POST /api/stripe/portal` route — auth-protected, creates Billing Portal session for existing Stripe customers. Created subscription gating utility (`src/lib/subscription.ts`) with `canCreateItem(userId, isPro)`, `canCreateCollection(userId, isPro)`, and `canUseFileUpload(isPro)`. Added `.env.example` to git (unignored via `.gitignore`). 8 unit tests added for gating functions (135 total passing).
+- 2026-04-12: Stripe Integration Phase 2 — created `POST /api/stripe/webhook` route with signature verification handling `checkout.session.completed` (sets `isPro`, saves Stripe IDs), `customer.subscription.updated` (toggles `isPro` based on status), and `customer.subscription.deleted` (clears Pro + subscription ID). Uses `updateMany` for idempotent webhook replays. Added `metadata.userId` to checkout session creation. Feature gating enforced in server actions: `createItem` blocks file/image types for non-Pro and enforces 50-item free limit, `createCollection` enforces 3-collection free limit, `POST /api/upload` returns 403 for non-Pro users. Created `SubscriptionSection` component (`src/components/settings/subscription-section.tsx`) — Pro users see crown icon with "Manage Subscription" (Stripe Portal), free users see usage counts (items/collections out of limits) and monthly/yearly upgrade buttons (Stripe Checkout) with loading states. Wired into settings page above Editor Preferences with `CheckoutSuccessToast` on `?checkout=success` redirect. Updated `ProfileData` to include `isPro` and `stripeSubscriptionId`. Profile page shows "X / 50 items" and "X / 3 collections" for free users, plain counts with "Unlimited" label for Pro. Homepage pricing buttons link to `/settings` for logged-in users, `/register` for anonymous. Updated `create-item` and `create-collection` test mocks with `isPro: true` and subscription module mocks (135 total passing).
