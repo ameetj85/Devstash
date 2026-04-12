@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import ItemsClientWrapper from '@/components/items/items-client-wrapper'
@@ -12,6 +13,15 @@ import { ITEMS_PER_PAGE } from '@/lib/constants'
 interface CollectionDetailPageProps {
   params: Promise<{ id: string }>
   searchParams: Promise<{ page?: string }>
+}
+
+export async function generateMetadata({ params }: CollectionDetailPageProps): Promise<Metadata> {
+  const session = await auth()
+  const userId = session?.user?.id
+  if (!userId) return { title: 'Collection' }
+  const { id } = await params
+  const collection = await getCollectionById(userId, id)
+  return { title: collection?.name ?? 'Collection' }
 }
 
 export default async function CollectionDetailPage({ params, searchParams }: CollectionDetailPageProps) {

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import MainContent from '@/components/dashboard/main-content'
@@ -6,6 +7,8 @@ import { getCollections } from '@/lib/db/collections'
 import { getPinnedItems, getRecentItems, getItemStats, getItemTypesWithCounts } from '@/lib/db/items'
 import { getEditorPreferences } from '@/lib/db/profile'
 import { DASHBOARD_COLLECTIONS_LIMIT, DASHBOARD_RECENT_ITEMS_LIMIT } from '@/lib/constants'
+
+export const metadata: Metadata = { title: 'Dashboard' }
 
 export default async function DashboardPage() {
   const session = await auth()

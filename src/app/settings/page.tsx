@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getProfileData, getEditorPreferences } from '@/lib/db/profile'
@@ -5,6 +6,8 @@ import ChangePasswordForm from '@/components/profile/change-password-form'
 import DeleteAccountDialog from '@/components/profile/delete-account-dialog'
 import EditorPreferencesForm from '@/components/settings/editor-preferences-form'
 import { EditorPreferencesProvider } from '@/contexts/editor-preferences-context'
+
+export const metadata: Metadata = { title: 'Settings' }
 
 export default async function SettingsPage() {
   const session = await auth()

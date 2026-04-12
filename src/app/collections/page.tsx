@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import CreateCollectionDialog from '@/components/collections/create-collection-dialog'
@@ -8,6 +9,8 @@ import { getCollections } from '@/lib/db/collections'
 import { getItemTypesWithCounts } from '@/lib/db/items'
 import { getEditorPreferences } from '@/lib/db/profile'
 import { COLLECTIONS_PER_PAGE } from '@/lib/constants'
+
+export const metadata: Metadata = { title: 'Collections' }
 
 interface CollectionsPageProps {
   searchParams: Promise<{ page?: string }>

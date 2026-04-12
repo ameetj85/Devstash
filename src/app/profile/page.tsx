@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 import { getProfileData } from '@/lib/db/profile'
 import UserAvatar from '@/components/user-avatar'
 import { Layers, Folders } from 'lucide-react'
+
+export const metadata: Metadata = { title: 'Profile' }
 
 function formatDate(date: Date) {
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { Star } from 'lucide-react'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
@@ -6,6 +7,8 @@ import { auth } from '@/auth'
 import { getFavoriteItems, getItemTypesWithCounts } from '@/lib/db/items'
 import { getCollections, getFavoriteCollections, getUserCollections } from '@/lib/db/collections'
 import { getEditorPreferences } from '@/lib/db/profile'
+
+export const metadata: Metadata = { title: 'Favorites' }
 
 export default async function FavoritesPage() {
   const session = await auth()

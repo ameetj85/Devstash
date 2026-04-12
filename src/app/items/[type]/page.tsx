@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import ItemsClientWrapper from '@/components/items/items-client-wrapper'
@@ -12,6 +13,13 @@ import { ITEMS_PER_PAGE } from '@/lib/constants'
 interface ItemsPageProps {
   params: Promise<{ type: string }>
   searchParams: Promise<{ page?: string }>
+}
+
+export async function generateMetadata({ params }: ItemsPageProps): Promise<Metadata> {
+  const { type: typeSlug } = await params
+  const typeName = typeSlug.endsWith('s') ? typeSlug.slice(0, -1) : typeSlug
+  const label = typeName.charAt(0).toUpperCase() + typeName.slice(1) + 's'
+  return { title: label }
 }
 
 export default async function ItemsPage({ params, searchParams }: ItemsPageProps) {
