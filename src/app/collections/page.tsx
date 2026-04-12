@@ -6,7 +6,7 @@ import CollectionCard from '@/components/collections/collection-card'
 import Pagination from '@/components/pagination'
 import { auth } from '@/auth'
 import { getCollections } from '@/lib/db/collections'
-import { getItemTypesWithCounts } from '@/lib/db/items'
+import { getItemTypesWithCounts, hasFavorites as checkHasFavorites } from '@/lib/db/items'
 import { getEditorPreferences } from '@/lib/db/profile'
 import { COLLECTIONS_PER_PAGE } from '@/lib/constants'
 
@@ -25,17 +25,18 @@ export default async function CollectionsPage({ searchParams }: CollectionsPageP
   const { page: pageParam } = await searchParams
   const currentPage = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
-  const [{ collections, totalCount }, itemTypes, editorPreferences] = await Promise.all([
+  const [{ collections, totalCount }, itemTypes, editorPreferences, userHasFavorites] = await Promise.all([
     getCollections(userId, { page: currentPage, perPage: COLLECTIONS_PER_PAGE }),
     getItemTypesWithCounts(userId),
     getEditorPreferences(userId),
+    checkHasFavorites(userId),
   ])
 
   const totalPages = Math.ceil(totalCount / COLLECTIONS_PER_PAGE)
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>

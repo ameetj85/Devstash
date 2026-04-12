@@ -20,9 +20,10 @@ interface DashboardShellProps {
   collections: CollectionWithMeta[]
   user: DashboardUser
   editorPreferences: EditorPreferences
+  hasFavorites?: boolean
 }
 
-export default function DashboardShell({ children, itemTypes, collections, user, editorPreferences }: DashboardShellProps) {
+export default function DashboardShell({ children, itemTypes, collections, user, editorPreferences, hasFavorites = false }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -32,6 +33,7 @@ export default function DashboardShell({ children, itemTypes, collections, user,
         <TopBar
           onMobileMenuToggle={() => setIsMobileOpen(true)}
           collections={collections.map((c) => ({ id: c.id, name: c.name }))}
+          hasFavorites={hasFavorites}
         />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar

@@ -152,6 +152,14 @@ export async function getItemStats(userId: string): Promise<ItemStats> {
   return { totalItems, favoriteItems }
 }
 
+export async function hasFavorites(userId: string): Promise<boolean> {
+  const [favItem, favCollection] = await Promise.all([
+    prisma.item.findFirst({ where: { userId, isFavorite: true }, select: { id: true } }),
+    prisma.collection.findFirst({ where: { userId, isFavorite: true }, select: { id: true } }),
+  ])
+  return favItem !== null || favCollection !== null
+}
+
 export type ItemTypeWithCount = {
   id: string
   name: string

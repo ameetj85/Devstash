@@ -16,59 +16,64 @@ import {
 interface TopBarProps {
   onMobileMenuToggle?: () => void
   collections?: { id: string; name: string }[]
+  hasFavorites?: boolean
 }
 
-export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarProps) {
+export default function TopBar({ onMobileMenuToggle, collections = [], hasFavorites = false }: TopBarProps) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [createItemOpen, setCreateItemOpen] = useState(false)
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
 
   return (
-    <header className="flex items-center gap-2 sm:gap-4 px-4 h-14 border-b border-border shrink-0">
-      {/* Mobile hamburger */}
-      <button
-        onClick={onMobileMenuToggle}
-        className="md:hidden p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Open menu"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+    <header className="flex items-center px-4 h-14 border-b border-border shrink-0">
+      {/* Left section — logo & hamburger */}
+      <div className="flex items-center gap-2 flex-1 min-w-0">
+        <button
+          onClick={onMobileMenuToggle}
+          className="md:hidden p-1.5 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Open menu"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
+          <FileCode2 className="size-7 text-primary" />
+          <span className="hidden sm:inline font-semibold text-sm">DevStash</span>
+        </Link>
+      </div>
 
-      {/* Logo — icon always visible, text hidden on mobile */}
-      <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
-        <FileCode2 className="size-7 text-primary" />
-        <span className="hidden sm:inline font-semibold text-sm">DevStash</span>
-      </Link>
-
-      {/* Search — full bar on md+, icon button on mobile */}
-      <button
-        onClick={() => setPaletteOpen(true)}
-        className="hidden md:flex flex-1 max-w-xl relative items-center h-9 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
-      >
-        <Search className="w-4 h-4 mr-2 shrink-0" />
-        <span>Search items...</span>
-        <kbd className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
-          ⌘K
-        </kbd>
-      </button>
-      <button
-        onClick={() => setPaletteOpen(true)}
-        className="md:hidden p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors ml-auto"
-        aria-label="Search"
-      >
-        <Search className="w-4 h-4" />
-      </button>
+      {/* Center section — search bar (md+) / search icon (mobile) */}
+      <div className="flex items-center justify-center shrink-0 md:flex-1 md:max-w-xl md:mx-4">
+        <button
+          onClick={() => setPaletteOpen(true)}
+          className="hidden md:flex w-full relative items-center h-9 rounded-md border border-border bg-muted/50 px-3 text-sm text-muted-foreground hover:bg-muted/80 transition-colors cursor-pointer"
+        >
+          <Search className="w-4 h-4 mr-2 shrink-0" />
+          <span>Search items...</span>
+          <kbd className="ml-auto text-xs bg-muted px-1.5 py-0.5 rounded font-mono">
+            ⌘K
+          </kbd>
+        </button>
+        <button
+          onClick={() => setPaletteOpen(true)}
+          className="md:hidden p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          aria-label="Search"
+        >
+          <Search className="w-4 h-4" />
+        </button>
+      </div>
 
       <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
 
-      {/* Actions — individual buttons on sm+, "+" dropdown on mobile */}
-      <div className="flex items-center gap-2 md:ml-auto">
+      {/* Right section — actions */}
+      <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
         <Link
           href="/favorites"
-          className="p-2 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          className={`p-2 rounded-md hover:bg-accent transition-colors ${
+            hasFavorites ? 'text-yellow-400 hover:text-yellow-300' : 'text-muted-foreground hover:text-foreground'
+          }`}
           title="Favorites"
         >
-          <Star className="w-4 h-4" />
+          <Star className={`w-4 h-4 ${hasFavorites ? 'fill-current' : ''}`} />
         </Link>
 
         {/* Desktop: individual buttons */}
@@ -98,7 +103,6 @@ export default function TopBar({ onMobileMenuToggle, collections = [] }: TopBarP
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Hidden dialogs triggered by dropdown */}
           <CreateItemDialog
             collections={collections}
             externalOpen={createItemOpen}
