@@ -1,20 +1,12 @@
 # Current Feature
 
 ## Status
-In Progress
 
 ## Goals
-Make the dashboard top bar responsive on small screens (< 768px). Currently it crams 6 elements into a single row — hamburger, logo+text, search bar, star, "New Collection", and "New Item" — and at 375px and below, elements overflow or get cut off.
 
-Changes:
-1. Hide logo text on mobile, show only the "S" icon (remove fixed `w-48` width)
-2. Collapse search bar to a search icon button on mobile — tapping opens the Command Palette
-3. Merge "New Collection" and "New Item" into a single "+" dropdown menu on mobile
 
 ## Notes
-- Only modifies `src/components/dashboard/top-bar.tsx`
-- No new dependencies needed — uses existing shadcn DropdownMenu
-- Desktop layout unchanged
+
 
 
 ## History
@@ -64,3 +56,4 @@ Changes:
 - 2026-04-10: Pinned Items — wired up existing Pin button in ItemDrawer. Added `toggleItemPin` DB query (`src/lib/db/items.ts`) and matching server action (`src/actions/items.ts`) following the favorite toggle pattern. Pin button in ItemDrawer now toggles `isPinned` with optimistic UI (instant blue fill/unfill, rollback on error), label toggles "Pin"/"Unpin". Pinned items sort to top of item listings — `getItemsByType` and `getItemsByCollection` now use `orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }]`. `ItemCard` shows a filled blue pin icon next to the star for pinned items as a static indicator. Dashboard pinned section already powered by `getPinnedItems()`. 10 unit tests added (127 total passing).
 - 2026-04-10: Homepage Mockup — created static marketing homepage prototype in `prototypes/homepage/` with `index.html`, `styles.css`, `script.js`. Hero section with "chaos to order" concept: floating icons → pulsing arrow → dashboard preview. Chaos icons animate with requestAnimationFrame (drift, bounce, mouse repel). Fixed nav, features grid (6 cards), AI section with code editor mockup, pricing with yearly toggle, CTA, footer. Scroll fade-in animations, responsive layout.
 - 2026-04-11: Homepage — converted static HTML/CSS/JS prototype into Next.js homepage at `src/app/page.tsx`. Created 10 components in `src/components/homepage/`: `Navbar` (client, fixed top with scroll opacity), `HeroSection` (gradient headline, badge, CTAs), `ChaosVisual` (client, 8 floating Lucide icons with `requestAnimationFrame` animation, wall bounce, mouse repel), `FeaturesSection` (6 cards in responsive 3-col grid with type-colored icons), `AISection` (two-column layout with faux code editor mockup and AI-generated tags), `PricingSection` (client, monthly/yearly toggle, Free/Pro cards with "Most Popular" badge), `BottomCTA`, `Footer` (4-column grid with dynamic copyright year), `ScrollFadeIn` (client, `IntersectionObserver` for `.homepage-fade-in` elements). Added `homepage-fade-in` CSS animation and `scroll-behavior: smooth` to `globals.css`. All Tailwind, dark theme, fully responsive (mobile/tablet/desktop), publicly accessible. Feature spec stored in `context/features/homepage-spec.md`.
+- 2026-04-12: Responsive Top Bar — fixed top bar clutter on mobile screens. Logo text ("DevStash") hidden below `sm`, showing only the "S" icon. Search bar collapsed to a search icon button below `md` that opens the Command Palette directly. "New Item" and "New Collection" buttons merged into a single "+" dropdown menu below `sm` using shadcn `DropdownMenu`. Added `externalOpen`/`onExternalOpenChange` controlled-mode props to `CreateItemDialog` and `CreateCollectionDialog` so they can be opened programmatically from the dropdown. Desktop layout unchanged.
