@@ -64,6 +64,28 @@ export async function POST(req: NextRequest) {
       })
       break
     }
+
+    case 'invoice.payment_succeeded': {
+      const invoice = event.data.object as Stripe.Invoice
+      if (invoice.parent?.subscription_details) {
+        await prisma.user.updateMany({
+          where: { stripeCustomerId: invoice.customer as string },
+          data: { isPro: true },
+        })
+      }
+      break
+    }
+
+    case 'invoice.payment_failed': {
+      const invoice = event.data.object as Stripe.Invoice
+      if (invoice.parent?.subscription_details) {
+        await prisma.user.updateMany({
+          where: { stripeCustomerId: invoice.customer as string },
+          data: { isPro: false },
+        })
+      }
+      break
+    }
   }
 
   return NextResponse.json({ received: true })
