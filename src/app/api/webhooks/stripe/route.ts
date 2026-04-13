@@ -40,6 +40,19 @@ export async function POST(req: NextRequest) {
       break
     }
 
+    case 'customer.subscription.created': {
+      const subscription = event.data.object as Stripe.Subscription
+      const isActive = subscription.status === 'active' || subscription.status === 'trialing'
+      await prisma.user.updateMany({
+        where: { stripeCustomerId: subscription.customer as string },
+        data: {
+          isPro: isActive,
+          stripeSubscriptionId: subscription.id,
+        },
+      })
+      break
+    }
+
     case 'customer.subscription.updated': {
       const subscription = event.data.object as Stripe.Subscription
       const isActive = subscription.status === 'active' || subscription.status === 'trialing'
