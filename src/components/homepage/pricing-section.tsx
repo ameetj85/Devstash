@@ -119,7 +119,7 @@ export function PricingSection({ isLoggedIn = false }: PricingSectionProps) {
             ))}
           </ul>
           <Link
-            href={isLoggedIn ? '/settings' : '/register'}
+            href={isLoggedIn ? '/upgrade' : '/register'}
             className={cn(
               buttonVariants(),
               'w-full py-2.5 bg-[#3b82f6] text-white hover:bg-[#2563eb]'

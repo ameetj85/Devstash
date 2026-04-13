@@ -29,7 +29,7 @@ export default async function FavoritesPage() {
   const totalFavorites = favoriteItems.length + favoriteCollections.length
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={totalFavorites > 0}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={totalFavorites > 0} isPro={session.user?.isPro ?? false}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center gap-2">
           <Star className="w-5 h-5 text-yellow-500" />

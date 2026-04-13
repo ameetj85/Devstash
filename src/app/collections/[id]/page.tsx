@@ -50,7 +50,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Col
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites} isPro={session.user?.isPro ?? false}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
