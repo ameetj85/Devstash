@@ -41,6 +41,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
+import LanguageSelect from '@/components/items/language-select'
 import CollectionPicker from '@/components/items/collection-picker'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -378,6 +379,19 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
                   />
                 </div>
 
+                {/* Language (above content for immediate highlighting) */}
+                {showLanguage && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                      Language
+                    </Label>
+                    <LanguageSelect
+                      value={form.language}
+                      onChange={(v) => setForm((f) => ({ ...f, language: v }))}
+                    />
+                  </div>
+                )}
+
                 {/* Content */}
                 {showContent && (
                   <div className="space-y-1.5">
@@ -404,21 +418,6 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
                         rows={8}
                       />
                     )}
-                  </div>
-                )}
-
-                {/* Language */}
-                {showLanguage && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Language
-                    </Label>
-                    <Input
-                      value={form.language}
-                      onChange={(e) => setForm((f) => ({ ...f, language: e.target.value }))}
-                      placeholder="e.g. typescript"
-                      className="text-sm"
-                    />
                   </div>
                 )}
 

@@ -18,6 +18,7 @@ import { Label } from '@/components/ui/label'
 import { createItem } from '@/actions/items'
 import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
+import LanguageSelect from '@/components/items/language-select'
 import FileUpload, { type UploadedFile } from '@/components/items/file-upload'
 import CollectionPicker from '@/components/items/collection-picker'
 
@@ -245,6 +246,19 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
             </div>
           )}
 
+          {/* Language (above content for immediate highlighting) */}
+          {showLanguage && (
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Language
+              </Label>
+              <LanguageSelect
+                value={form.language}
+                onChange={(v) => setForm((f) => ({ ...f, language: v }))}
+              />
+            </div>
+          )}
+
           {/* Content */}
           {showContent && (
             <div className="space-y-1.5">
@@ -271,21 +285,6 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
                   rows={6}
                 />
               )}
-            </div>
-          )}
-
-          {/* Language */}
-          {showLanguage && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Language
-              </Label>
-              <Input
-                value={form.language}
-                onChange={field('language')}
-                placeholder="e.g. typescript"
-                className="text-sm"
-              />
             </div>
           )}
 
