@@ -1,27 +1,14 @@
-# Current Feature: AI Auto-Tagging
+# Current Feature
 
 ## Status
-In Progress
+Completed
 
 ## Goals
-- Create OpenAI client utility with `AI_MODEL` constant (`gpt-5-nano`) and Responses API
-- Create `generateAutoTags` server action with auth, Pro gating, Zod validation, rate limiting (20 req/hr per user)
-- Add "Suggest Tags" button (Sparkles icon, ghost variant) near tags input in CreateItemDialog and ItemDrawer edit mode
-- Display suggested tags as badges with accept (check) and reject (X) controls
-- Accepted tags get added to the item's tag list (freeform, not limited to existing DB tags)
-- Truncate content to 2000 chars before API call
-- Hide Suggest Tags button for free users (Pro-only UI gating)
-- Error handling via toast (Pro gating, rate limit, AI service errors)
-- Unit tests for server action
+
 
 ## Notes
-- Must use OpenAI **Responses API** (`client.responses.create()`), NOT Chat Completions — gpt-5-nano returns empty content with Chat Completions
-- Use `text: { format: { type: 'json_object' } }` for structured output, parse manually (zodResponseFormat hits token limits)
-- Handle both `{"tags": [...]}` and `[...]` response formats, normalize to lowercase
-- `OPENAI_API_KEY` already in `.env`
-- `isPro` available server-side via session; needs to be threaded to UI components for button visibility
-- AI rate limit: 20 requests/hour per user, added to existing `src/lib/rate-limit.ts`
-- See `docs/ai-integration-plan.md` for architectural context
+
+
 
 
 
@@ -78,3 +65,4 @@ In Progress
 - 2026-04-12: Stripe Integration Phase 1 — installed `stripe` package. Created Stripe client singleton (`src/lib/stripe.ts`) and plan/limit constants (`src/lib/stripe-config.ts`) with `STRIPE_PLANS` (monthly $8/yearly $72) and `FREE_LIMITS` (50 items, 3 collections). Exposed `isPro` on NextAuth session via `jwt` callback that queries DB on every token refresh (`src/auth.ts`), added `isPro: boolean` to Session type (`src/types/next-auth.d.ts`). Created `POST /api/stripe/checkout` route — auth-protected, accepts `{ plan: 'monthly' | 'yearly' }`, creates/reuses Stripe customer, creates Checkout session with success/cancel URLs to `/settings`. Created `POST /api/stripe/portal` route — auth-protected, creates Billing Portal session for existing Stripe customers. Created subscription gating utility (`src/lib/subscription.ts`) with `canCreateItem(userId, isPro)`, `canCreateCollection(userId, isPro)`, and `canUseFileUpload(isPro)`. Added `.env.example` to git (unignored via `.gitignore`). 8 unit tests added for gating functions (135 total passing).
 - 2026-04-12: Stripe Integration Phase 2 — created `POST /api/stripe/webhook` route with signature verification handling `checkout.session.completed` (sets `isPro`, saves Stripe IDs), `customer.subscription.updated` (toggles `isPro` based on status), and `customer.subscription.deleted` (clears Pro + subscription ID). Uses `updateMany` for idempotent webhook replays. Added `metadata.userId` to checkout session creation. Feature gating enforced in server actions: `createItem` blocks file/image types for non-Pro and enforces 50-item free limit, `createCollection` enforces 3-collection free limit, `POST /api/upload` returns 403 for non-Pro users. Created `SubscriptionSection` component (`src/components/settings/subscription-section.tsx`) — Pro users see crown icon with "Manage Subscription" (Stripe Portal), free users see usage counts (items/collections out of limits) and monthly/yearly upgrade buttons (Stripe Checkout) with loading states. Wired into settings page above Editor Preferences with `CheckoutSuccessToast` on `?checkout=success` redirect. Updated `ProfileData` to include `isPro` and `stripeSubscriptionId`. Profile page shows "X / 50 items" and "X / 3 collections" for free users, plain counts with "Unlimited" label for Pro. Homepage pricing buttons link to `/settings` for logged-in users, `/register` for anonymous. Updated `create-item` and `create-collection` test mocks with `isPro: true` and subscription module mocks (135 total passing).
 - 2026-04-14: Language Dropdown Selector — replaced the free-text language input with a `LanguageSelect` dropdown component (`src/components/items/language-select.tsx`) using shadcn `Select`, listing ~35 common programming languages. Moved the language selector above the content/code editor area in both `CreateItemDialog` and `ItemDrawer` edit mode so users pick a language first and get real-time syntax highlighting in the Monaco editor as they type. Removed the old text `Input` for language. Works for both snippet and command item types.
+- 2026-04-15: AI Auto-Tagging — installed `openai` package. Created OpenAI client utility (`src/lib/openai.ts`) with `AI_MODEL` constant (`gpt-5-nano`) and lazy initialization. Created `generateAutoTags` server action (`src/actions/ai.ts`) using the Responses API (`client.responses.create()`) with auth check, Pro gating, Zod validation, content truncation (2000 chars), and AI rate limiting (20 req/hr per user via `src/lib/rate-limit.ts`). Handles both `{"tags": [...]}` and `[...]` response formats, normalizes to lowercase, caps at 5 tags. Created `SuggestTagsButton` component (`src/components/items/suggest-tags-button.tsx`) — ghost button with Sparkles icon, hidden for free users. On click, calls the server action and shows suggestions in an absolutely-positioned dropdown with accept (check) and reject (X) controls per tag; accepted tags append to the comma-separated tags input. Wired into `CreateItemDialog` and `ItemDrawer` edit mode near the tags input. Threaded `isPro` from server pages through `DashboardShell` → `TopBar` → `CreateItemDialog`, and through `ItemsClientWrapper`/`DashboardItemRows`/`FavoritesList` → `ItemDrawer`. 9 unit tests added (144 total passing).
