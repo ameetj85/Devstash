@@ -43,6 +43,7 @@ import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
 import LanguageSelect from '@/components/items/language-select'
 import CollectionPicker from '@/components/items/collection-picker'
+import SuggestTagsButton from '@/components/items/suggest-tags-button'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -132,9 +133,10 @@ interface ItemDrawerProps {
   open: boolean
   onClose: () => void
   allCollections?: { id: string; name: string }[]
+  isPro?: boolean
 }
 
-export default function ItemDrawer({ itemId, open, onClose, allCollections = [] }: ItemDrawerProps) {
+export default function ItemDrawer({ itemId, open, onClose, allCollections = [], isPro = false }: ItemDrawerProps) {
   const router = useRouter()
   const [item, setItem] = useState<ItemDetailResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -448,7 +450,22 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [] 
                     placeholder="react, typescript, hooks"
                     className="text-sm"
                   />
-                  <p className="text-xs text-muted-foreground">Comma-separated</p>
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <p className="text-xs text-muted-foreground">Comma-separated</p>
+                    <SuggestTagsButton
+                      title={form.title}
+                      content={form.content}
+                      typeName={typeName}
+                      isPro={isPro}
+                      onAcceptTag={(tag) => {
+                        setForm((f) => {
+                          const existing = f.tags.split(',').map((t) => t.trim()).filter(Boolean)
+                          if (existing.includes(tag)) return f
+                          return { ...f, tags: existing.length > 0 ? `${f.tags}, ${tag}` : tag }
+                        })
+                      }}
+                    />
+                  </div>
                 </div>
 
                 {/* Collections */}

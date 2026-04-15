@@ -21,6 +21,7 @@ interface MainContentProps {
   pinnedItems: ItemWithType[]
   recentItems: ItemWithType[]
   itemStats: ItemStats
+  isPro?: boolean
 }
 
 export default function MainContent({
@@ -28,6 +29,7 @@ export default function MainContent({
   pinnedItems,
   recentItems,
   itemStats,
+  isPro = false,
 }: MainContentProps) {
   const totalCollections = collections.length
   const favoriteCollections = collections.filter((c) => c.isFavorite).length
@@ -107,6 +109,7 @@ export default function MainContent({
           itemType: item.itemType,
         }))}
         collections={collections.map((c) => ({ id: c.id, name: c.name }))}
+        isPro={isPro}
       />
     </main>
   )

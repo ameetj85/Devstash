@@ -57,7 +57,7 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites} isPro={isPro}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -66,13 +66,13 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
               {totalCount} {totalCount === 1 ? 'item' : 'items'}
             </p>
           </div>
-          <CreateItemDialog defaultType={typeName} collections={collectionOptions} />
+          <CreateItemDialog defaultType={typeName} collections={collectionOptions} isPro={isPro} />
         </div>
 
         {items.length === 0 && currentPage === 1 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
             <p className="text-muted-foreground text-sm">No {typeSlug} yet.</p>
-            <CreateItemDialog defaultType={typeName} collections={collectionOptions} />
+            <CreateItemDialog defaultType={typeName} collections={collectionOptions} isPro={isPro} />
           </div>
         ) : (
           <>
@@ -80,6 +80,7 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
               items={items}
               layout={typeName === 'image' ? 'gallery' : typeName === 'file' ? 'list' : 'grid'}
               collections={collectionOptions}
+              isPro={isPro}
             />
             <Pagination
               currentPage={currentPage}

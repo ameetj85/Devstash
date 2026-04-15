@@ -73,7 +73,7 @@ export default async function CollectionDetailPage({ params, searchParams }: Col
           </div>
         ) : (
           <>
-            <ItemsClientWrapper items={items} collections={collectionOptions} />
+            <ItemsClientWrapper items={items} collections={collectionOptions} isPro={session.user?.isPro ?? false} />
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}

@@ -13,9 +13,10 @@ interface ItemsClientWrapperProps {
   items: ItemWithType[]
   layout?: 'grid' | 'gallery' | 'list'
   collections?: { id: string; name: string }[]
+  isPro?: boolean
 }
 
-export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid', collections = [] }: ItemsClientWrapperProps) {
+export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid', collections = [], isPro = false }: ItemsClientWrapperProps) {
   const searchParams = useSearchParams()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -95,6 +96,7 @@ export default function ItemsClientWrapper({ items, layout: initialLayout = 'gri
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         allCollections={collections}
+        isPro={isPro}
       />
     </>
   )

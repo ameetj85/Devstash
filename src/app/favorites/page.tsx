@@ -45,6 +45,7 @@ export default async function FavoritesPage() {
           items={favoriteItems}
           collections={favoriteCollections}
           allCollections={collectionOptions}
+          isPro={session.user?.isPro ?? false}
         />
       </main>
     </DashboardShell>

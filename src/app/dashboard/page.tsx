@@ -35,6 +35,7 @@ export default async function DashboardPage() {
         pinnedItems={pinnedItems}
         recentItems={recentItems}
         itemStats={itemStats}
+        isPro={session.user?.isPro ?? false}
       />
     </DashboardShell>
   )

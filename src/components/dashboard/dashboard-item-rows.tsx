@@ -25,9 +25,10 @@ interface DashboardItemRowsProps {
   pinnedItems: DashboardItemRow[]
   recentItems: DashboardItemRow[]
   collections?: { id: string; name: string }[]
+  isPro?: boolean
 }
 
-export default function DashboardItemRows({ pinnedItems, recentItems, collections = [] }: DashboardItemRowsProps) {
+export default function DashboardItemRows({ pinnedItems, recentItems, collections = [], isPro = false }: DashboardItemRowsProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
 
@@ -129,6 +130,7 @@ export default function DashboardItemRows({ pinnedItems, recentItems, collection
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         allCollections={collections}
+        isPro={isPro}
       />
     </>
   )

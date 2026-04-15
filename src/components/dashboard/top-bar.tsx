@@ -89,7 +89,7 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
         {/* Desktop: individual buttons */}
         <div className="hidden sm:flex items-center gap-2">
           <CreateCollectionDialog />
-          <CreateItemDialog collections={collections} />
+          <CreateItemDialog collections={collections} isPro={isPro} />
         </div>
 
         {/* Mobile: combined "+" dropdown */}
@@ -117,6 +117,7 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
             collections={collections}
             externalOpen={createItemOpen}
             onExternalOpenChange={setCreateItemOpen}
+            isPro={isPro}
           />
           <CreateCollectionDialog
             externalOpen={createCollectionOpen}
