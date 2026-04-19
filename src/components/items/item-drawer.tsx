@@ -615,6 +615,11 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
                         value={item.content}
                         language={item.language}
                         readonly
+                        explain={{
+                          typeName: typeName as 'snippet' | 'command',
+                          title: item.title,
+                          isPro,
+                        }}
                       />
                     ) : MARKDOWN_TYPES.includes(typeName) ? (
                       <MarkdownEditor

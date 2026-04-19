@@ -11,6 +11,13 @@ const generateAutoTagsSchema = z.object({
   typeName: z.string().min(1).max(50),
 })
 
+const explainCodeSchema = z.object({
+  content: z.string().trim().min(1).max(500_000),
+  language: z.string().max(50).nullable().optional(),
+  typeName: z.enum(['snippet', 'command']),
+  title: z.string().max(500).nullable().optional(),
+})
+
 const generateDescriptionSchema = z.object({
   title: z.string().trim().max(500).nullable().optional(),
   typeName: z.string().min(1).max(50),
@@ -87,6 +94,81 @@ export async function generateAutoTags(
   } catch (error) {
     console.error('AI auto-tag error:', error)
     return { success: false as const, error: 'Failed to generate tag suggestions. Please try again.' }
+  }
+}
+
+export async function explainCode(
+  data: z.infer<typeof explainCodeSchema>
+) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false as const, error: 'Unauthorized' }
+  }
+
+  const isPro = session.user.isPro ?? false
+  if (!isPro) {
+    return { success: false as const, error: 'AI features require a Pro subscription.' }
+  }
+
+  const parsed = explainCodeSchema.safeParse(data)
+  if (!parsed.success) {
+    return { success: false as const, error: 'Invalid input' }
+  }
+
+  const { allowed, retryAfter } = await checkRateLimit('ai', session.user.id)
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfter / 60)
+    return {
+      success: false as const,
+      error: `AI rate limit reached. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`,
+    }
+  }
+
+  const { content, language, typeName, title } = parsed.data
+  const truncatedContent = content.slice(0, 2000)
+
+  const inputLines: string[] = [
+    'Explain this code and return it as JSON.',
+    `Type: ${typeName}`,
+  ]
+  if (title && title.trim()) inputLines.push(`Title: ${title.trim()}`)
+  if (language && language.trim()) inputLines.push(`Language: ${language.trim()}`)
+  inputLines.push(`Content:\n${truncatedContent}`)
+
+  try {
+    const client = getOpenAIClient()
+
+    const response = await client.responses.create({
+      model: AI_MODEL,
+      instructions:
+        'You are a developer tool assistant. Explain the given code or terminal command clearly and concisely in 200-300 words. Cover what it does and any key concepts a developer should understand. Use markdown: short paragraphs, inline code for identifiers, and bullet points when useful. Do not restate the whole code block verbatim. Return a JSON object with a single "explanation" key whose value is the markdown string.',
+      input: inputLines.join('\n'),
+      text: {
+        format: { type: 'json_object' },
+      },
+    })
+
+    const text = response.output_text
+    const parsedResponse = JSON.parse(text)
+
+    const raw: unknown =
+      typeof parsedResponse === 'string'
+        ? parsedResponse
+        : parsedResponse?.explanation
+
+    if (typeof raw !== 'string' || raw.trim().length === 0) {
+      return { success: false as const, error: 'Unexpected AI response format' }
+    }
+
+    const explanation = raw.trim().slice(0, 3000)
+
+    return { success: true as const, data: { explanation } }
+  } catch (error) {
+    console.error('AI explain error:', error)
+    return {
+      success: false as const,
+      error: 'Failed to generate explanation. Please try again.',
+    }
   }
 }
 
