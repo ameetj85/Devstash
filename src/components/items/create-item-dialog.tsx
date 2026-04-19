@@ -22,6 +22,7 @@ import LanguageSelect from '@/components/items/language-select'
 import FileUpload, { type UploadedFile } from '@/components/items/file-upload'
 import CollectionPicker from '@/components/items/collection-picker'
 import SuggestTagsButton from '@/components/items/suggest-tags-button'
+import GenerateDescriptionButton from '@/components/items/generate-description-button'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -220,9 +221,22 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
 
           {/* Description */}
           <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Description
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                Description
+              </Label>
+              <GenerateDescriptionButton
+                title={form.title}
+                typeName={selectedType}
+                content={form.content}
+                url={form.url}
+                fileName={uploadedFile?.fileName}
+                language={form.language}
+                tags={form.tags.split(',').map((t) => t.trim()).filter(Boolean)}
+                isPro={isPro}
+                onGenerated={(description) => setForm((f) => ({ ...f, description }))}
+              />
+            </div>
             <Textarea
               value={form.description}
               onChange={field('description')}
