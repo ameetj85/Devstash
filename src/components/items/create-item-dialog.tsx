@@ -291,6 +291,15 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
                 <MarkdownEditor
                   value={form.content}
                   onChange={(v) => setForm((f) => ({ ...f, content: v }))}
+                  optimize={selectedType === 'prompt' ? {
+                    typeName: 'prompt',
+                    title: form.title || undefined,
+                    isPro,
+                    onAccept: (optimized) => {
+                      setForm((f) => ({ ...f, content: optimized }))
+                      toast.success('Optimized prompt applied.')
+                    },
+                  } : undefined}
                 />
               ) : (
                 <Textarea

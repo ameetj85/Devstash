@@ -1,15 +1,25 @@
-# Current Feature
+# Current Feature: AI Prompt Optimization
 
 ## Status
-Completed
+In Progress
 
 ## Goals
 
+- Add an "Optimize" button to the `MarkdownEditor` header for `prompt` type items, analogous to the existing "Explain" button on `CodeEditor` for `snippet`/`command` types.
+- When clicked, send the current prompt content to an AI server action that evaluates and (if needed) refines the prompt.
+- Show the user the refined prompt with a clear diff/preview and ask whether they want to accept it.
+- On accept, replace the current prompt content with the optimized version; on reject, leave the original untouched.
+- Gate the feature behind Pro (hidden/Crown-disabled for free users, matching existing AI feature patterns).
+- Apply shared `ai` rate limit bucket, auth check, Zod validation, and OpenAI Responses API usage consistent with `generateAutoTags`, `generateDescription`, and `explainCode`.
 
 ## Notes
 
-
-
+- Server action lives in `src/actions/ai.ts` — follow the pattern from `explainCode` (auth, Pro gate, rate limit, Zod, content truncation ~2000 chars, JSON response format).
+- Response shape suggestion: `{ "optimized": string, "changed": boolean, "rationale"?: string }` so the UI can show "Already optimized" when no changes are needed.
+- Button placement: header of `src/components/items/markdown-editor.tsx`, only rendered when an `optimize` prop is provided (scoped to `prompt` type, mirroring how `CodeEditor.explain` is scoped to snippet/command).
+- UI flow for acceptance: consider a modal/inline panel showing original vs optimized prompt with Accept / Reject actions. On Accept, call `onChange` to replace the editor value.
+- Wire into `ItemDrawer` view and edit modes for `prompt` items, and into `CreateItemDialog` if appropriate (TBD based on review of existing Explain wiring).
+- Include unit tests for the new server action (auth, Pro gating, rate limit, validation, truncation, response parsing) following the existing AI action test patterns.
 
 ## History
 

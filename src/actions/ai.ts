@@ -28,6 +28,12 @@ const generateDescriptionSchema = z.object({
   tags: z.array(z.string().max(50)).max(20).optional(),
 })
 
+const optimizePromptSchema = z.object({
+  content: z.string().trim().min(1).max(500_000),
+  typeName: z.enum(['prompt']),
+  title: z.string().max(500).nullable().optional(),
+})
+
 export async function generateAutoTags(
   data: z.infer<typeof generateAutoTagsSchema>
 ) {
@@ -260,6 +266,99 @@ export async function generateDescription(
     return {
       success: false as const,
       error: 'Failed to generate description. Please try again.',
+    }
+  }
+}
+
+export async function optimizePrompt(
+  data: z.infer<typeof optimizePromptSchema>
+) {
+  const session = await auth()
+  if (!session?.user?.id) {
+    return { success: false as const, error: 'Unauthorized' }
+  }
+
+  const isPro = session.user.isPro ?? false
+  if (!isPro) {
+    return { success: false as const, error: 'AI features require a Pro subscription.' }
+  }
+
+  const parsed = optimizePromptSchema.safeParse(data)
+  if (!parsed.success) {
+    return { success: false as const, error: 'Invalid input' }
+  }
+
+  const { allowed, retryAfter } = await checkRateLimit('ai', session.user.id)
+  if (!allowed) {
+    const minutes = Math.ceil(retryAfter / 60)
+    return {
+      success: false as const,
+      error: `AI rate limit reached. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`,
+    }
+  }
+
+  const { content, title } = parsed.data
+  const truncatedContent = content.slice(0, 2000)
+
+  const inputLines: string[] = [
+    'Refine this prompt if it can be meaningfully improved, otherwise return it unchanged. Respond as JSON.',
+  ]
+  if (title && title.trim()) inputLines.push(`Title: ${title.trim()}`)
+  inputLines.push(`Prompt:\n${truncatedContent}`)
+
+  try {
+    const client = getOpenAIClient()
+
+    const response = await client.responses.create({
+      model: AI_MODEL,
+      instructions:
+        'You are a prompt engineering assistant. Improve the given AI prompt for clarity, specificity, and structure while preserving the user\'s intent and voice. If it is already well-written, return it unchanged. Respond with a JSON object: {"optimized": string, "changed": boolean, "rationale": string}. "rationale" is 1-2 short sentences.',
+      input: inputLines.join('\n'),
+      text: {
+        format: { type: 'json_object' },
+      },
+    })
+
+    const text = response.output_text
+    if (!text || typeof text !== 'string') {
+      console.error('AI optimize prompt: empty response', response)
+      return { success: false as const, error: 'Unexpected AI response format' }
+    }
+
+    let parsedResponse: unknown
+    try {
+      parsedResponse = JSON.parse(text)
+    } catch {
+      console.error('AI optimize prompt: JSON parse failed', text)
+      return { success: false as const, error: 'Unexpected AI response format' }
+    }
+
+    const obj = parsedResponse as Record<string, unknown> | null
+    const rawOptimized = obj?.optimized
+    const rawChanged = obj?.changed
+    const rawRationale = obj?.rationale
+
+    if (typeof rawOptimized !== 'string' || rawOptimized.trim().length === 0) {
+      console.error('AI optimize prompt: no optimized field', parsedResponse)
+      return { success: false as const, error: 'Unexpected AI response format' }
+    }
+
+    const optimized = rawOptimized.trim().slice(0, 4000)
+    const changed =
+      typeof rawChanged === 'boolean'
+        ? rawChanged
+        : optimized !== truncatedContent.trim()
+    const rationale =
+      typeof rawRationale === 'string' && rawRationale.trim().length > 0
+        ? rawRationale.trim().slice(0, 500)
+        : undefined
+
+    return { success: true as const, data: { optimized, changed, rationale } }
+  } catch (error) {
+    console.error('AI optimize prompt error:', error)
+    return {
+      success: false as const,
+      error: 'Failed to optimize prompt. Please try again.',
     }
   }
 }
