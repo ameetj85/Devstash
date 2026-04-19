@@ -424,6 +424,15 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
                       <MarkdownEditor
                         value={form.content}
                         onChange={(v) => setForm((f) => ({ ...f, content: v }))}
+                        optimize={typeName === 'prompt' ? {
+                          typeName: 'prompt',
+                          title: form.title || undefined,
+                          isPro,
+                          onAccept: (optimized) => {
+                            setForm((f) => ({ ...f, content: optimized }))
+                            toast.success('Optimized prompt applied. Click Save to persist.')
+                          },
+                        } : undefined}
                       />
                     ) : (
                       <Textarea
@@ -625,6 +634,42 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
                       <MarkdownEditor
                         value={item.content}
                         readonly
+                        optimize={typeName === 'prompt' ? {
+                          typeName: 'prompt',
+                          title: item.title,
+                          isPro,
+                          onAccept: async (optimized) => {
+                            const result = await updateItem(item.id, {
+                              title: item.title,
+                              description: item.description,
+                              content: optimized,
+                              url: item.url,
+                              language: item.language,
+                              tags: item.tags,
+                              collectionIds: item.collections.map((c) => c.id),
+                            })
+                            if (!result.success) {
+                              toast.error(
+                                typeof result.error === 'string'
+                                  ? result.error
+                                  : 'Failed to apply optimized prompt'
+                              )
+                              return
+                            }
+                            const updated = result.data
+                            setItem({
+                              ...updated,
+                              createdAt: updated.createdAt instanceof Date
+                                ? updated.createdAt.toISOString()
+                                : String(updated.createdAt),
+                              updatedAt: updated.updatedAt instanceof Date
+                                ? updated.updatedAt.toISOString()
+                                : String(updated.updatedAt),
+                            })
+                            toast.success('Optimized prompt applied')
+                            router.refresh()
+                          },
+                        } : undefined}
                       />
                     ) : (
                       <SyntaxHighlighter
