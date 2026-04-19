@@ -1,25 +1,15 @@
-# Current Feature: AI Prompt Optimization
+# Current Feature
 
 ## Status
-In Progress
+Completed
 
 ## Goals
 
-- Add an "Optimize" button to the `MarkdownEditor` header for `prompt` type items, analogous to the existing "Explain" button on `CodeEditor` for `snippet`/`command` types.
-- When clicked, send the current prompt content to an AI server action that evaluates and (if needed) refines the prompt.
-- Show the user the refined prompt with a clear diff/preview and ask whether they want to accept it.
-- On accept, replace the current prompt content with the optimized version; on reject, leave the original untouched.
-- Gate the feature behind Pro (hidden/Crown-disabled for free users, matching existing AI feature patterns).
-- Apply shared `ai` rate limit bucket, auth check, Zod validation, and OpenAI Responses API usage consistent with `generateAutoTags`, `generateDescription`, and `explainCode`.
 
 ## Notes
 
-- Server action lives in `src/actions/ai.ts` — follow the pattern from `explainCode` (auth, Pro gate, rate limit, Zod, content truncation ~2000 chars, JSON response format).
-- Response shape suggestion: `{ "optimized": string, "changed": boolean, "rationale"?: string }` so the UI can show "Already optimized" when no changes are needed.
-- Button placement: header of `src/components/items/markdown-editor.tsx`, only rendered when an `optimize` prop is provided (scoped to `prompt` type, mirroring how `CodeEditor.explain` is scoped to snippet/command).
-- UI flow for acceptance: consider a modal/inline panel showing original vs optimized prompt with Accept / Reject actions. On Accept, call `onChange` to replace the editor value.
-- Wire into `ItemDrawer` view and edit modes for `prompt` items, and into `CreateItemDialog` if appropriate (TBD based on review of existing Explain wiring).
-- Include unit tests for the new server action (auth, Pro gating, rate limit, validation, truncation, response parsing) following the existing AI action test patterns.
+
+
 
 ## History
 
@@ -77,3 +67,4 @@ In Progress
 - 2026-04-15: AI Auto-Tagging — installed `openai` package. Created OpenAI client utility (`src/lib/openai.ts`) with `AI_MODEL` constant (`gpt-5-nano`) and lazy initialization. Created `generateAutoTags` server action (`src/actions/ai.ts`) using the Responses API (`client.responses.create()`) with auth check, Pro gating, Zod validation, content truncation (2000 chars), and AI rate limiting (20 req/hr per user via `src/lib/rate-limit.ts`). Handles both `{"tags": [...]}` and `[...]` response formats, normalizes to lowercase, caps at 5 tags. Created `SuggestTagsButton` component (`src/components/items/suggest-tags-button.tsx`) — ghost button with Sparkles icon, hidden for free users. On click, calls the server action and shows suggestions in an absolutely-positioned dropdown with accept (check) and reject (X) controls per tag; accepted tags append to the comma-separated tags input. Wired into `CreateItemDialog` and `ItemDrawer` edit mode near the tags input. Threaded `isPro` from server pages through `DashboardShell` → `TopBar` → `CreateItemDialog`, and through `ItemsClientWrapper`/`DashboardItemRows`/`FavoritesList` → `ItemDrawer`. 9 unit tests added (144 total passing).
 - 2026-04-19: AI Description Generator — added `generateDescription` server action in `src/actions/ai.ts` following the `generateAutoTags` pattern (auth check, Pro gating, Zod validation, content truncation to 2000 chars, shared `ai` rate limit bucket — 20 req/hr per user). Input accepts any combination of `title`, `typeName`, `content`, `url`, `fileName`, `language`, `tags` — the action builds a dynamic prompt from whatever is populated and requires at least one signal field to avoid empty calls. Uses the OpenAI Responses API with `text.format: json_object` to return `{ "description": "..." }`; input prefixed with "... return it as JSON" to satisfy the API's json-keyword requirement. Response is trimmed, quote-stripped, and capped at 500 chars. Created `GenerateDescriptionButton` component (`src/components/items/generate-description-button.tsx`) — ghost sparkles button with "Describe"/"Describing…" label, hidden for free users, populates the description textarea directly on success. Wired next to the Description label in both `CreateItemDialog` and `ItemDrawer` edit mode. Works for all item types (snippet, prompt, command, note, link, file, image). 12 unit tests added (156 total passing).
 - 2026-04-19: AI Explain Code — added `explainCode` server action in `src/actions/ai.ts` with Zod-enum gating on `typeName` (`snippet` | `command`), auth + Pro checks, shared `ai` rate limit bucket, 2000-char content truncation, and 3000-char explanation cap. Uses OpenAI Responses API with `text.format: json_object` returning `{ "explanation": "..." }`. Extended `CodeEditor` (`src/components/items/code-editor.tsx`) with optional `explain` prop — when set, the header shows a Sparkles button (or a disabled Crown with "AI features require Pro subscription" tooltip for free users) next to Copy; on click, `Loader2` spinner replaces the icon; after success the header swaps in Code/Explain tab pills, and the Explain tab renders the markdown via `ReactMarkdown` + `remarkGfm` inside the existing `.markdown-preview` container. Explanations are ephemeral (not persisted, regenerated on each click). Item drawer (`src/components/items/item-drawer.tsx`) passes `explain={{ typeName, title, isPro }}` to the read-view `CodeEditor` only — create dialog and edit mode remain unaffected. 12 unit tests added (168 total passing).
+- 2026-04-19: AI Prompt Optimization — added `optimizePrompt` server action in `src/actions/ai.ts` with Zod-enum gating on `typeName` (`prompt`), auth + Pro checks, shared `ai` rate limit bucket, 2000-char content truncation, and 4000-char optimized cap. Uses OpenAI Responses API with `text.format: json_object` returning `{ "optimized": string, "changed": boolean, "rationale": string }`. Extended `MarkdownEditor` (`src/components/items/markdown-editor.tsx`) with optional `optimize` prop — header shows a Sparkles button (or disabled Crown for free users) next to Copy, mirroring the Explain button pattern. On click, spinner replaces the icon; on success with `changed=false` shows a toast; with `changed=true` opens a shadcn `Dialog` showing Original vs Optimized side-by-side with the AI's rationale, Accept/Reject buttons. Wired into `ItemDrawer` view mode (onAccept calls `updateItem` server action and refreshes), `ItemDrawer` edit mode (onAccept updates form state), and `CreateItemDialog` (onAccept updates form state). Server action includes defensive JSON parsing with logging for malformed responses; client wraps action call in try/catch/finally to guarantee spinner resets. 14 unit tests added (182 total passing).
