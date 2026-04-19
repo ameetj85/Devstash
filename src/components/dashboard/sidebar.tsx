@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import {
   Star,
   PanelLeftClose,
@@ -12,6 +13,13 @@ import UserMenu from '@/components/dashboard/user-menu'
 import type { ItemTypeWithCount } from '@/lib/db/items'
 import type { CollectionWithMeta } from '@/lib/db/collections'
 import { getItemIcon } from '@/lib/item-type-icons'
+
+const NAV_LINK_BASE =
+  'flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm transition-colors'
+const NAV_LINK_INACTIVE =
+  'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
+const NAV_LINK_ACTIVE =
+  'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
 
 interface SidebarUser {
   name?: string | null
@@ -38,8 +46,10 @@ export default function Sidebar({
   collections,
   user,
 }: SidebarProps) {
+  const pathname = usePathname()
   const favoriteCollections = collections.filter((c) => c.isFavorite)
   const recentCollections = collections.filter((c) => !c.isFavorite).slice(0, 3)
+  const favoritesActive = pathname === '/favorites'
 
   return (
     <>
@@ -98,11 +108,16 @@ export default function Sidebar({
               {itemTypes.map((type) => {
                 const Icon = getItemIcon(type.icon)
                 const href = `/items/${type.name}s`
+                const isActive = pathname === href
                 return (
                   <Link
                     key={type.id}
                     href={href}
-                    className="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
+                    aria-current={isActive ? 'page' : undefined}
+                    className={cn(
+                      NAV_LINK_BASE,
+                      isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
+                    )}
                     title={isCollapsed ? `${type.name}s` : undefined}
                   >
                     <Icon
@@ -128,6 +143,24 @@ export default function Sidebar({
             </nav>
           </div>
 
+          {/* Favorites link */}
+          <div className="px-3">
+            <nav>
+              <Link
+                href="/favorites"
+                aria-current={favoritesActive ? 'page' : undefined}
+                className={cn(
+                  NAV_LINK_BASE,
+                  favoritesActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
+                )}
+                title={isCollapsed ? 'Favorites' : undefined}
+              >
+                <Star className="w-4 h-4 shrink-0 text-yellow-400" />
+                {!isCollapsed && <span className="flex-1">Favorites</span>}
+              </Link>
+            </nav>
+          </div>
+
           {/* Collections — hidden when collapsed */}
           {!isCollapsed && (
             <div className="px-3">
@@ -140,19 +173,27 @@ export default function Sidebar({
                   <div>
                     <p className="text-xs text-muted-foreground mb-1 px-2">Favorites</p>
                     <nav className="space-y-0.5">
-                      {favoriteCollections.map((col) => (
-                        <Link
-                          key={col.id}
-                          href={`/collections/${col.id}`}
-                          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                        >
-                          <Star className="w-3.5 h-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
-                          <span className="flex-1 truncate">{col.name}</span>
-                          <span className="text-xs text-muted-foreground tabular-nums">
-                            {col.itemCount}
-                          </span>
-                        </Link>
-                      ))}
+                      {favoriteCollections.map((col) => {
+                        const href = `/collections/${col.id}`
+                        const isActive = pathname === href
+                        return (
+                          <Link
+                            key={col.id}
+                            href={href}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={cn(
+                              NAV_LINK_BASE,
+                              isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
+                            )}
+                          >
+                            <Star className="w-3.5 h-3.5 shrink-0 fill-yellow-400 text-yellow-400" />
+                            <span className="flex-1 truncate">{col.name}</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              {col.itemCount}
+                            </span>
+                          </Link>
+                        )
+                      })}
                     </nav>
                   </div>
                 )}
@@ -162,22 +203,30 @@ export default function Sidebar({
                   <div>
                     <p className="text-xs text-muted-foreground mb-1 px-2">Recent</p>
                     <nav className="space-y-0.5">
-                      {recentCollections.map((col) => (
-                        <Link
-                          key={col.id}
-                          href={`/collections/${col.id}`}
-                          className="flex items-center gap-2.5 px-2 py-1.5 rounded-md text-sm text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
-                        >
-                          <span
-                            className="w-3.5 h-3.5 rounded-full shrink-0"
-                            style={{ backgroundColor: col.dominantColor }}
-                          />
-                          <span className="flex-1 truncate">{col.name}</span>
-                          <span className="text-xs text-muted-foreground tabular-nums">
-                            {col.itemCount}
-                          </span>
-                        </Link>
-                      ))}
+                      {recentCollections.map((col) => {
+                        const href = `/collections/${col.id}`
+                        const isActive = pathname === href
+                        return (
+                          <Link
+                            key={col.id}
+                            href={href}
+                            aria-current={isActive ? 'page' : undefined}
+                            className={cn(
+                              NAV_LINK_BASE,
+                              isActive ? NAV_LINK_ACTIVE : NAV_LINK_INACTIVE
+                            )}
+                          >
+                            <span
+                              className="w-3.5 h-3.5 rounded-full shrink-0"
+                              style={{ backgroundColor: col.dominantColor }}
+                            />
+                            <span className="flex-1 truncate">{col.name}</span>
+                            <span className="text-xs text-muted-foreground tabular-nums">
+                              {col.itemCount}
+                            </span>
+                          </Link>
+                        )
+                      })}
                     </nav>
                   </div>
                 )}
@@ -185,7 +234,13 @@ export default function Sidebar({
                 {/* View all collections */}
                 <Link
                   href="/collections"
-                  className="block px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  aria-current={pathname === '/collections' ? 'page' : undefined}
+                  className={cn(
+                    'block px-2 py-1.5 text-xs transition-colors',
+                    pathname === '/collections'
+                      ? 'text-foreground font-medium'
+                      : 'text-muted-foreground hover:text-foreground'
+                  )}
                 >
                   View all collections →
                 </Link>

@@ -34,7 +34,7 @@ export default function CollectionCard({ collection: col }: CollectionCardProps)
           <CollectionCardMenu collection={col} />
         </div>
       </div>
-      <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
+      <p className="text-xs text-muted-foreground mb-3 line-clamp-2 min-h-[2lh]">
         {col.description}
       </p>
       <div className="flex items-center justify-between">

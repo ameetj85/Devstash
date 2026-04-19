@@ -92,7 +92,7 @@ export function PricingSection({ isLoggedIn = false }: PricingSectionProps) {
             href={isLoggedIn ? '/dashboard' : '/register'}
             className={cn(
               buttonVariants({ variant: 'outline' }),
-              'w-full py-2.5 border-[#2a2a3a] text-[#f0f0f5] hover:border-[#8888a0] hover:bg-[#1a1a25]'
+              'w-full py-2.5 border-[#55556a] bg-transparent text-[#f0f0f5] hover:border-[#f0f0f5] hover:bg-[#2a2a3a]'
             )}
           >
             {isLoggedIn ? 'Go to Dashboard' : 'Get Started'}
