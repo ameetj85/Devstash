@@ -1,12 +1,30 @@
 # Current Feature
 
 ## Status
-Completed
+In Progress
 
 ## Goals
 
+UI review fixes from 2026-04-19 Playwright audit. Address layout, consistency, and accessibility issues found across the app.
+
+### Confirmed user-flagged issues
+- **Sidebar has no active-state highlighting.** On `/items/snippets`, `/collections`, `/favorites`, etc. the sidebar nav links render identically regardless of the current route. Add `usePathname()`-driven active state (background + text color + `aria-current="page"`) to all sidebar nav items including item-type links, Collections, Favorites, and Recent collections.
+- **Register page missing GitHub OAuth.** `/sign-in` has a full-width "Sign in with GitHub" button plus an "or" divider, but `/register` does not. Mirror the sign-in layout on register.
+
+### Major
+- **Wrap `/profile` and `/settings` in `DashboardShell`.** Both pages currently render as standalone pages with only a "← Back to dashboard" text link, losing sidebar and top bar. Mobile users have no nav at all on these pages. Use the same shell as every other authenticated page.
+- **Add a mobile hamburger menu to the homepage navbar.** At 375px the `Features` and `Pricing` links disappear entirely with no alternative access. Add a hamburger drawer/menu for mobile.
+
+### Minor
+- **Add Favorites link to the sidebar.** Currently only accessible via the small star icon in the top bar. Add a proper sidebar nav entry.
+- **Fix inconsistent collection card heights.** Cards on `/collections` with no description render an empty space where the description would be, making card heights uneven. Either collapse the description area when empty, or use a `min-h` for consistency.
+- **Homepage Free plan CTA contrast.** The outline "Get Started" button on the Free pricing card is very low contrast against the card background. Increase border/text contrast.
+- ~~Settings editor font-size default~~ — withdrawn. Default is already `12` in `src/lib/editor-preferences.ts`; the `10` seen in the audit screenshot was the seeded demo user's saved preference.
+- ~~Sign-in placeholder / hardcoded defaults~~ — withdrawn after inspecting the source: `useState('')` starts empty and only `placeholder` text is set. The `demo@devstash.io`/`12345678`/`Brad Traversy` values seen in Playwright were Chromium autofill from saved credentials, not code.
 
 ## Notes
+
+Findings captured from a Playwright-driven UI audit run on 2026-04-19. Desktop viewport 1440x900 and mobile 375x812. Screenshots in `.playwright-mcp/`.
 
 
 
