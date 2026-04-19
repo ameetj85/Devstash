@@ -1,26 +1,13 @@
-# Current Feature: AI Explain Code
+# Current Feature
 
 ## Status
-In Progress
+Completed
 
 ## Goals
 
-- Add `explainCode` server action (auth, Pro gating, Zod validation, shared AI rate limit) for snippet and command item types
-- Add "Explain" button (Sparkles icon) to the code editor header next to the Copy button, shown only in the item drawer read view for snippets/commands
-- After generation, show Code/Explain tabs in the editor header to toggle views; render explanation as markdown in the same container
-- Keep explanations concise (~200-300 words, covering what the code does and key concepts); regenerate on each click (not persisted)
-- Loading state uses `Loader2` spinner; free users see a Crown icon with "AI features require Pro subscription" tooltip
-- Handle errors via toast (Pro gating, rate limit, AI service errors)
-- Thread `isPro` to the item drawer / code editor; do not expose in create/edit forms
-- Add unit tests for the server action
 
 ## Notes
 
-- Only snippet and command types get this feature — other types are already human-readable or non-code
-- Explanations are ephemeral: not saved to the DB, regenerated on each click
-- Reuse shared `ai` rate limit bucket (20 req/hr per user) and follow existing `generateAutoTags` / `generateDescription` patterns
-- Full architectural context lives in `docs/ai-integration-plan.md`
-- Spec: `context/features/ai-explain-spec.md`
 
 
 
@@ -79,3 +66,4 @@ In Progress
 - 2026-04-14: Language Dropdown Selector — replaced the free-text language input with a `LanguageSelect` dropdown component (`src/components/items/language-select.tsx`) using shadcn `Select`, listing ~35 common programming languages. Moved the language selector above the content/code editor area in both `CreateItemDialog` and `ItemDrawer` edit mode so users pick a language first and get real-time syntax highlighting in the Monaco editor as they type. Removed the old text `Input` for language. Works for both snippet and command item types.
 - 2026-04-15: AI Auto-Tagging — installed `openai` package. Created OpenAI client utility (`src/lib/openai.ts`) with `AI_MODEL` constant (`gpt-5-nano`) and lazy initialization. Created `generateAutoTags` server action (`src/actions/ai.ts`) using the Responses API (`client.responses.create()`) with auth check, Pro gating, Zod validation, content truncation (2000 chars), and AI rate limiting (20 req/hr per user via `src/lib/rate-limit.ts`). Handles both `{"tags": [...]}` and `[...]` response formats, normalizes to lowercase, caps at 5 tags. Created `SuggestTagsButton` component (`src/components/items/suggest-tags-button.tsx`) — ghost button with Sparkles icon, hidden for free users. On click, calls the server action and shows suggestions in an absolutely-positioned dropdown with accept (check) and reject (X) controls per tag; accepted tags append to the comma-separated tags input. Wired into `CreateItemDialog` and `ItemDrawer` edit mode near the tags input. Threaded `isPro` from server pages through `DashboardShell` → `TopBar` → `CreateItemDialog`, and through `ItemsClientWrapper`/`DashboardItemRows`/`FavoritesList` → `ItemDrawer`. 9 unit tests added (144 total passing).
 - 2026-04-19: AI Description Generator — added `generateDescription` server action in `src/actions/ai.ts` following the `generateAutoTags` pattern (auth check, Pro gating, Zod validation, content truncation to 2000 chars, shared `ai` rate limit bucket — 20 req/hr per user). Input accepts any combination of `title`, `typeName`, `content`, `url`, `fileName`, `language`, `tags` — the action builds a dynamic prompt from whatever is populated and requires at least one signal field to avoid empty calls. Uses the OpenAI Responses API with `text.format: json_object` to return `{ "description": "..." }`; input prefixed with "... return it as JSON" to satisfy the API's json-keyword requirement. Response is trimmed, quote-stripped, and capped at 500 chars. Created `GenerateDescriptionButton` component (`src/components/items/generate-description-button.tsx`) — ghost sparkles button with "Describe"/"Describing…" label, hidden for free users, populates the description textarea directly on success. Wired next to the Description label in both `CreateItemDialog` and `ItemDrawer` edit mode. Works for all item types (snippet, prompt, command, note, link, file, image). 12 unit tests added (156 total passing).
+- 2026-04-19: AI Explain Code — added `explainCode` server action in `src/actions/ai.ts` with Zod-enum gating on `typeName` (`snippet` | `command`), auth + Pro checks, shared `ai` rate limit bucket, 2000-char content truncation, and 3000-char explanation cap. Uses OpenAI Responses API with `text.format: json_object` returning `{ "explanation": "..." }`. Extended `CodeEditor` (`src/components/items/code-editor.tsx`) with optional `explain` prop — when set, the header shows a Sparkles button (or a disabled Crown with "AI features require Pro subscription" tooltip for free users) next to Copy; on click, `Loader2` spinner replaces the icon; after success the header swaps in Code/Explain tab pills, and the Explain tab renders the markdown via `ReactMarkdown` + `remarkGfm` inside the existing `.markdown-preview` container. Explanations are ephemeral (not persisted, regenerated on each click). Item drawer (`src/components/items/item-drawer.tsx`) passes `explain={{ typeName, title, isPro }}` to the read-view `CodeEditor` only — create dialog and edit mode remain unaffected. 12 unit tests added (168 total passing).
