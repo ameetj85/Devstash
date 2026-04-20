@@ -1,9 +1,8 @@
 'use server'
 
 import { z } from 'zod'
-import { auth } from '@/auth'
 import { getOpenAIClient, AI_MODEL } from '@/lib/openai'
-import { checkRateLimit } from '@/lib/rate-limit'
+import { requireAuth, requirePro, checkAIRateLimit } from '@/lib/action-helpers'
 
 const generateAutoTagsSchema = z.object({
   title: z.string().trim().min(1).max(500),
@@ -37,29 +36,19 @@ const optimizePromptSchema = z.object({
 export async function generateAutoTags(
   data: z.infer<typeof generateAutoTagsSchema>
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const isPro = session.user.isPro ?? false
-  if (!isPro) {
-    return { success: false as const, error: 'AI features require a Pro subscription.' }
-  }
+  const proGate = requirePro(session.isPro)
+  if (proGate) return proGate
 
   const parsed = generateAutoTagsSchema.safeParse(data)
   if (!parsed.success) {
     return { success: false as const, error: 'Invalid input' }
   }
 
-  const { allowed, retryAfter } = await checkRateLimit('ai', session.user.id)
-  if (!allowed) {
-    const minutes = Math.ceil(retryAfter / 60)
-    return {
-      success: false as const,
-      error: `AI rate limit reached. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`,
-    }
-  }
+  const rateGate = await checkAIRateLimit(session.userId)
+  if (rateGate) return rateGate
 
   const { title, content, typeName } = parsed.data
   const truncatedContent = content ? content.slice(0, 2000) : ''
@@ -106,29 +95,19 @@ export async function generateAutoTags(
 export async function explainCode(
   data: z.infer<typeof explainCodeSchema>
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const isPro = session.user.isPro ?? false
-  if (!isPro) {
-    return { success: false as const, error: 'AI features require a Pro subscription.' }
-  }
+  const proGate = requirePro(session.isPro)
+  if (proGate) return proGate
 
   const parsed = explainCodeSchema.safeParse(data)
   if (!parsed.success) {
     return { success: false as const, error: 'Invalid input' }
   }
 
-  const { allowed, retryAfter } = await checkRateLimit('ai', session.user.id)
-  if (!allowed) {
-    const minutes = Math.ceil(retryAfter / 60)
-    return {
-      success: false as const,
-      error: `AI rate limit reached. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`,
-    }
-  }
+  const rateGate = await checkAIRateLimit(session.userId)
+  if (rateGate) return rateGate
 
   const { content, language, typeName, title } = parsed.data
   const truncatedContent = content.slice(0, 2000)
@@ -181,15 +160,11 @@ export async function explainCode(
 export async function generateDescription(
   data: z.infer<typeof generateDescriptionSchema>
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const isPro = session.user.isPro ?? false
-  if (!isPro) {
-    return { success: false as const, error: 'AI features require a Pro subscription.' }
-  }
+  const proGate = requirePro(session.isPro)
+  if (proGate) return proGate
 
   const parsed = generateDescriptionSchema.safeParse(data)
   if (!parsed.success) {
@@ -211,14 +186,8 @@ export async function generateDescription(
     }
   }
 
-  const { allowed, retryAfter } = await checkRateLimit('ai', session.user.id)
-  if (!allowed) {
-    const minutes = Math.ceil(retryAfter / 60)
-    return {
-      success: false as const,
-      error: `AI rate limit reached. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`,
-    }
-  }
+  const rateGate = await checkAIRateLimit(session.userId)
+  if (rateGate) return rateGate
 
   const truncatedContent = content ? content.slice(0, 2000) : ''
 
@@ -273,29 +242,19 @@ export async function generateDescription(
 export async function optimizePrompt(
   data: z.infer<typeof optimizePromptSchema>
 ) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const isPro = session.user.isPro ?? false
-  if (!isPro) {
-    return { success: false as const, error: 'AI features require a Pro subscription.' }
-  }
+  const proGate = requirePro(session.isPro)
+  if (proGate) return proGate
 
   const parsed = optimizePromptSchema.safeParse(data)
   if (!parsed.success) {
     return { success: false as const, error: 'Invalid input' }
   }
 
-  const { allowed, retryAfter } = await checkRateLimit('ai', session.user.id)
-  if (!allowed) {
-    const minutes = Math.ceil(retryAfter / 60)
-    return {
-      success: false as const,
-      error: `AI rate limit reached. Try again in ${minutes} minute${minutes > 1 ? 's' : ''}.`,
-    }
-  }
+  const rateGate = await checkAIRateLimit(session.userId)
+  if (rateGate) return rateGate
 
   const { content, title } = parsed.data
   const truncatedContent = content.slice(0, 2000)
