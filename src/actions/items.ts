@@ -1,11 +1,11 @@
 'use server'
 
 import { z } from 'zod'
-import { auth } from '@/auth'
 import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createItem as createItemQuery, toggleItemFavorite as toggleItemFavoriteQuery, toggleItemPin as toggleItemPinQuery } from '@/lib/db/items'
 import { deleteR2Object, keyFromUrl } from '@/lib/r2'
 import { canCreateItem, canUseFileUpload } from '@/lib/subscription'
 import { FREE_LIMITS } from '@/lib/stripe-config'
+import { requireAuth, parseOrFail } from '@/lib/action-helpers'
 
 const updateItemSchema = z.object({
   title: z.string().trim().min(1, 'Title is required').max(500),
@@ -20,19 +20,15 @@ const updateItemSchema = z.object({
 type UpdateItemInput = z.infer<typeof updateItemSchema>
 
 export async function updateItem(itemId: string, data: UpdateItemInput) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const parsed = updateItemSchema.safeParse(data)
-  if (!parsed.success) {
-    return { success: false as const, error: parsed.error.flatten().fieldErrors }
-  }
+  const parsed = parseOrFail(updateItemSchema, data)
+  if (!parsed.success) return parsed
 
   const { title, description, content, url, language, tags, collectionIds } = parsed.data
 
-  const updated = await updateItemQuery(session.user.id, itemId, {
+  const updated = await updateItemQuery(session.userId, itemId, {
     title,
     description: description ?? null,
     content: content ?? null,
@@ -75,30 +71,24 @@ const createItemSchema = z.object({
 type CreateItemInput = z.infer<typeof createItemSchema>
 
 export async function createItem(data: CreateItemInput) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const parsed = createItemSchema.safeParse(data)
-  if (!parsed.success) {
-    return { success: false as const, error: parsed.error.flatten().fieldErrors }
-  }
+  const parsed = parseOrFail(createItemSchema, data)
+  if (!parsed.success) return parsed
 
   const { title, typeName, description, content, url, language, tags, fileUrl, fileName, fileSize, collectionIds } = parsed.data
 
-  const isPro = session.user.isPro ?? false
-
-  if ((typeName === 'file' || typeName === 'image') && !canUseFileUpload(isPro)) {
+  if ((typeName === 'file' || typeName === 'image') && !canUseFileUpload(session.isPro)) {
     return { success: false as const, error: 'File and image types require a Pro subscription. Upgrade to Pro in Settings.' }
   }
 
-  const allowed = await canCreateItem(session.user.id, isPro)
+  const allowed = await canCreateItem(session.userId, session.isPro)
   if (!allowed) {
     return { success: false as const, error: `You've reached the free limit of ${FREE_LIMITS.items} items. Upgrade to Pro for unlimited items.` }
   }
 
-  const created = await createItemQuery(session.user.id, {
+  const created = await createItemQuery(session.userId, {
     title,
     typeName,
     description: description ?? null,
@@ -125,12 +115,10 @@ export async function createItem(data: CreateItemInput) {
 }
 
 export async function deleteItem(itemId: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const deleted = await deleteItemQuery(session.user.id, itemId)
+  const deleted = await deleteItemQuery(session.userId, itemId)
   if (!deleted) {
     return { success: false as const, error: 'Item not found or access denied' }
   }
@@ -150,12 +138,10 @@ export async function deleteItem(itemId: string) {
 }
 
 export async function toggleItemFavorite(itemId: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const result = await toggleItemFavoriteQuery(session.user.id, itemId)
+  const result = await toggleItemFavoriteQuery(session.userId, itemId)
   if (!result) {
     return { success: false as const, error: 'Item not found or access denied' }
   }
@@ -164,12 +150,10 @@ export async function toggleItemFavorite(itemId: string) {
 }
 
 export async function toggleItemPin(itemId: string) {
-  const session = await auth()
-  if (!session?.user?.id) {
-    return { success: false as const, error: 'Unauthorized' }
-  }
+  const session = await requireAuth()
+  if ('success' in session) return session
 
-  const result = await toggleItemPinQuery(session.user.id, itemId)
+  const result = await toggleItemPinQuery(session.userId, itemId)
   if (!result) {
     return { success: false as const, error: 'Item not found or access denied' }
   }
