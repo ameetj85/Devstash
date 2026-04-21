@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Star, Folder, ArrowUpDown } from 'lucide-react'
 import { getItemIcon } from '@/lib/item-type-icons'
 import ItemDrawer from '@/components/items/item-drawer'
+import { useItemDrawer } from '@/hooks/use-item-drawer'
 import { sortItems, sortCollections, SORT_LABELS } from '@/lib/favorites-sort'
 import type { SortOption } from '@/lib/favorites-sort'
 import type { ItemWithType } from '@/lib/db/items'
@@ -26,17 +27,11 @@ function formatDate(date: Date) {
 
 export default function FavoritesList({ items, collections, allCollections, isPro = false }: FavoritesListProps) {
   const router = useRouter()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const { selectedId, drawerOpen, openDrawer, closeDrawer } = useItemDrawer()
   const [sort, setSort] = useState<SortOption>('date')
 
   const sortedItems = useMemo(() => sortItems(items, sort), [items, sort])
   const sortedCollections = useMemo(() => sortCollections(collections, sort), [collections, sort])
-
-  function handleItemClick(id: string) {
-    setSelectedId(id)
-    setDrawerOpen(true)
-  }
 
   const isEmpty = items.length === 0 && collections.length === 0
 
@@ -84,7 +79,7 @@ export default function FavoritesList({ items, collections, allCollections, isPr
               return (
                 <button
                   key={item.id}
-                  onClick={() => handleItemClick(item.id)}
+                  onClick={() => openDrawer(item.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2 text-left hover:bg-muted/50 transition-colors cursor-pointer ${
                     i > 0 ? 'border-t border-border' : ''
                   }`}
@@ -148,7 +143,7 @@ export default function FavoritesList({ items, collections, allCollections, isPr
       <ItemDrawer
         itemId={selectedId}
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
         allCollections={allCollections}
         isPro={isPro}
       />

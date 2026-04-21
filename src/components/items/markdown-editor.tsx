@@ -3,9 +3,10 @@
 import { useState } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { Copy, Sparkles, Loader2, Crown, Check, X } from 'lucide-react'
+import { Copy, Sparkles, Loader2, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
+import ProAIButton from './pro-ai-button'
 import {
   Dialog,
   DialogContent,
@@ -142,34 +143,12 @@ export default function MarkdownEditor({
 
         {/* Optimize button (prompt type only) */}
         {showOptimizeUI && (
-          optimize!.isPro ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-[#8a8a8a] hover:text-white hover:bg-[#3d3d3d]"
-              onClick={handleOptimize}
-              type="button"
-              title="Optimize prompt with AI"
-              disabled={optimizing}
-            >
-              {optimizing ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <Sparkles className="w-3 h-3" />
-              )}
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-[#8a8a8a] hover:text-white hover:bg-[#3d3d3d] cursor-not-allowed opacity-70"
-              type="button"
-              title="AI features require Pro subscription"
-              disabled
-            >
-              <Crown className="w-3 h-3" />
-            </Button>
-          )
+          <ProAIButton
+            isPro={optimize!.isPro}
+            loading={optimizing}
+            onClick={handleOptimize}
+            title="Optimize prompt with AI"
+          />
         )}
 
         <Button

@@ -7,6 +7,7 @@ import ItemCard from './item-card'
 import ImageThumbnailCard from './image-thumbnail-card'
 import FileListRow from './file-list-row'
 import ItemDrawer from './item-drawer'
+import { useItemDrawer } from '@/hooks/use-item-drawer'
 import type { ItemWithType } from '@/lib/db/items'
 
 interface ItemsClientWrapperProps {
@@ -18,23 +19,17 @@ interface ItemsClientWrapperProps {
 
 export default function ItemsClientWrapper({ items, layout: initialLayout = 'grid', collections = [], isPro = false }: ItemsClientWrapperProps) {
   const searchParams = useSearchParams()
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const { selectedId, drawerOpen, openDrawer, closeDrawer } = useItemDrawer()
   const [layout, setLayout] = useState(initialLayout)
 
   // Auto-open drawer from ?item= query param (e.g. from command palette)
   useEffect(() => {
     const itemId = searchParams.get('item')
     if (itemId) {
-      setSelectedId(itemId)
-      setDrawerOpen(true)
+      openDrawer(itemId)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams])
-
-  function handleItemClick(id: string) {
-    setSelectedId(id)
-    setDrawerOpen(true)
-  }
 
   return (
     <>
@@ -67,7 +62,7 @@ export default function ItemsClientWrapper({ items, layout: initialLayout = 'gri
             <FileListRow
               key={item.id}
               item={item}
-              onClick={() => handleItemClick(item.id)}
+              onClick={() => openDrawer(item.id)}
             />
           ))}
         </div>
@@ -78,13 +73,13 @@ export default function ItemsClientWrapper({ items, layout: initialLayout = 'gri
               <ImageThumbnailCard
                 key={item.id}
                 item={item}
-                onClick={() => handleItemClick(item.id)}
+                onClick={() => openDrawer(item.id)}
               />
             ) : (
               <ItemCard
                 key={item.id}
                 item={item}
-                onClick={() => handleItemClick(item.id)}
+                onClick={() => openDrawer(item.id)}
               />
             )
           )}
@@ -94,7 +89,7 @@ export default function ItemsClientWrapper({ items, layout: initialLayout = 'gri
       <ItemDrawer
         itemId={selectedId}
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
         allCollections={collections}
         isPro={isPro}
       />
