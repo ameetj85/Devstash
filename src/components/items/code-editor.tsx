@@ -2,13 +2,14 @@
 
 import { useMemo, useRef, useState } from 'react'
 import Editor, { type Monaco } from '@monaco-editor/react'
-import { Copy, Sparkles, Loader2, Crown } from 'lucide-react'
+import { Copy } from 'lucide-react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { useEditorPreferences } from '@/contexts/editor-preferences-context'
 import { explainCode } from '@/actions/ai'
+import ProAIButton from './pro-ai-button'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -184,34 +185,12 @@ export default function CodeEditor({
 
         {/* Explain button (drawer read view only) */}
         {showExplainUI && !showTabs && (
-          explain!.isPro ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-[#8a8a8a] hover:text-white hover:bg-[#3d3d3d]"
-              onClick={handleExplain}
-              type="button"
-              title="Explain code with AI"
-              disabled={explaining}
-            >
-              {explaining ? (
-                <Loader2 className="w-3 h-3 animate-spin" />
-              ) : (
-                <Sparkles className="w-3 h-3" />
-              )}
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 text-[#8a8a8a] hover:text-white hover:bg-[#3d3d3d] cursor-not-allowed opacity-70"
-              type="button"
-              title="AI features require Pro subscription"
-              disabled
-            >
-              <Crown className="w-3 h-3" />
-            </Button>
-          )
+          <ProAIButton
+            isPro={explain!.isPro}
+            loading={explaining}
+            onClick={handleExplain}
+            title="Explain code with AI"
+          />
         )}
 
         {/* Copy button */}

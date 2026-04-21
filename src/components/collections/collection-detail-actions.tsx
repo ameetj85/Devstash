@@ -1,11 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Pencil, Trash2, Star } from 'lucide-react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { toggleCollectionFavorite } from '@/actions/collections'
+import { useCollectionFavoriteToggle } from '@/hooks/use-collection-favorite-toggle'
 import EditCollectionDialog from './edit-collection-dialog'
 import DeleteCollectionDialog from './delete-collection-dialog'
 
@@ -19,22 +17,12 @@ interface CollectionDetailActionsProps {
 }
 
 export default function CollectionDetailActions({ collection }: CollectionDetailActionsProps) {
-  const router = useRouter()
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
-  const [isFavorite, setIsFavorite] = useState(collection.isFavorite)
-
-  async function handleFavorite() {
-    const prev = isFavorite
-    setIsFavorite(!prev)
-    const result = await toggleCollectionFavorite(collection.id)
-    if (!result.success) {
-      setIsFavorite(prev)
-      toast.error(result.error || 'Failed to update favorite')
-      return
-    }
-    router.refresh()
-  }
+  const { isFavorite, toggle: handleFavorite } = useCollectionFavoriteToggle(
+    collection.id,
+    collection.isFavorite,
+  )
 
   return (
     <>

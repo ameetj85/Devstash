@@ -13,42 +13,16 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { createItem } from '@/actions/items'
-import CodeEditor from '@/components/items/code-editor'
-import MarkdownEditor from '@/components/items/markdown-editor'
-import LanguageSelect from '@/components/items/language-select'
 import FileUpload, { type UploadedFile } from '@/components/items/file-upload'
-import CollectionPicker from '@/components/items/collection-picker'
-import SuggestTagsButton from '@/components/items/suggest-tags-button'
-import GenerateDescriptionButton from '@/components/items/generate-description-button'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import ItemFormBody, { type ItemFormState } from '@/components/items/item-form-body'
+import { FILE_TYPES, TYPE_COLORS } from '@/lib/item-type-config'
 
 const ITEM_TYPES = ['snippet', 'prompt', 'command', 'note', 'link', 'file', 'image'] as const
 type ItemType = (typeof ITEM_TYPES)[number]
 
-const TYPE_COLORS: Record<ItemType, string> = {
-  snippet: '#3b82f6',
-  prompt: '#8b5cf6',
-  command: '#f97316',
-  note: '#fde047',
-  link: '#10b981',
-  file: '#6b7280',
-  image: '#ec4899',
-}
-
-type FormState = {
-  title: string
-  description: string
-  content: string
-  url: string
-  language: string
-  tags: string
-}
-
-const EMPTY_FORM: FormState = {
+const EMPTY_FORM: ItemFormState = {
   title: '',
   description: '',
   content: '',
@@ -56,10 +30,6 @@ const EMPTY_FORM: FormState = {
   language: '',
   tags: '',
 }
-
-import { CONTENT_TYPES, LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib/item-type-config'
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 interface CreateItemDialogProps {
   defaultType?: string
@@ -80,7 +50,7 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
   const open = isControlled ? externalOpen : internalOpen
   const setOpen = isControlled ? (v: boolean) => onExternalOpenChange?.(v) : setInternalOpen
   const [selectedType, setSelectedType] = useState<ItemType>(initialType)
-  const [form, setForm] = useState<FormState>(EMPTY_FORM)
+  const [form, setForm] = useState<ItemFormState>(EMPTY_FORM)
   const [selectedCollections, setSelectedCollections] = useState<string[]>([])
   const [uploadedFile, setUploadedFile] = useState<UploadedFile | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -96,9 +66,8 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
     }
   }
 
-  function field(key: keyof FormState) {
-    return (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setForm((f) => ({ ...f, [key]: e.target.value }))
+  function updateForm(patch: Partial<ItemFormState>) {
+    setForm((f) => ({ ...f, ...patch }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -150,8 +119,6 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
     router.refresh()
   }
 
-  const showContent = CONTENT_TYPES.includes(selectedType)
-  const showLanguage = LANGUAGE_TYPES.includes(selectedType)
   const showUrl = selectedType === 'link'
   const showFile = FILE_TYPES.includes(selectedType)
   const color = TYPE_COLORS[selectedType]
@@ -162,6 +129,21 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
     !form.title.trim() ||
     (showUrl && !form.url.trim()) ||
     (showFile && !uploadedFile)
+
+  const fileUploadSlot = showFile ? (
+    <div className="space-y-1.5">
+      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+        {selectedType === 'image' ? 'Image' : 'File'} <span style={{ color }}>*</span>
+      </Label>
+      <FileUpload
+        itemType={selectedType as 'file' | 'image'}
+        value={uploadedFile}
+        onChange={setUploadedFile}
+        onUploadStart={() => setUploading(true)}
+        onUploadEnd={() => setUploading(false)}
+      />
+    </div>
+  ) : undefined
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -211,7 +193,7 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
             </Label>
             <Input
               value={form.title}
-              onChange={field('title')}
+              onChange={(e) => updateForm({ title: e.target.value })}
               placeholder={`${selectedType} title`}
               className="text-sm"
               required
@@ -219,159 +201,20 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
             />
           </div>
 
-          {/* Description */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Description
-              </Label>
-              <GenerateDescriptionButton
-                title={form.title}
-                typeName={selectedType}
-                content={form.content}
-                url={form.url}
-                fileName={uploadedFile?.fileName}
-                language={form.language}
-                tags={form.tags.split(',').map((t) => t.trim()).filter(Boolean)}
-                isPro={isPro}
-                onGenerated={(description) => setForm((f) => ({ ...f, description }))}
-              />
-            </div>
-            <Textarea
-              value={form.description}
-              onChange={field('description')}
-              placeholder="Optional description"
-              className="text-sm resize-none"
-              rows={2}
-            />
-          </div>
-
-          {/* File / Image upload */}
-          {showFile && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                {selectedType === 'image' ? 'Image' : 'File'} <span style={{ color }}>*</span>
-              </Label>
-              <FileUpload
-                itemType={selectedType as 'file' | 'image'}
-                value={uploadedFile}
-                onChange={setUploadedFile}
-                onUploadStart={() => setUploading(true)}
-                onUploadEnd={() => setUploading(false)}
-              />
-            </div>
-          )}
-
-          {/* Language (above content for immediate highlighting) */}
-          {showLanguage && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Language
-              </Label>
-              <LanguageSelect
-                value={form.language}
-                onChange={(v) => setForm((f) => ({ ...f, language: v }))}
-              />
-            </div>
-          )}
-
-          {/* Content */}
-          {showContent && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Content
-              </Label>
-              {showLanguage ? (
-                <CodeEditor
-                  value={form.content}
-                  onChange={(v) => setForm((f) => ({ ...f, content: v }))}
-                  language={form.language}
-                />
-              ) : MARKDOWN_TYPES.includes(selectedType) ? (
-                <MarkdownEditor
-                  value={form.content}
-                  onChange={(v) => setForm((f) => ({ ...f, content: v }))}
-                  optimize={selectedType === 'prompt' ? {
-                    typeName: 'prompt',
-                    title: form.title || undefined,
-                    isPro,
-                    onAccept: (optimized) => {
-                      setForm((f) => ({ ...f, content: optimized }))
-                      toast.success('Optimized prompt applied.')
-                    },
-                  } : undefined}
-                />
-              ) : (
-                <Textarea
-                  value={form.content}
-                  onChange={field('content')}
-                  placeholder="Content"
-                  className="text-xs font-mono resize-none"
-                  rows={6}
-                />
-              )}
-            </div>
-          )}
-
-          {/* URL */}
-          {showUrl && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                URL <span style={{ color }}>*</span>
-              </Label>
-              <Input
-                value={form.url}
-                onChange={field('url')}
-                placeholder="https://..."
-                className="text-sm"
-                type="url"
-                required={showUrl}
-              />
-            </div>
-          )}
-
-          {/* Tags */}
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-              Tags
-            </Label>
-            <Input
-              value={form.tags}
-              onChange={field('tags')}
-              placeholder="react, typescript, hooks"
-              className="text-sm"
-            />
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-              <p className="text-xs text-muted-foreground">Comma-separated</p>
-              <SuggestTagsButton
-                title={form.title}
-                content={form.content}
-                typeName={selectedType}
-                isPro={isPro}
-                onAcceptTag={(tag) => {
-                  setForm((f) => {
-                    const existing = f.tags.split(',').map((t) => t.trim()).filter(Boolean)
-                    if (existing.includes(tag)) return f
-                    return { ...f, tags: existing.length > 0 ? `${f.tags}, ${tag}` : tag }
-                  })
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Collections */}
-          {collections.length > 0 && (
-            <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Collections
-              </Label>
-              <CollectionPicker
-                collections={collections}
-                selected={selectedCollections}
-                onChange={setSelectedCollections}
-              />
-            </div>
-          )}
+          <ItemFormBody
+            form={form}
+            onFormChange={updateForm}
+            typeName={selectedType}
+            selectedCollections={selectedCollections}
+            onCollectionsChange={setSelectedCollections}
+            allCollections={collections}
+            isPro={isPro}
+            descriptionFileName={uploadedFile?.fileName}
+            descriptionRows={2}
+            fileUploadSlot={fileUploadSlot}
+            urlRequired
+            urlLabelSuffix={<span style={{ color }}>*</span>}
+          />
 
           <DialogFooter>
             <Button

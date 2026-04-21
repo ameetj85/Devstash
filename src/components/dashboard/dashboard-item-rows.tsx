@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
 import {
   Star,
   Pin,
   Clock,
 } from 'lucide-react'
 import ItemDrawer from '@/components/items/item-drawer'
+import { useItemDrawer } from '@/hooks/use-item-drawer'
 import { getItemIcon } from '@/lib/item-type-icons'
 
 // Serializable item row (dates pre-formatted as strings by the server component)
@@ -29,13 +29,7 @@ interface DashboardItemRowsProps {
 }
 
 export default function DashboardItemRows({ pinnedItems, recentItems, collections = [], isPro = false }: DashboardItemRowsProps) {
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [drawerOpen, setDrawerOpen] = useState(false)
-
-  function openDrawer(id: string) {
-    setSelectedId(id)
-    setDrawerOpen(true)
-  }
+  const { selectedId, drawerOpen, openDrawer, closeDrawer } = useItemDrawer()
 
   return (
     <>
@@ -128,7 +122,7 @@ export default function DashboardItemRows({ pinnedItems, recentItems, collection
       <ItemDrawer
         itemId={selectedId}
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
         allCollections={collections}
         isPro={isPro}
       />

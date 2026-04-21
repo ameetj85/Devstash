@@ -2,18 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import {
-  File,
-  Star,
-  Pin,
-  Copy,
-  Pencil,
-  Trash2,
-  ExternalLink,
-  Save,
-  X,
-  Download,
-} from 'lucide-react'
+import { File } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   Sheet,
@@ -21,85 +10,14 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { Label } from '@/components/ui/label'
 import { updateItem, deleteItem, toggleItemFavorite, toggleItemPin } from '@/actions/items'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from '@/components/ui/alert-dialog'
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import CodeEditor from '@/components/items/code-editor'
-import MarkdownEditor from '@/components/items/markdown-editor'
-import LanguageSelect from '@/components/items/language-select'
-import CollectionPicker from '@/components/items/collection-picker'
-import SuggestTagsButton from '@/components/items/suggest-tags-button'
-import GenerateDescriptionButton from '@/components/items/generate-description-button'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type ItemDetailResponse = {
-  id: string
-  title: string
-  description: string | null
-  content: string | null
-  contentType: string
-  url: string | null
-  fileUrl: string | null
-  fileName: string | null
-  language: string | null
-  isFavorite: boolean
-  isPinned: boolean
-  createdAt: string
-  updatedAt: string
-  tags: string[]
-  collections: { id: string; name: string }[]
-  itemType: { name: string; icon: string; color: string }
-}
-
-type EditFormState = {
-  title: string
-  description: string
-  content: string
-  url: string
-  language: string
-  tags: string
-}
-
 import { getItemIcon } from '@/lib/item-type-icons'
-import { CONTENT_TYPES, LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib/item-type-config'
-import { extractFileKey } from '@/lib/file-utils'
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('en-US', {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-function itemToFormState(item: ItemDetailResponse): EditFormState {
-  return {
-    title: item.title,
-    description: item.description ?? '',
-    content: item.content ?? '',
-    url: item.url ?? '',
-    language: item.language ?? '',
-    tags: item.tags.join(', '),
-  }
-}
-
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+import type { ItemFormState } from './item-form-body'
+import type { ItemDetailResponse } from './item-drawer-types'
+import { itemToFormState } from './item-drawer-types'
+import ItemDrawerView from './item-drawer-view'
+import ItemDrawerEdit from './item-drawer-edit'
 
 function DrawerSkeleton() {
   return (
@@ -127,7 +45,20 @@ function DrawerSkeleton() {
   )
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+function normalizeDates(updated: Omit<ItemDetailResponse, 'createdAt' | 'updatedAt'> & {
+  createdAt: Date | string
+  updatedAt: Date | string
+}): ItemDetailResponse {
+  return {
+    ...updated,
+    createdAt: updated.createdAt instanceof Date
+      ? updated.createdAt.toISOString()
+      : String(updated.createdAt),
+    updatedAt: updated.updatedAt instanceof Date
+      ? updated.updatedAt.toISOString()
+      : String(updated.updatedAt),
+  }
+}
 
 interface ItemDrawerProps {
   itemId: string | null
@@ -145,7 +76,7 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [selectedCollections, setSelectedCollections] = useState<string[]>([])
-  const [form, setForm] = useState<EditFormState>({
+  const [form, setForm] = useState<ItemFormState>({
     title: '',
     description: '',
     content: '',
@@ -176,11 +107,8 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
   const Icon = item ? getItemIcon(item.itemType.icon) : File
   const color = item?.itemType.color ?? '#6b7280'
 
-  function handleCopy() {
-    if (!item) return
-    const text = item.content ?? item.url ?? item.fileUrl ?? item.title
-    navigator.clipboard.writeText(text)
-    toast.success('Copied to clipboard')
+  function updateForm(patch: Partial<ItemFormState>) {
+    setForm((f) => ({ ...f, ...patch }))
   }
 
   function handleEditToggle() {
@@ -231,17 +159,7 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
       return
     }
 
-    // Merge dates back as strings (server returns Date objects)
-    const updated = result.data
-    setItem({
-      ...updated,
-      createdAt: updated.createdAt instanceof Date
-        ? updated.createdAt.toISOString()
-        : String(updated.createdAt),
-      updatedAt: updated.updatedAt instanceof Date
-        ? updated.updatedAt.toISOString()
-        : String(updated.updatedAt),
-    })
+    setItem(normalizeDates(result.data))
     setIsEditing(false)
     toast.success('Item saved')
     router.refresh()
@@ -249,11 +167,9 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
 
   async function handleFavorite() {
     if (!item) return
-    // Optimistic update
     setItem((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : prev)
     const result = await toggleItemFavorite(item.id)
     if (!result.success) {
-      // Rollback
       setItem((prev) => prev ? { ...prev, isFavorite: !prev.isFavorite } : prev)
       toast.error(result.error || 'Failed to update favorite')
       return
@@ -263,11 +179,9 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
 
   async function handlePin() {
     if (!item) return
-    // Optimistic update
     setItem((prev) => prev ? { ...prev, isPinned: !prev.isPinned } : prev)
     const result = await toggleItemPin(item.id)
     if (!result.success) {
-      // Rollback
       setItem((prev) => prev ? { ...prev, isPinned: !prev.isPinned } : prev)
       toast.error(result.error || 'Failed to update pin')
       return
@@ -289,10 +203,27 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
     router.refresh()
   }
 
-  const typeName = item?.itemType.name ?? ''
-  const showContent = CONTENT_TYPES.includes(typeName)
-  const showLanguage = LANGUAGE_TYPES.includes(typeName)
-  const showUrl = typeName === 'link'
+  async function handleOptimizedPromptAccept(optimized: string) {
+    if (!item) return
+    const result = await updateItem(item.id, {
+      title: item.title,
+      description: item.description,
+      content: optimized,
+      url: item.url,
+      language: item.language,
+      tags: item.tags,
+      collectionIds: item.collections.map((c) => c.id),
+    })
+    if (!result.success) {
+      toast.error(
+        typeof result.error === 'string' ? result.error : 'Failed to apply optimized prompt'
+      )
+      return
+    }
+    setItem(normalizeDates(result.data))
+    toast.success('Optimized prompt applied')
+    router.refresh()
+  }
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
@@ -329,7 +260,7 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
             {isEditing ? (
               <Input
                 value={form.title}
-                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                onChange={(e) => updateForm({ title: e.target.value })}
                 className="text-base font-semibold h-8"
                 placeholder="Title"
               />
@@ -344,468 +275,29 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
         ) : item ? (
           <div className="flex flex-col gap-6 p-6">
             {isEditing ? (
-              <>
-                {/* Edit action bar */}
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={handleSave}
-                    disabled={saving || !form.title.trim()}
-                  >
-                    <Save className="w-3.5 h-3.5" />
-                    {saving ? 'Saving…' : 'Save'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={handleCancel}
-                    disabled={saving}
-                  >
-                    <X className="w-3.5 h-3.5" />
-                    Cancel
-                  </Button>
-                </div>
-
-                {/* Description */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Description
-                    </Label>
-                    <GenerateDescriptionButton
-                      title={form.title}
-                      typeName={typeName}
-                      content={form.content}
-                      url={form.url}
-                      fileName={item.fileName ?? undefined}
-                      language={form.language}
-                      tags={form.tags.split(',').map((t) => t.trim()).filter(Boolean)}
-                      isPro={isPro}
-                      onGenerated={(description) => setForm((f) => ({ ...f, description }))}
-                    />
-                  </div>
-                  <Textarea
-                    value={form.description}
-                    onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                    placeholder="Optional description"
-                    className="text-sm resize-none"
-                    rows={3}
-                  />
-                </div>
-
-                {/* Language (above content for immediate highlighting) */}
-                {showLanguage && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Language
-                    </Label>
-                    <LanguageSelect
-                      value={form.language}
-                      onChange={(v) => setForm((f) => ({ ...f, language: v }))}
-                    />
-                  </div>
-                )}
-
-                {/* Content */}
-                {showContent && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Content
-                    </Label>
-                    {showLanguage ? (
-                      <CodeEditor
-                        value={form.content}
-                        onChange={(v) => setForm((f) => ({ ...f, content: v }))}
-                        language={form.language}
-                      />
-                    ) : MARKDOWN_TYPES.includes(typeName) ? (
-                      <MarkdownEditor
-                        value={form.content}
-                        onChange={(v) => setForm((f) => ({ ...f, content: v }))}
-                        optimize={typeName === 'prompt' ? {
-                          typeName: 'prompt',
-                          title: form.title || undefined,
-                          isPro,
-                          onAccept: (optimized) => {
-                            setForm((f) => ({ ...f, content: optimized }))
-                            toast.success('Optimized prompt applied. Click Save to persist.')
-                          },
-                        } : undefined}
-                      />
-                    ) : (
-                      <Textarea
-                        value={form.content}
-                        onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))}
-                        placeholder="Content"
-                        className="text-xs font-mono resize-none"
-                        rows={8}
-                      />
-                    )}
-                  </div>
-                )}
-
-                {/* URL */}
-                {showUrl && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      URL
-                    </Label>
-                    <Input
-                      value={form.url}
-                      onChange={(e) => setForm((f) => ({ ...f, url: e.target.value }))}
-                      placeholder="https://..."
-                      className="text-sm"
-                      type="url"
-                    />
-                  </div>
-                )}
-
-                {/* Tags */}
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                    Tags
-                  </Label>
-                  <Input
-                    value={form.tags}
-                    onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))}
-                    placeholder="react, typescript, hooks"
-                    className="text-sm"
-                  />
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                    <p className="text-xs text-muted-foreground">Comma-separated</p>
-                    <SuggestTagsButton
-                      title={form.title}
-                      content={form.content}
-                      typeName={typeName}
-                      isPro={isPro}
-                      onAcceptTag={(tag) => {
-                        setForm((f) => {
-                          const existing = f.tags.split(',').map((t) => t.trim()).filter(Boolean)
-                          if (existing.includes(tag)) return f
-                          return { ...f, tags: existing.length > 0 ? `${f.tags}, ${tag}` : tag }
-                        })
-                      }}
-                    />
-                  </div>
-                </div>
-
-                {/* Collections */}
-                {allCollections.length > 0 && (
-                  <div className="space-y-1.5">
-                    <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                      Collections
-                    </Label>
-                    <CollectionPicker
-                      collections={allCollections}
-                      selected={selectedCollections}
-                      onChange={setSelectedCollections}
-                    />
-                  </div>
-                )}
-
-                {/* Non-editable: Details */}
-                <section>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                    Details
-                  </p>
-                  <dl className="space-y-1.5 text-sm">
-                    <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground">Created</dt>
-                      <dd>{formatDate(item.createdAt)}</dd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground">Updated</dt>
-                      <dd>{formatDate(item.updatedAt)}</dd>
-                    </div>
-                  </dl>
-                </section>
-              </>
+              <ItemDrawerEdit
+                item={item}
+                form={form}
+                onFormChange={updateForm}
+                selectedCollections={selectedCollections}
+                onCollectionsChange={setSelectedCollections}
+                allCollections={allCollections}
+                isPro={isPro}
+                saving={saving}
+                onSave={handleSave}
+                onCancel={handleCancel}
+              />
             ) : (
-              <>
-                {/* View action bar */}
-                <div className="flex items-center gap-1.5">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={handleFavorite}
-                  >
-                    <Star
-                      className="w-3.5 h-3.5"
-                      style={item.isFavorite ? { fill: '#facc15', color: '#facc15' } : {}}
-                    />
-                    Favorite
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={handlePin}
-                  >
-                    <Pin
-                      className="w-3.5 h-3.5"
-                      style={item.isPinned ? { fill: '#3b82f6', color: '#3b82f6' } : {}}
-                    />
-                    {item.isPinned ? 'Unpin' : 'Pin'}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 text-xs"
-                    onClick={handleCopy}
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                    Copy
-                  </Button>
-                  <div className="flex-1" />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={handleEditToggle}
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger
-                      render={
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
-                          disabled={deleting}
-                        />
-                      }
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Delete &ldquo;{item.title}&rdquo;?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. The item will be permanently deleted.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={handleDelete}
-                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                        >
-                          Delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-
-                {/* Description */}
-                {item.description && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      Description
-                    </p>
-                    <p className="text-sm text-foreground/80 leading-relaxed">
-                      {item.description}
-                    </p>
-                  </section>
-                )}
-
-                {/* Content */}
-                {item.content && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      Content
-                    </p>
-                    {LANGUAGE_TYPES.includes(typeName) ? (
-                      <CodeEditor
-                        value={item.content}
-                        language={item.language}
-                        readonly
-                        explain={{
-                          typeName: typeName as 'snippet' | 'command',
-                          title: item.title,
-                          isPro,
-                        }}
-                      />
-                    ) : MARKDOWN_TYPES.includes(typeName) ? (
-                      <MarkdownEditor
-                        value={item.content}
-                        readonly
-                        optimize={typeName === 'prompt' ? {
-                          typeName: 'prompt',
-                          title: item.title,
-                          isPro,
-                          onAccept: async (optimized) => {
-                            const result = await updateItem(item.id, {
-                              title: item.title,
-                              description: item.description,
-                              content: optimized,
-                              url: item.url,
-                              language: item.language,
-                              tags: item.tags,
-                              collectionIds: item.collections.map((c) => c.id),
-                            })
-                            if (!result.success) {
-                              toast.error(
-                                typeof result.error === 'string'
-                                  ? result.error
-                                  : 'Failed to apply optimized prompt'
-                              )
-                              return
-                            }
-                            const updated = result.data
-                            setItem({
-                              ...updated,
-                              createdAt: updated.createdAt instanceof Date
-                                ? updated.createdAt.toISOString()
-                                : String(updated.createdAt),
-                              updatedAt: updated.updatedAt instanceof Date
-                                ? updated.updatedAt.toISOString()
-                                : String(updated.updatedAt),
-                            })
-                            toast.success('Optimized prompt applied')
-                            router.refresh()
-                          },
-                        } : undefined}
-                      />
-                    ) : (
-                      <SyntaxHighlighter
-                        language={item.language ?? 'text'}
-                        style={vscDarkPlus}
-                        customStyle={{
-                          margin: 0,
-                          borderRadius: '0.5rem',
-                          fontSize: '0.75rem',
-                          lineHeight: '1.6',
-                        }}
-                        wrapLongLines
-                      >
-                        {item.content}
-                      </SyntaxHighlighter>
-                    )}
-                  </section>
-                )}
-
-                {/* URL */}
-                {item.url && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      URL
-                    </p>
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-primary flex items-center gap-1 hover:underline break-all"
-                    >
-                      {item.url}
-                      <ExternalLink className="w-3 h-3 shrink-0" />
-                    </a>
-                  </section>
-                )}
-
-                {/* File / Image */}
-                {FILE_TYPES.includes(typeName) && item.fileUrl && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      {typeName === 'image' ? 'Image' : 'File'}
-                    </p>
-                    {typeName === 'image' ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={item.fileUrl}
-                        alt={item.fileName ?? 'Image'}
-                        className="rounded-lg border border-border max-h-80 w-auto object-contain"
-                      />
-                    ) : (
-                      <div className="flex items-center gap-3 rounded-lg border border-border bg-card p-3">
-                        <div className="h-10 w-10 rounded bg-muted flex items-center justify-center shrink-0">
-                          <File className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate">{item.fileName ?? 'File'}</p>
-                        </div>
-                        <a
-                          href={`/api/files/${encodeURIComponent(extractFileKey(item.fileUrl))}?name=${encodeURIComponent(item.fileName ?? 'download')}`}
-                          download={item.fileName ?? 'download'}
-                          className="shrink-0 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                          Download
-                        </a>
-                      </div>
-                    )}
-                    {typeName === 'image' && item.fileName && (
-                      <a
-                        href={`/api/files/${encodeURIComponent(extractFileKey(item.fileUrl))}?name=${encodeURIComponent(item.fileName)}`}
-                        download={item.fileName}
-                        className="mt-2 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                        Download
-                      </a>
-                    )}
-                  </section>
-                )}
-
-                {/* Tags */}
-                {item.tags.length > 0 && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      Tags
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.tags.map((tag) => (
-                        <span
-                          key={tag}
-                          className="text-xs px-2 py-0.5 rounded bg-muted text-muted-foreground"
-                        >
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Collections */}
-                {item.collections.length > 0 && (
-                  <section>
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                      Collections
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {item.collections.map((col) => (
-                        <span
-                          key={col.id}
-                          className="text-xs px-2 py-1 rounded border border-border bg-card text-foreground/80"
-                        >
-                          {col.name}
-                        </span>
-                      ))}
-                    </div>
-                  </section>
-                )}
-
-                {/* Details */}
-                <section>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">
-                    Details
-                  </p>
-                  <dl className="space-y-1.5 text-sm">
-                    <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground">Created</dt>
-                      <dd>{formatDate(item.createdAt)}</dd>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <dt className="text-muted-foreground">Updated</dt>
-                      <dd>{formatDate(item.updatedAt)}</dd>
-                    </div>
-                  </dl>
-                </section>
-              </>
+              <ItemDrawerView
+                item={item}
+                isPro={isPro}
+                deleting={deleting}
+                onEdit={handleEditToggle}
+                onFavorite={handleFavorite}
+                onPin={handlePin}
+                onDelete={handleDelete}
+                onOptimizedPromptAccept={handleOptimizedPromptAccept}
+              />
             )}
           </div>
         ) : null}
