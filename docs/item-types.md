@@ -1,6 +1,6 @@
 # Item Types
 
-DevStash ships with 7 system item types. System types have `isSystem: true` and `userId: null` in the database — they are non-editable and shared across all users.
+Scribbles ships with 7 system item types. System types have `isSystem: true` and `userId: null` in the database — they are non-editable and shared across all users.
 
 ---
 

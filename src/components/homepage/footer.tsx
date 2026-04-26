@@ -35,7 +35,7 @@ export function Footer() {
         <div className="max-md:col-span-2">
           <a href="#" className="mb-3 flex items-center gap-2 text-xl font-bold text-[#f0f0f5]">
             <FileCode2 className="size-6" />
-            DevStash
+            Scribbles
           </a>
           <p className="max-w-[250px] text-sm text-[#8888a0]">
             Your developer knowledge hub. One place for snippets, prompts, commands, and more.
@@ -62,7 +62,7 @@ export function Footer() {
       </div>
 
       <div className="flex items-center justify-between border-t border-[#2a2a3a] pt-6 text-xs text-[#55556a] max-md:flex-col max-md:gap-2 max-md:text-center">
-        <span>&copy; {new Date().getFullYear()} DevStash. All rights reserved.</span>
+        <span>&copy; {new Date().getFullYear()} Scribbles. All rights reserved.</span>
         <span>Built for developers, by developers.</span>
       </div>
     </footer>

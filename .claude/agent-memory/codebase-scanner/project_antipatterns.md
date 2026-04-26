@@ -1,5 +1,5 @@
 ---
-name: DevStash Recurring Antipatterns
+name: Scribbles Recurring Antipatterns
 description: Recurring code quality issues and antipatterns found during March 2026 scan (updated after full auth+items+uploads audit)
 type: project
 ---

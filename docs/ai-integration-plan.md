@@ -1,6 +1,6 @@
 # AI Integration Plan
 
-> Research findings for integrating OpenAI `gpt-5-nano` into DevStash.
+> Research findings for integrating OpenAI `gpt-5-nano` into Scribbles.
 
 ---
 

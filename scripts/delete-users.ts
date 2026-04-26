@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { PrismaNeon } from '@prisma/adapter-neon'
 import { PrismaClient } from '../src/generated/prisma/client'
 
-const KEEP_EMAIL = 'demo@devstash.io'
+const KEEP_EMAIL = 'demo@Scribbles.io'
 
 const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
 const prisma = new PrismaClient({ adapter })

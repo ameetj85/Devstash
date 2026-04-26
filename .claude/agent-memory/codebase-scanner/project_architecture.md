@@ -1,10 +1,10 @@
 ---
-name: DevStash Architecture Overview
-description: Key architectural decisions, file locations, and current state of the DevStash codebase (March 2026 — post-auth/items/uploads scan)
+name: Scribbles Architecture Overview
+description: Key architectural decisions, file locations, and current state of the Scribbles codebase (March 2026 — post-auth/items/uploads scan)
 type: project
 ---
 
-DevStash is a fully auth-gated developer knowledge hub. As of March 2026, the app has: full auth (NextAuth v5, GitHub OAuth + credentials, email verification, rate limiting), items CRUD with a drawer UI, file/image upload via Cloudflare R2, and a dashboard. Collections and search pages are not yet built (sidebar links go to /collections/* which 404).
+Scribbles is a fully auth-gated developer knowledge hub. As of March 2026, the app has: full auth (NextAuth v5, GitHub OAuth + credentials, email verification, rate limiting), items CRUD with a drawer UI, file/image upload via Cloudflare R2, and a dashboard. Collections and search pages are not yet built (sidebar links go to /collections/* which 404).
 
 **Why:** Active course project built incrementally. Auth, items, and file upload are fully implemented. Collections/search are next.
 **How to apply:** Do not flag missing collection/search pages as issues — they are planned but not yet implemented.

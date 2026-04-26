@@ -39,7 +39,7 @@ export default function ForgotPasswordForm() {
         <div className="text-4xl">✉</div>
         <h1 className="text-2xl font-bold text-foreground">Check your email</h1>
         <p className="text-sm text-muted-foreground">
-          If <strong>{email}</strong> is associated with a DevStash account, we&apos;ve sent a
+          If <strong>{email}</strong> is associated with a Scribbles account, we&apos;ve sent a
           password reset link. The link expires in 1 hour.
         </p>
         <Link

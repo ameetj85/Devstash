@@ -164,7 +164,7 @@ Examples of what to record:
 
 # Persistent Agent Memory
 
-You have a persistent, file-based memory system at `/Users/ameetjayawant/Source/repos/Traversy-AI-Course/Source/devstash/.claude/agent-memory/refactor-scanner/`. Write to it directly with the Write tool (do not run mkdir or check for its existence — if it doesn't exist yet, the first Write will create it via its parent tooling, or skip memory for that run).
+You have a persistent, file-based memory system at `/Users/ameetjayawant/Source/repos/Traversy-AI-Course/Source/Scribbles/.claude/agent-memory/refactor-scanner/`. Write to it directly with the Write tool (do not run mkdir or check for its existence — if it doesn't exist yet, the first Write will create it via its parent tooling, or skip memory for that run).
 
 Save memories only when they'd be useful in *future* scans.
 

@@ -27,7 +27,7 @@ export function Navbar() {
       <div className="flex items-center justify-between px-6 py-4">
         <a href="/" className="flex items-center gap-2 text-xl font-bold text-[#f0f0f5]">
           <FileCode2 className="size-7" />
-          DevStash
+          Scribbles
         </a>
 
         <ul className="hidden items-center gap-8 md:flex">

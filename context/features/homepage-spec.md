@@ -2,7 +2,7 @@
 
 ## Overview
 
-Convert the static HTML/CSS/JS mockup in `prototypes/homepage/` (on `feature/homepage-mockup` branch) into the real Next.js homepage at `src/app/page.tsx`. This replaces the current placeholder `<h1>Devstash</h1>`.
+Convert the static HTML/CSS/JS mockup in `prototypes/homepage/` (on `feature/homepage-mockup` branch) into the real Next.js homepage at `src/app/page.tsx`. This replaces the current placeholder `<h1>Scribbles</h1>`.
 
 ## Reference
 

@@ -1,6 +1,6 @@
 # Stripe Subscription Integration Plan
 
-> DevStash Pro: $8/mo monthly, $72/yr ($6/mo) annual
+> Scribbles Pro: $8/mo monthly, $72/yr ($6/mo) annual
 
 ---
 
@@ -704,7 +704,7 @@ When a free user hits a limit (create item/collection, upload file), the error t
 
 ### 1. Create Product
 
-- **Name**: DevStash Pro
+- **Name**: Scribbles Pro
 - **Description**: Unlimited items, collections, file uploads, AI features
 
 ### 2. Create Prices

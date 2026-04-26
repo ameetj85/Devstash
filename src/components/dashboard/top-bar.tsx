@@ -38,7 +38,7 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
         </button>
         <Link href="/dashboard" className="flex items-center gap-2 shrink-0">
           <FileCode2 className="size-7 text-primary" />
-          <span className="hidden sm:inline font-semibold text-sm">DevStash</span>
+          <span className="hidden sm:inline font-semibold text-sm">Scribbles</span>
         </Link>
       </div>
 

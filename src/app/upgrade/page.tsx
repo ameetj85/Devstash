@@ -76,7 +76,7 @@ export default function UpgradePage() {
             Upgrade to Pro
           </div>
           <h1 className="text-3xl font-bold tracking-tight mb-3">
-            Unlock the full power of DevStash
+            Unlock the full power of Scribbles
           </h1>
           <p className="text-muted-foreground max-w-lg mx-auto">
             Get unlimited items, collections, file uploads, AI features, and more.

@@ -1,4 +1,4 @@
-# DevStash — Project Overview
+# Scribbles — Project Overview
 
 > **One fast, searchable, AI-enhanced hub for all your developer knowledge & resources.**
 
@@ -34,7 +34,7 @@ Developers keep their essentials scattered across too many places:
 
 **Result:** Context switching, lost knowledge, inconsistent workflows.
 
-**DevStash** solves this by providing a single, fast, searchable, AI-enhanced hub for all developer knowledge and resources.
+**Scribbles** solves this by providing a single, fast, searchable, AI-enhanced hub for all developer knowledge and resources.
 
 ---
 
@@ -53,7 +53,7 @@ Developers keep their essentials scattered across too many places:
 
 ### A. Items & Item Types
 
-Items are the core unit of DevStash. Each item has a **type** that determines its behavior and appearance. Users will eventually be able to create custom types, but the app ships with these **system types** (non-editable):
+Items are the core unit of Scribbles. Each item has a **type** that determines its behavior and appearance. Users will eventually be able to create custom types, but the app ships with these **system types** (non-editable):
 
 | Type        | Content Mode | Color                       | Icon        | Pro Only |
 | ----------- | ------------ | --------------------------- | ----------- | -------- |

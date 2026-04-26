@@ -62,7 +62,7 @@ export function FeaturesSection() {
           Everything you need, nothing you don&apos;t
         </h2>
         <p className="mb-12 max-w-[550px] text-[#8888a0]">
-          DevStash is purpose-built for developers. Fast, keyboard-driven, and dark-mode by default.
+          Scribbles is purpose-built for developers. Fast, keyboard-driven, and dark-mode by default.
         </p>
       </div>
 

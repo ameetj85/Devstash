@@ -49,7 +49,7 @@ export default function SignInForm() {
       {/* Header */}
       <div className="text-center space-y-1">
         <h1 className="text-2xl font-bold text-foreground">Welcome back</h1>
-        <p className="text-sm text-muted-foreground">Sign in to your DevStash account</p>
+        <p className="text-sm text-muted-foreground">Sign in to your Scribbles account</p>
       </div>
 
       <GitHubSignInButton label="Sign in with GitHub" />

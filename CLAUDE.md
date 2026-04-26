@@ -1,4 +1,4 @@
-# DevStash
+# Scribbles
 
 A developer knowledge hub for snippets, commands, prompts, notes, files, images, links and custom types.
 
@@ -13,7 +13,7 @@ Read the following to get the full context of the project:
 
 ## Neon Database (MCP)
 
-The DevStash Neon project does **not** appear in `mcp__neon__list_projects`. Always query the database using the connection string from `.env` via the `@neondatabase/serverless` driver:
+The Scribbles Neon project does **not** appear in `mcp__neon__list_projects`. Always query the database using the connection string from `.env` via the `@neondatabase/serverless` driver:
 
 ```js
 const { neon } = require('@neondatabase/serverless');
@@ -28,7 +28,7 @@ const sql = neon('<DATABASE_URL from .env>');
 - **Database:** `neondb` (both branches)
 - **Default for all dev work:** use `.env` (development branch)
 
-> Never use `mcp__neon__run_sql` with another project's ID for DevStash queries — it will hit the wrong database.
+> Never use `mcp__neon__run_sql` with another project's ID for Scribbles queries — it will hit the wrong database.
 
 ## Commands
 

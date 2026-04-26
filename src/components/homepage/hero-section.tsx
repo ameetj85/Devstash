@@ -25,7 +25,7 @@ export function HeroSection() {
       </h1>
 
       <p className="mx-auto mb-8 max-w-[600px] text-[clamp(1rem,2.5vw,1.25rem)] text-[#8888a0]">
-        Your code snippets, AI prompts, commands, and notes are scattered everywhere. DevStash brings them into one fast, searchable hub.
+        Your code snippets, AI prompts, commands, and notes are scattered everywhere. Scribbles brings them into one fast, searchable hub.
       </p>
 
       <div className="mb-16 flex flex-wrap items-center justify-center gap-4 max-md:flex-col">
@@ -61,7 +61,7 @@ export function HeroSection() {
         {/* Order / Dashboard preview */}
         <div className="flex-1 overflow-hidden rounded-2xl border border-[#2a2a3a] bg-[#12121a] max-md:w-full">
           <div className="border-b border-[#2a2a3a] px-4 py-3 text-xs font-medium text-[#55556a]">
-            ...with DevStash
+            ...with Scribbles
           </div>
           <div className="flex h-[280px] max-md:h-[220px]">
             {/* Sidebar */}

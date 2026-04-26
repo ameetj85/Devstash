@@ -1,6 +1,6 @@
-# DevStash User Guide
+# Scribbles User Guide
 
-Welcome to **DevStash** — your fast, searchable, AI-enhanced hub for all your developer knowledge. Whether you're saving code snippets, AI prompts, terminal commands, or useful links, DevStash keeps everything in one place so you can stop hunting through Notion, Gists, browser bookmarks, and shell history.
+Welcome to **Scribbles** — your fast, searchable, AI-enhanced hub for all your developer knowledge. Whether you're saving code snippets, AI prompts, terminal commands, or useful links, Scribbles keeps everything in one place so you can stop hunting through Notion, Gists, browser bookmarks, and shell history.
 
 This guide will get you from zero to productive in about 10 minutes.
 
@@ -8,7 +8,7 @@ This guide will get you from zero to productive in about 10 minutes.
 
 ## Table of Contents
 
-1. [What Is DevStash?](#1-what-is-devstash)
+1. [What Is Scribbles?](#1-what-is-Scribbles)
 2. [Getting Started](#2-getting-started)
    - 2.1 [Creating an Account](#21-creating-an-account)
    - 2.2 [Signing In](#22-signing-in)
@@ -55,9 +55,9 @@ This guide will get you from zero to productive in about 10 minutes.
 
 ---
 
-## 1. What Is DevStash?
+## 1. What Is Scribbles?
 
-DevStash is a single home for the things developers constantly lose track of:
+Scribbles is a single home for the things developers constantly lose track of:
 
 - **Code snippets** you reuse across projects
 - **AI prompts** you've carefully crafted
@@ -105,7 +105,7 @@ After signing in, you'll land on `/dashboard`.
 
 ### 3.1 Items
 
-An **item** is the basic unit of DevStash. Every piece of knowledge you save — a snippet, a prompt, a link — is an item. Each item has:
+An **item** is the basic unit of Scribbles. Every piece of knowledge you save — a snippet, a prompt, a link — is an item. Each item has:
 
 - A **title** (required)
 - An optional **description**
@@ -116,7 +116,7 @@ An **item** is the basic unit of DevStash. Every piece of knowledge you save —
 
 ### 3.2 Item Types
 
-DevStash ships with seven built-in types. Each has its own color and icon so you can spot them at a glance.
+Scribbles ships with seven built-in types. Each has its own color and icon so you can spot them at a glance.
 
 | Type        | Color   | Best For                                      | Plan |
 | ----------- | ------- | --------------------------------------------- | ---- |
@@ -160,7 +160,7 @@ The dashboard (`/dashboard`) is your landing page after sign-in. It has three zo
 
 From left to right:
 
-- **DevStash logo** — click to return to the dashboard.
+- **Scribbles logo** — click to return to the dashboard.
 - **Search bar** (center) — click or press **⌘K / Ctrl+K** to open the global command palette.
 - **Favorites star** — yellow when you have favorites; takes you to `/favorites`.
 - **New Item** button — opens a drawer to create an item.
@@ -421,7 +421,7 @@ Upgrade from `/settings` or the pricing section on the homepage.
 Check your spam folder. If it's still missing, try registering again or contact support — the link is valid for 24 hours.
 
 **I got "Too many requests" (429).**
-DevStash rate-limits sensitive endpoints (sign-in, registration, password reset, AI calls) to prevent abuse. Wait the time shown in the error and try again.
+Scribbles rate-limits sensitive endpoints (sign-in, registration, password reset, AI calls) to prevent abuse. Wait the time shown in the error and try again.
 
 **I hit my free-plan limit.**
 You'll see an error when creating items beyond 50 or collections beyond 3. Either delete old items or upgrade to Pro from `/settings`.
