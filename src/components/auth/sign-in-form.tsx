@@ -52,7 +52,7 @@ export default function SignInForm() {
         <p className="text-sm text-muted-foreground">Sign in to your Scribbles account</p>
       </div>
 
-      <GitHubSignInButton label="Sign in with GitHub" />
+      <GitHubSignInButton label="Sign in with GitHub" disabled />
 
       {/* Divider */}
       <div className="relative">
