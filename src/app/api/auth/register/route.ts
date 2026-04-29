@@ -7,6 +7,7 @@ import { checkRateLimit, getIp } from '@/lib/rate-limit'
 
 export async function POST(request: Request) {
   if (process.env.REGISTRATION_ENABLED !== 'true') {
+    console.log('Registration attempt blocked: registration is disabled.')
     return NextResponse.json(
       { error: 'Registration is currently invite-only.' },
       { status: 403 }

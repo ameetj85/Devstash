@@ -7,6 +7,7 @@ export const metadata: Metadata = { title: 'Register' }
 
 export default function RegisterPage() {
   const registrationEnabled = process.env.REGISTRATION_ENABLED === 'true'
+  console.log('Registration enabled:', registrationEnabled);
 
   return (
     <>
