@@ -15,7 +15,6 @@ interface FavoritesListProps {
   items: ItemWithType[]
   collections: FavoriteCollection[]
   allCollections: { id: string; name: string }[]
-  isPro?: boolean
 }
 
 function formatDate(date: Date) {
@@ -25,7 +24,7 @@ function formatDate(date: Date) {
   })
 }
 
-export default function FavoritesList({ items, collections, allCollections, isPro = false }: FavoritesListProps) {
+export default function FavoritesList({ items, collections, allCollections }: FavoritesListProps) {
   const router = useRouter()
   const { selectedId, drawerOpen, openDrawer, closeDrawer } = useItemDrawer()
   const [sort, setSort] = useState<SortOption>('date')
@@ -145,7 +144,6 @@ export default function FavoritesList({ items, collections, allCollections, isPr
         open={drawerOpen}
         onClose={closeDrawer}
         allCollections={allCollections}
-        isPro={isPro}
       />
     </>
   )

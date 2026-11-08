@@ -32,14 +32,6 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
   const { page: pageParam } = await searchParams
   // sidebar links as `${name}s` — strip the trailing 's' to get the DB name
   const typeName = typeSlug.endsWith('s') ? typeSlug.slice(0, -1) : typeSlug
-  const isPro = session.user?.isPro ?? false
-
-  // Pro-only types: redirect free users to upgrade page
-  const proOnlyTypes = ['file', 'image']
-  if (proOnlyTypes.includes(typeName) && !isPro) {
-    redirect('/upgrade')
-  }
-
   const currentPage = Math.max(1, parseInt(pageParam ?? '1', 10) || 1)
 
   const [{ items, itemType, totalCount }, itemTypes, { collections }, collectionOptions, editorPreferences, userHasFavorites] = await Promise.all([
@@ -57,7 +49,7 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites} isPro={isPro}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites}>
       <main className="flex-1 overflow-y-auto p-6 space-y-6">
         <div className="flex items-center justify-between gap-4">
           <div>
@@ -66,13 +58,13 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
               {totalCount} {totalCount === 1 ? 'item' : 'items'}
             </p>
           </div>
-          <CreateItemDialog defaultType={typeName} collections={collectionOptions} isPro={isPro} />
+          <CreateItemDialog defaultType={typeName} collections={collectionOptions} />
         </div>
 
         {items.length === 0 && currentPage === 1 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
             <p className="text-muted-foreground text-sm">No {typeSlug} yet.</p>
-            <CreateItemDialog defaultType={typeName} collections={collectionOptions} isPro={isPro} />
+            <CreateItemDialog defaultType={typeName} collections={collectionOptions} />
           </div>
         ) : (
           <>
@@ -80,7 +72,6 @@ export default async function ItemsPage({ params, searchParams }: ItemsPageProps
               items={items}
               layout={typeName === 'image' ? 'gallery' : typeName === 'file' ? 'list' : 'grid'}
               collections={collectionOptions}
-              isPro={isPro}
             />
             <Pagination
               currentPage={currentPage}

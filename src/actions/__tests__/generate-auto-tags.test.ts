@@ -40,18 +40,21 @@ describe('generateAutoTags server action', () => {
     const result = await generateAutoTags(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Unauthorized')
+    expect('error' in result && result.error).toBe('Unauthorized')
   })
 
-  it('returns error for non-Pro users', async () => {
+  it('generates tags for non-Pro users', async () => {
     mockAuth.mockResolvedValue({
       user: { id: 'user-1', isPro: false },
     } as never)
 
+    const create = vi.fn().mockResolvedValue({ output_text: '{"tags":["react"]}' })
+    mockGetOpenAIClient.mockReturnValue({ responses: { create } } as never)
     const result = await generateAutoTags(validInput)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('Pro subscription')
+    expect(result).toEqual({ success: true, data: { tags: ['react'] } })
+    expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
+    expect(create).toHaveBeenCalledOnce()
   })
 
   it('returns error when rate limited', async () => {
@@ -63,7 +66,7 @@ describe('generateAutoTags server action', () => {
     const result = await generateAutoTags(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('rate limit')
+    expect('error' in result && result.error).toContain('rate limit')
     expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
   })
 
@@ -75,7 +78,7 @@ describe('generateAutoTags server action', () => {
     const result = await generateAutoTags({ title: '', content: null, typeName: 'snippet' })
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid input')
+    expect('error' in result && result.error).toBe('Invalid input')
   })
 
   it('returns tags from {"tags": [...]} response format', async () => {
@@ -157,7 +160,7 @@ describe('generateAutoTags server action', () => {
     const result = await generateAutoTags(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Failed to generate')
+    expect('error' in result && result.error).toContain('Failed to generate')
   })
 
   it('limits tags to max 5', async () => {

@@ -41,18 +41,21 @@ describe('explainCode server action', () => {
     const result = await explainCode(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Unauthorized')
+    expect('error' in result && result.error).toBe('Unauthorized')
   })
 
-  it('returns error for non-Pro users', async () => {
+  it('explains code for non-Pro users', async () => {
     mockAuth.mockResolvedValue({
       user: { id: 'user-1', isPro: false },
     } as never)
 
+    const create = vi.fn().mockResolvedValue({ output_text: '{"explanation":"Adds numbers"}' })
+    mockGetOpenAIClient.mockReturnValue({ responses: { create } } as never)
     const result = await explainCode(validInput)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('Pro subscription')
+    expect(result).toEqual({ success: true, data: { explanation: 'Adds numbers' } })
+    expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
+    expect(create).toHaveBeenCalledOnce()
   })
 
   it('returns error for invalid input (empty content)', async () => {
@@ -66,7 +69,7 @@ describe('explainCode server action', () => {
     } as never)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid input')
+    expect('error' in result && result.error).toBe('Invalid input')
   })
 
   it('returns error for invalid typeName (not snippet or command)', async () => {
@@ -80,7 +83,7 @@ describe('explainCode server action', () => {
     } as never)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid input')
+    expect('error' in result && result.error).toBe('Invalid input')
   })
 
   it('returns error when rate limited', async () => {
@@ -92,7 +95,7 @@ describe('explainCode server action', () => {
     const result = await explainCode(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('rate limit')
+    expect('error' in result && result.error).toContain('rate limit')
     expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
   })
 
@@ -136,7 +139,7 @@ describe('explainCode server action', () => {
     const result = await explainCode(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Unexpected')
+    expect('error' in result && result.error).toContain('Unexpected')
   })
 
   it('truncates content to 2000 chars before sending to AI', async () => {
@@ -195,7 +198,7 @@ describe('explainCode server action', () => {
     const result = await explainCode(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Failed to generate')
+    expect('error' in result && result.error).toContain('Failed to generate')
   })
 
   it('caps explanation at 3000 characters', async () => {
@@ -237,6 +240,6 @@ describe('explainCode server action', () => {
     const result = await explainCode(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Unexpected')
+    expect('error' in result && result.error).toContain('Unexpected')
   })
 })

@@ -3,27 +3,17 @@ import { auth } from '@/auth'
 import { checkRateLimit } from '@/lib/rate-limit'
 
 export type AuthFailure = { success: false; error: 'Unauthorized' }
-export type AuthSuccess = { userId: string; isPro: boolean }
+export type AuthSuccess = { userId: string }
 
 export async function requireAuth(): Promise<AuthFailure | AuthSuccess> {
   const session = await auth()
   if (!session?.user?.id) {
     return { success: false as const, error: 'Unauthorized' }
   }
-  return {
-    userId: session.user.id,
-    isPro: session.user.isPro ?? false,
-  }
+  return { userId: session.user.id }
 }
 
 export type GateFailure = { success: false; error: string }
-
-export function requirePro(isPro: boolean): GateFailure | null {
-  if (!isPro) {
-    return { success: false as const, error: 'AI features require a Pro subscription.' }
-  }
-  return null
-}
 
 export async function checkAIRateLimit(userId: string): Promise<GateFailure | null> {
   const { allowed, retryAfter } = await checkRateLimit('ai', userId)

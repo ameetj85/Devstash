@@ -25,10 +25,9 @@ interface DashboardItemRowsProps {
   pinnedItems: DashboardItemRow[]
   recentItems: DashboardItemRow[]
   collections?: { id: string; name: string }[]
-  isPro?: boolean
 }
 
-export default function DashboardItemRows({ pinnedItems, recentItems, collections = [], isPro = false }: DashboardItemRowsProps) {
+export default function DashboardItemRows({ pinnedItems, recentItems, collections = [] }: DashboardItemRowsProps) {
   const { selectedId, drawerOpen, openDrawer, closeDrawer } = useItemDrawer()
 
   return (
@@ -124,7 +123,6 @@ export default function DashboardItemRows({ pinnedItems, recentItems, collection
         open={drawerOpen}
         onClose={closeDrawer}
         allCollections={collections}
-        isPro={isPro}
       />
     </>
   )

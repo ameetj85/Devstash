@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import GitHubSignInButton from './github-sign-in-button'
 
-export default function SignInForm() {
+interface SignInFormProps {
+  socialLoginsEnabled: boolean
+}
+
+export default function SignInForm({ socialLoginsEnabled }: SignInFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -52,17 +56,19 @@ export default function SignInForm() {
         <p className="text-sm text-muted-foreground">Sign in to your Scribbles account</p>
       </div>
 
-      <GitHubSignInButton label="Sign in with GitHub" disabled />
-
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">or</span>
-        </div>
-      </div>
+      {socialLoginsEnabled && (
+        <>
+          <GitHubSignInButton label="Sign in with GitHub" />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Email/password form */}
       <form onSubmit={handleSubmit} className="space-y-4">

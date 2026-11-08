@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, Menu, Star, Plus, FolderPlus, FilePlus, FileCode2, Sparkles } from 'lucide-react'
+import { Search, Menu, Star, Plus, FolderPlus, FilePlus, FileCode2 } from 'lucide-react'
 import Link from 'next/link'
 import CreateItemDialog from '@/components/items/create-item-dialog'
 import CreateCollectionDialog from '@/components/collections/create-collection-dialog'
@@ -17,10 +17,9 @@ interface TopBarProps {
   onMobileMenuToggle?: () => void
   collections?: { id: string; name: string }[]
   hasFavorites?: boolean
-  isPro?: boolean
 }
 
-export default function TopBar({ onMobileMenuToggle, collections = [], hasFavorites = false, isPro = false }: TopBarProps) {
+export default function TopBar({ onMobileMenuToggle, collections = [], hasFavorites = false }: TopBarProps) {
   const [paletteOpen, setPaletteOpen] = useState(false)
   const [createItemOpen, setCreateItemOpen] = useState(false)
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
@@ -67,15 +66,6 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
 
       {/* Right section — actions */}
       <div className="flex items-center gap-2 flex-1 min-w-0 justify-end">
-        {!isPro && (
-          <Link
-            href="/upgrade"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            Upgrade
-          </Link>
-        )}
         <Link
           href="/favorites"
           className={`p-2 rounded-md hover:bg-accent transition-colors ${
@@ -89,7 +79,7 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
         {/* Desktop: individual buttons */}
         <div className="hidden sm:flex items-center gap-2">
           <CreateCollectionDialog />
-          <CreateItemDialog collections={collections} isPro={isPro} />
+          <CreateItemDialog collections={collections} />
         </div>
 
         {/* Mobile: combined "+" dropdown */}
@@ -117,7 +107,6 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
             collections={collections}
             externalOpen={createItemOpen}
             onExternalOpenChange={setCreateItemOpen}
-            isPro={isPro}
           />
           <CreateCollectionDialog
             externalOpen={createCollectionOpen}

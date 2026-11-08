@@ -14,7 +14,6 @@ interface GenerateDescriptionButtonProps {
   fileName?: string
   language?: string
   tags?: string[]
-  isPro: boolean
   onGenerated: (description: string) => void
 }
 
@@ -26,12 +25,9 @@ export default function GenerateDescriptionButton({
   fileName,
   language,
   tags,
-  isPro,
   onGenerated,
 }: GenerateDescriptionButtonProps) {
   const [loading, setLoading] = useState(false)
-
-  if (!isPro) return null
 
   async function handleClick() {
     const hasSignal =

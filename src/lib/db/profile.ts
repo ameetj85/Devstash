@@ -8,8 +8,6 @@ export type ProfileData = {
   image: string | null
   createdAt: Date
   hasPassword: boolean
-  isPro: boolean
-  stripeSubscriptionId: string | null
   totalItems: number
   totalCollections: number
   itemTypeCounts: { name: string; icon: string; color: string; count: number }[]
@@ -25,8 +23,6 @@ export async function getProfileData(userId: string): Promise<ProfileData | null
       image: true,
       createdAt: true,
       hashedPassword: true,
-      isPro: true,
-      stripeSubscriptionId: true,
     },
   })
 
@@ -51,8 +47,6 @@ export async function getProfileData(userId: string): Promise<ProfileData | null
     image: user.image,
     createdAt: user.createdAt,
     hasPassword: !!user.hashedPassword,
-    isPro: user.isPro,
-    stripeSubscriptionId: user.stripeSubscriptionId,
     totalItems,
     totalCollections,
     itemTypeCounts: itemTypes.map((t) => ({

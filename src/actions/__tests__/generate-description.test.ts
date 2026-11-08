@@ -41,18 +41,21 @@ describe('generateDescription server action', () => {
     const result = await generateDescription(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Unauthorized')
+    expect('error' in result && result.error).toBe('Unauthorized')
   })
 
-  it('returns error for non-Pro users', async () => {
+  it('generates descriptions for non-Pro users', async () => {
     mockAuth.mockResolvedValue({
       user: { id: 'user-1', isPro: false },
     } as never)
 
+    const create = vi.fn().mockResolvedValue({ output_text: '{"description":"A description"}' })
+    mockGetOpenAIClient.mockReturnValue({ responses: { create } } as never)
     const result = await generateDescription(validInput)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('Pro subscription')
+    expect(result).toEqual({ success: true, data: { description: 'A description' } })
+    expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
+    expect(create).toHaveBeenCalledOnce()
   })
 
   it('returns error for invalid input', async () => {
@@ -63,7 +66,7 @@ describe('generateDescription server action', () => {
     const result = await generateDescription({ title: '', typeName: '' } as never)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid input')
+    expect('error' in result && result.error).toBe('Invalid input')
   })
 
   it('returns error when no signal (no title, content, url, or fileName)', async () => {
@@ -80,7 +83,7 @@ describe('generateDescription server action', () => {
     })
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('title or some content')
+    expect('error' in result && result.error).toContain('title or some content')
   })
 
   it('returns error when rate limited', async () => {
@@ -92,7 +95,7 @@ describe('generateDescription server action', () => {
     const result = await generateDescription(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('rate limit')
+    expect('error' in result && result.error).toContain('rate limit')
     expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
   })
 
@@ -161,7 +164,7 @@ describe('generateDescription server action', () => {
     const result = await generateDescription(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Unexpected')
+    expect('error' in result && result.error).toContain('Unexpected')
   })
 
   it('truncates content to 2000 chars', async () => {
@@ -221,7 +224,7 @@ describe('generateDescription server action', () => {
     const result = await generateDescription(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Failed to generate')
+    expect('error' in result && result.error).toContain('Failed to generate')
   })
 
   it('caps description at 500 characters', async () => {

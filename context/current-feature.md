@@ -1,17 +1,18 @@
-# SQLite Database Migration
+# Remove Payments and Disable Social Logins
 
 ## Status
 Completed
 
 ## Goals
-- Switch Prisma and all application scripts from Neon PostgreSQL to SQLite.
-- Create `prisma/scribbles.db` and copy existing application data without changing IDs.
-- Verify record counts, row values, foreign keys, app tests, lint, type-check, and build.
-- Remove active PostgreSQL dependencies and update setup/project documentation.
+- Remove Stripe payment and subscription upgrade functionality.
+- Give all users access to implemented features without subscription limits.
+- Disable social login and hide its controls while retaining the implementation.
+- Preserve authentication, operational limits, and existing subscription data.
 
 ## Notes
-- Keep the PostgreSQL database untouched and retain its migration files as an archive.
-- Use `SQLITE_DATABASE_URL` as the sole application database path setting.
+- Keep existing payment-only files rather than deleting them.
+- Retain legacy subscription columns in SQLite for reversibility.
+- Social login is disabled by default and can be restored via configuration.
 
 
 
@@ -78,3 +79,5 @@ Completed
 - 2026-04-28: Auth fix + invite-only registration gate — added `trustHost: true` to `src/auth.config.ts` to resolve the `UntrustedHost` error from NextAuth v5 on `localhost`. Gated public sign-up behind a new `REGISTRATION_ENABLED` env var: when missing or not `'true'`, `/register` renders a new `RegistrationClosed` component (`src/components/auth/registration-closed.tsx`) — a centered card with stacked `Lock` + `Sparkles` icons, an "invite-only" headline, an invite-info callout with `Mail` icon, "Sign in" / "Back to home" buttons, and a mailto link for invite requests. `POST /api/auth/register` returns 403 with `"Registration is currently invite-only."` when the flag is off so the UI gate can't be bypassed. No new DB queries, server actions, or tests.
 - 2026-11-08: SQLite database migration — switched Prisma 7 to the `better-sqlite3` adapter and `SQLITE_DATABASE_URL` (`file:./prisma/scribbles.db`), generated a fresh SQLite migration history while archiving the PostgreSQL migrations, and copied all 10 application tables from Neon without altering the source. Verified row-level SHA-256 comparisons, equal counts (2 users, 1 account, 7 item types, 19 items, 3 collections, 54 tags, 19 item-collection links, 53 item-tag links; no sessions/tokens), item type counts, SQLite integrity, and foreign keys. Removed active Neon packages/configuration and updated docs. All 182 tests and the production build pass; `npm run lint` reports existing issues in unrelated UI files and standalone `npx tsc --noEmit` reports existing AI-test type errors.
 - 2026-11-08: VPS SQLite setup — added a repeatable setup script that applies committed migrations and initializes missing system item types without creating demo users or copying existing data; documented usage and backup considerations.
+- 2026-11-08: Removed Stripe payment processing and subscription gates — retired checkout, portal, webhook, and upgrade UI while keeping their files, removed paid-tier limits for all users, preserved legacy SQLite subscription fields, updated guides, and verified the app with tests, a production build, and browser checks using an isolated non-Pro account.
+- 2026-11-08: Disabled social login by default — gated the retained GitHub provider and sign-in/registration controls behind `SOCIAL_LOGINS_ENABLED`, preserved social account data, and documented access and re-enablement limitations.

@@ -37,19 +37,18 @@ This guide will get you from zero to productive in about 10 minutes.
    - 7.1 [Command Palette (⌘K / Ctrl+K)](#71-command-palette-k--ctrlk)
    - 7.2 [Browsing by Type](#72-browsing-by-type)
    - 7.3 [Favorites Page](#73-favorites-page)
-8. [AI Features (Pro)](#8-ai-features-pro)
+8. [AI Features](#8-ai-features)
    - 8.1 [Auto-Tag Suggestions](#81-auto-tag-suggestions)
    - 8.2 [Description Generator](#82-description-generator)
    - 8.3 [Explain This Code](#83-explain-this-code)
    - 8.4 [Prompt Optimizer](#84-prompt-optimizer)
-9. [Files & Images (Pro)](#9-files--images-pro)
+9. [Files & Images](#9-files--images)
 10. [Settings](#10-settings)
     - 10.1 [Editor Preferences](#101-editor-preferences)
-    - 10.2 [Subscription](#102-subscription)
-    - 10.3 [Change Password](#103-change-password)
-    - 10.4 [Delete Account](#104-delete-account)
+    - 10.2 [Change Password](#102-change-password)
+    - 10.3 [Delete Account](#103-delete-account)
 11. [Profile](#11-profile)
-12. [Free vs. Pro](#12-free-vs-pro)
+12. [Feature Access](#12-feature-access)
 13. [Tips & Best Practices](#13-tips--best-practices)
 14. [Troubleshooting / FAQ](#14-troubleshooting--faq)
 
@@ -64,7 +63,7 @@ Scribbles is a single home for the things developers constantly lose track of:
 - **Terminal commands** that took you an hour to figure out
 - **Notes** on patterns, architectures, and decisions
 - **Links** to docs and tools worth remembering
-- **Files and images** (screenshots, design assets, context files) — *Pro*
+- **Files and images** (screenshots, design assets, context files)
 
 Everything is searchable, organizable, and enhanced with AI features like auto-tagging, code explanation, and prompt optimization.
 
@@ -75,18 +74,18 @@ Everything is searchable, organizable, and enhanced with AI features like auto-t
 ### 2.1 Creating an Account
 
 1. Go to the homepage and click **Get Started** (or navigate to `/register`).
-2. You can sign up in two ways:
-   - **Email + password** — fill in your name, email, and a password (twice to confirm).
+2. Fill in your name, email, and a password (twice to confirm).
+   If the instance has explicitly enabled social login, another option is:
    - **GitHub** — click **Sign up with GitHub** for one-click OAuth.
 3. If email verification is enabled on your instance, check your inbox for a verification link. Click it to activate your account.
 4. Once verified (or right away if verification is off), sign in.
 
 ### 2.2 Signing In
 
-Head to `/sign-in` and choose:
+Head to `/sign-in` and use:
 
 - **Email + password** — the same credentials you registered with.
-- **GitHub OAuth** — one click, no password needed.
+- **GitHub OAuth** — available only if the instance has explicitly enabled social login.
 
 After signing in, you'll land on `/dashboard`.
 
@@ -97,7 +96,7 @@ After signing in, you'll land on `/dashboard`.
 3. Check your inbox for a reset link (valid for 1 hour).
 4. Click the link, set a new password, and sign in.
 
-> Password reset only works for email/password accounts. If you signed up with GitHub, sign in with GitHub — there's no password to reset.
+> Password reset only works for email/password accounts. GitHub-only accounts have no password to reset and cannot sign in while social login is disabled.
 
 ---
 
@@ -118,15 +117,15 @@ An **item** is the basic unit of Scribbles. Every piece of knowledge you save �
 
 Scribbles ships with seven built-in types. Each has its own color and icon so you can spot them at a glance.
 
-| Type        | Color   | Best For                                      | Plan |
-| ----------- | ------- | --------------------------------------------- | ---- |
-| **Snippet** | Blue    | Reusable code blocks (syntax-highlighted)     | Free |
-| **Prompt**  | Purple  | AI prompts and system messages (markdown)     | Free |
-| **Command** | Orange  | Shell commands and one-liners                 | Free |
-| **Note**    | Yellow  | Freeform markdown notes and docs              | Free |
-| **Link**    | Emerald | URLs to docs, tools, articles                 | Free |
-| **File**    | Gray    | Any file upload (context files, PDFs, etc.)   | Pro  |
-| **Image**   | Pink    | Screenshots, diagrams, design assets          | Pro  |
+| Type        | Color   | Best For                                      |
+| ----------- | ------- | --------------------------------------------- |
+| **Snippet** | Blue    | Reusable code blocks (syntax-highlighted)     |
+| **Prompt**  | Purple  | AI prompts and system messages (markdown)     |
+| **Command** | Orange  | Shell commands and one-liners                 |
+| **Note**    | Yellow  | Freeform markdown notes and docs              |
+| **Link**    | Emerald | URLs to docs, tools, articles                 |
+| **File**    | Gray    | Any file upload (context files, PDFs, etc.)   |
+| **Image**   | Pink    | Screenshots, diagrams, design assets          |
 
 **Text-based types** (snippet, prompt, command, note) use the appropriate editor:
 
@@ -196,14 +195,14 @@ Click any item or collection to open it.
 2. Pick a **type** from the color-coded selector. You can also land on a type-specific page (e.g., `/items/snippets`) and click **New Snippet** to pre-select the type.
 3. Fill in the fields:
    - **Title** — required.
-   - **Description** — optional; use the **Describe** button (Pro) to auto-generate one.
+   - **Description** — optional; use the **Describe** button to auto-generate one.
    - **Language** — for snippets/commands; picks syntax highlighting.
    - **Content / URL / File** — depends on the type.
-   - **Tags** — comma-separated; use **Suggest tags** (Pro) for AI suggestions.
+   - **Tags** — comma-separated; use **Suggest tags** for AI suggestions.
    - **Collections** — pick one or more from the dropdown.
 4. Click **Create**. You'll see a toast confirmation and the new item will appear in listings.
 
-> Free users: you're limited to **50 items** and **3 collections**. File and image types require Pro.
+> All users can create items and collections and use file and image types.
 
 ### 5.2 Viewing an Item
 
@@ -287,8 +286,8 @@ The fastest way to find anything:
 Each type has a dedicated page:
 
 - `/items/snippets`, `/items/prompts`, `/items/commands`, `/items/notes`, `/items/links`
-- `/items/files` (Pro) — list view with download buttons
-- `/items/images` (Pro) — toggle between gallery thumbnails and card view
+- `/items/files` — list view with download buttons
+- `/items/images` — toggle between gallery thumbnails and card view
 
 Pages are paginated (21 items per page), with **pinned items** always sorted to the top.
 
@@ -302,9 +301,9 @@ Pages are paginated (21 items per page), with **pinned items** always sorted to 
 
 ---
 
-## 8. AI Features (Pro)
+## 8. AI Features
 
-All AI features require a Pro subscription and are rate-limited to **20 requests per hour** per user (shared across all AI actions).
+AI features require a configured OpenAI API key and are rate-limited to **20 requests per hour** per user (shared across all AI actions).
 
 ### 8.1 Auto-Tag Suggestions
 
@@ -333,7 +332,7 @@ Available on **Prompt** items. Click the **Sparkles** icon in the markdown edito
 
 ---
 
-## 9. Files & Images (Pro)
+## 9. Files & Images
 
 - **Files** — upload anything (context files, PDFs, zips, etc.). Stored in Cloudflare R2. File rows show a type-aware icon, name, size, and a download button.
 - **Images** — upload PNG, JPG, GIF, etc. The `/items/images` page defaults to a **gallery view** with 16:9 thumbnails. Toggle to card view with the layout button.
@@ -356,18 +355,13 @@ Tweak how the code editor looks and behaves. All changes auto-save.
 - **Word wrap** — on/off
 - **Minimap** — on/off
 
-### 10.2 Subscription
-
-- **Free users** — see your current usage (items X/50, collections X/3) and upgrade buttons for **Monthly ($8)** or **Yearly ($72)** plans. Clicking either launches Stripe Checkout.
-- **Pro users** — see a crown icon and a **Manage Subscription** button that opens the Stripe Billing Portal (update card, view invoices, cancel).
-
-### 10.3 Change Password
+### 10.2 Change Password
 
 Available for email/password users. Enter your current password and the new password (twice). Rate-limited to 5 attempts per 15 minutes. GitHub-only users don't see this section.
 
-### 10.4 Delete Account
+### 10.3 Delete Account
 
-Permanently deletes your user record and all associated data (items, collections, files, subscriptions). Confirm by typing **DELETE** in the dialog — the button only enables once the text matches.
+Permanently deletes your user record and associated app data. Confirm by typing **DELETE** in the dialog — the button only enables once the text matches.
 
 ---
 
@@ -377,28 +371,18 @@ Permanently deletes your user record and all associated data (items, collections
 
 - Avatar (GitHub image or initials)
 - Name, email, and account creation date
-- Total items and collections (with "X / 50" limits for free users, "Unlimited" for Pro)
+- Total items and collections
 - Per-item-type breakdown with counts
 
 Account actions (password, delete) live on `/settings`.
 
 ---
 
-## 12. Free vs. Pro
+## 12. Feature Access
 
-| Feature                  | Free              | Pro ($8/mo · $72/yr)    |
-| ------------------------ | ----------------- | ----------------------- |
-| Items                    | 50 total          | Unlimited               |
-| Collections              | 3                 | Unlimited               |
-| Snippets / Prompts / Commands / Notes / Links | ✓ | ✓                 |
-| File & Image uploads     | —                 | ✓                       |
-| AI auto-tagging          | —                 | ✓                       |
-| AI description generator | —                 | ✓                       |
-| AI code explanation      | —                 | ✓                       |
-| AI prompt optimizer      | —                 | ✓                       |
-| Priority support         | —                 | ✓                       |
-
-Upgrade from `/settings` or the pricing section on the homepage.
+All users can access implemented features without a subscription. AI and file
+uploads require their respective services to be configured and remain subject
+to operational limits such as rate and file-size limits.
 
 ---
 
@@ -411,7 +395,7 @@ Upgrade from `/settings` or the pricing section on the homepage.
 - Prompt library: use the **Prompt Optimizer** once after creating a prompt, then pin the winner.
 - **⌘K** is the fastest way around. Memorize it.
 - **Import** existing snippets from a file when creating an item to avoid copy-paste.
-- Use **Describe** (Pro) right after creating something — descriptions make your library way easier to skim later.
+- Use **Describe** right after creating something — descriptions make your library way easier to skim later.
 
 ---
 
@@ -423,20 +407,18 @@ Check your spam folder. If it's still missing, try registering again or contact 
 **I got "Too many requests" (429).**
 Scribbles rate-limits sensitive endpoints (sign-in, registration, password reset, AI calls) to prevent abuse. Wait the time shown in the error and try again.
 
-**I hit my free-plan limit.**
-You'll see an error when creating items beyond 50 or collections beyond 3. Either delete old items or upgrade to Pro from `/settings`.
-
-**AI features are greyed out.**
-AI actions require a Pro subscription. Free users see a crown icon with a tooltip instead of the Sparkles button.
+**AI features aren't working.**
+Check that the OpenAI API key is configured and that you haven't hit the AI rate limit.
 
 **My file upload failed.**
-Check your connection and file size. File and image uploads require Pro — free users will get a 403 from the upload endpoint.
+Check your connection, file size, and R2 configuration.
 
 **I signed up with GitHub but want to add a password.**
-Not currently supported. GitHub accounts authenticate exclusively through GitHub OAuth.
+Adding a password to a GitHub-only account is not currently supported. Such
+accounts cannot sign in while social login is disabled.
 
 **How do I export my data?**
-Export (JSON/ZIP) is a planned Pro feature.
+Export (JSON/ZIP) is a planned feature.
 
 **Can I create custom item types?**
 Custom types are on the roadmap. For now, the seven system types cover the common cases.

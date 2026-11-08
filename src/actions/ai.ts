@@ -2,7 +2,7 @@
 
 import { z } from 'zod'
 import { getOpenAIClient, AI_MODEL } from '@/lib/openai'
-import { requireAuth, requirePro, checkAIRateLimit } from '@/lib/action-helpers'
+import { requireAuth, checkAIRateLimit } from '@/lib/action-helpers'
 
 const generateAutoTagsSchema = z.object({
   title: z.string().trim().min(1).max(500),
@@ -38,9 +38,6 @@ export async function generateAutoTags(
 ) {
   const session = await requireAuth()
   if ('success' in session) return session
-
-  const proGate = requirePro(session.isPro)
-  if (proGate) return proGate
 
   const parsed = generateAutoTagsSchema.safeParse(data)
   if (!parsed.success) {
@@ -97,9 +94,6 @@ export async function explainCode(
 ) {
   const session = await requireAuth()
   if ('success' in session) return session
-
-  const proGate = requirePro(session.isPro)
-  if (proGate) return proGate
 
   const parsed = explainCodeSchema.safeParse(data)
   if (!parsed.success) {
@@ -162,9 +156,6 @@ export async function generateDescription(
 ) {
   const session = await requireAuth()
   if ('success' in session) return session
-
-  const proGate = requirePro(session.isPro)
-  if (proGate) return proGate
 
   const parsed = generateDescriptionSchema.safeParse(data)
   if (!parsed.success) {
@@ -244,9 +235,6 @@ export async function optimizePrompt(
 ) {
   const session = await requireAuth()
   if ('success' in session) return session
-
-  const proGate = requirePro(session.isPro)
-  if (proGate) return proGate
 
   const parsed = optimizePromptSchema.safeParse(data)
   if (!parsed.success) {

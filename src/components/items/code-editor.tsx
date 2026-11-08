@@ -21,7 +21,6 @@ interface CodeEditorProps {
   explain?: {
     typeName: 'snippet' | 'command'
     title?: string
-    isPro: boolean
   }
 }
 
@@ -186,7 +185,6 @@ export default function CodeEditor({
         {/* Explain button (drawer read view only) */}
         {showExplainUI && !showTabs && (
           <ProAIButton
-            isPro={explain!.isPro}
             loading={explaining}
             onClick={handleExplain}
             title="Explain code with AI"

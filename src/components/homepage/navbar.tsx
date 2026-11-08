@@ -36,11 +36,6 @@ export function Navbar() {
               Features
             </a>
           </li>
-          <li>
-            <a href="/#pricing" className="text-sm text-[#8888a0] transition-colors hover:text-[#f0f0f5]">
-              Pricing
-            </a>
-          </li>
         </ul>
 
         <div className="hidden md:flex items-center gap-3">
@@ -83,13 +78,6 @@ export function Navbar() {
             className="block text-sm text-[#8888a0] hover:text-[#f0f0f5] transition-colors"
           >
             Features
-          </a>
-          <a
-            href="/#pricing"
-            onClick={() => setMenuOpen(false)}
-            className="block text-sm text-[#8888a0] hover:text-[#f0f0f5] transition-colors"
-          >
-            Pricing
           </a>
           <div className="pt-2 flex flex-col gap-2">
             <Link

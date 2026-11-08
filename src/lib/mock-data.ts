@@ -5,7 +5,6 @@ export const mockUser = {
   name: "John Doe",
   email: "demo@Scribbles.io",
   image: null,
-  isPro: false,
 };
 
 export const mockItemTypes = [

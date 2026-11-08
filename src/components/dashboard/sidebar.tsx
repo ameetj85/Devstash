@@ -8,7 +8,6 @@ import {
   PanelLeftOpen,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { Badge } from '@/components/ui/badge'
 import UserMenu from '@/components/dashboard/user-menu'
 import type { ItemTypeWithCount } from '@/lib/db/items'
 import type { CollectionWithMeta } from '@/lib/db/collections'
@@ -127,11 +126,6 @@ export default function Sidebar({
                     {!isCollapsed && (
                       <>
                         <span className="flex-1 capitalize">{type.name}s</span>
-                        {(type.name === 'file' || type.name === 'image') && (
-                          <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 font-semibold text-muted-foreground">
-                            PRO
-                          </Badge>
-                        )}
                         <span className="text-xs text-muted-foreground tabular-nums">
                           {type.count}
                         </span>

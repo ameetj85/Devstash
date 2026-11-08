@@ -21,10 +21,9 @@ interface DashboardShellProps {
   user: DashboardUser
   editorPreferences: EditorPreferences
   hasFavorites?: boolean
-  isPro?: boolean
 }
 
-export default function DashboardShell({ children, itemTypes, collections, user, editorPreferences, hasFavorites = false, isPro = false }: DashboardShellProps) {
+export default function DashboardShell({ children, itemTypes, collections, user, editorPreferences, hasFavorites = false }: DashboardShellProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
@@ -35,7 +34,6 @@ export default function DashboardShell({ children, itemTypes, collections, user,
           onMobileMenuToggle={() => setIsMobileOpen(true)}
           collections={collections.map((c) => ({ id: c.id, name: c.name }))}
           hasFavorites={hasFavorites}
-          isPro={isPro}
         />
         <div className="flex flex-1 overflow-hidden">
           <Sidebar

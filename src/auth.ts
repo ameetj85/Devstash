@@ -1,10 +1,10 @@
 import NextAuth, { CredentialsSignin } from 'next-auth'
 import { PrismaAdapter } from '@auth/prisma-adapter'
-import GitHub from 'next-auth/providers/github'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getIp } from '@/lib/rate-limit'
+import { getSocialProviders } from '@/lib/social-auth'
 
 class EmailNotVerified extends CredentialsSignin {
   code = 'email_not_verified'
@@ -18,25 +18,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   callbacks: {
-    async jwt({ token }) {
-      if (!token.sub) return token
-      const user = await prisma.user.findUnique({
-        where: { id: token.sub },
-        select: { isPro: true },
-      })
-      token.isPro = user?.isPro ?? false
-      return token
-    },
     session({ session, token }) {
       if (token.sub) {
         session.user.id = token.sub
       }
-      session.user.isPro = (token.isPro as boolean) ?? false
       return session
     },
   },
   providers: [
-    GitHub,
+    ...getSocialProviders(),
     Credentials({
       credentials: {
         email: { label: 'Email', type: 'email' },

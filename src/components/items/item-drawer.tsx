@@ -65,10 +65,9 @@ interface ItemDrawerProps {
   open: boolean
   onClose: () => void
   allCollections?: { id: string; name: string }[]
-  isPro?: boolean
 }
 
-export default function ItemDrawer({ itemId, open, onClose, allCollections = [], isPro = false }: ItemDrawerProps) {
+export default function ItemDrawer({ itemId, open, onClose, allCollections = [] }: ItemDrawerProps) {
   const router = useRouter()
   const [item, setItem] = useState<ItemDetailResponse | null>(null)
   const [loading, setLoading] = useState(false)
@@ -282,7 +281,6 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
                 selectedCollections={selectedCollections}
                 onCollectionsChange={setSelectedCollections}
                 allCollections={allCollections}
-                isPro={isPro}
                 saving={saving}
                 onSave={handleSave}
                 onCancel={handleCancel}
@@ -290,7 +288,6 @@ export default function ItemDrawer({ itemId, open, onClose, allCollections = [],
             ) : (
               <ItemDrawerView
                 item={item}
-                isPro={isPro}
                 deleting={deleting}
                 onEdit={handleEditToggle}
                 onFavorite={handleFavorite}

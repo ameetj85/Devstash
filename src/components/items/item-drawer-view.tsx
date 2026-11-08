@@ -34,7 +34,6 @@ import { formatDate } from './item-drawer-types'
 
 interface ItemDrawerViewProps {
   item: ItemDetailResponse
-  isPro: boolean
   deleting: boolean
   onEdit: () => void
   onFavorite: () => void
@@ -45,7 +44,6 @@ interface ItemDrawerViewProps {
 
 export default function ItemDrawerView({
   item,
-  isPro,
   deleting,
   onEdit,
   onFavorite,
@@ -144,7 +142,6 @@ export default function ItemDrawerView({
               explain={{
                 typeName: typeName as 'snippet' | 'command',
                 title: item.title,
-                isPro,
               }}
             />
           ) : MARKDOWN_TYPES.includes(typeName) ? (
@@ -154,7 +151,6 @@ export default function ItemDrawerView({
               optimize={typeName === 'prompt' ? {
                 typeName: 'prompt',
                 title: item.title,
-                isPro,
                 onAccept: onOptimizedPromptAccept,
               } : undefined}
             />

@@ -9,10 +9,6 @@ vi.mock('@/lib/db/collections', () => ({
   getCollections: vi.fn(),
 }))
 
-vi.mock('@/lib/subscription', () => ({
-  canCreateCollection: vi.fn().mockResolvedValue(true),
-}))
-
 import { auth } from '@/auth'
 import { createCollection as createCollectionQuery } from '@/lib/db/collections'
 import { createCollection } from '@/actions/collections'
@@ -62,7 +58,7 @@ describe('createCollection server action', () => {
     const result = await createCollection({ name: '  ', description: null })
 
     expect(result.success).toBe(false)
-    expect(result.error).toBeTruthy()
+    expect('error' in result && result.error).toBeTruthy()
     expect(mockCreateCollectionQuery).not.toHaveBeenCalled()
   })
 
@@ -75,8 +71,8 @@ describe('createCollection server action', () => {
     expect(mockCreateCollectionQuery).not.toHaveBeenCalled()
   })
 
-  it('returns success with the created collection', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
+  it('creates a collection for a non-Pro user', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never)
     mockCreateCollectionQuery.mockResolvedValue(fakeCreated)
 
     const result = await createCollection(validInput)
@@ -86,6 +82,16 @@ describe('createCollection server action', () => {
       name: 'React Patterns',
       description: 'Useful hooks and patterns',
     })
+  })
+
+  it('creates more than 3 collections for a non-Pro user', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never)
+    mockCreateCollectionQuery.mockResolvedValue(fakeCreated)
+
+    for (let i = 0; i < 4; i++) {
+      expect((await createCollection(validInput)).success).toBe(true)
+    }
+    expect(mockCreateCollectionQuery).toHaveBeenCalledTimes(4)
   })
 
   it('creates collection without description', async () => {
