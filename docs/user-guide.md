@@ -51,6 +51,7 @@ This guide will get you from zero to productive in about 10 minutes.
 12. [Feature Access](#12-feature-access)
 13. [Tips & Best Practices](#13-tips--best-practices)
 14. [Troubleshooting / FAQ](#14-troubleshooting--faq)
+15. [Admin Console](#15-admin-console)
 
 ---
 
@@ -73,19 +74,18 @@ Everything is searchable, organizable, and enhanced with AI features like auto-t
 
 ### 2.1 Creating an Account
 
-1. Go to the homepage and click **Get Started** (or navigate to `/register`).
-2. Fill in your name, email, and a password (twice to confirm).
-   If the instance has explicitly enabled social login, another option is:
-   - **GitHub** — click **Sign up with GitHub** for one-click OAuth.
-3. If email verification is enabled on your instance, check your inbox for a verification link. Click it to activate your account.
-4. Once verified (or right away if verification is off), sign in.
+1. Ask an administrator for an invitation.
+2. Open the link in the invitation email within seven days.
+3. Enter your name and password twice. The invited email is fixed and is
+   verified automatically. Each invitation can be used once.
+4. Sign in with the invited email and your password.
 
 ### 2.2 Signing In
 
 Head to `/sign-in` and use:
 
 - **Email + password** — the same credentials you registered with.
-- **GitHub OAuth** — available only if the instance has explicitly enabled social login.
+- **GitHub OAuth** — currently disabled, including for previously linked accounts.
 
 After signing in, you'll land on `/dashboard`.
 
@@ -96,7 +96,7 @@ After signing in, you'll land on `/dashboard`.
 3. Check your inbox for a reset link (valid for 1 hour).
 4. Click the link, set a new password, and sign in.
 
-> Password reset only works for email/password accounts. GitHub-only accounts have no password to reset and cannot sign in while social login is disabled.
+> GitHub-only accounts have no password to reset until an administrator sets one in the Admin Console.
 
 ---
 
@@ -414,14 +414,42 @@ Check that the OpenAI API key is configured and that you haven't hit the AI rate
 Check your connection, file size, and R2 configuration.
 
 **I signed up with GitHub but want to add a password.**
-Adding a password to a GitHub-only account is not currently supported. Such
-accounts cannot sign in while social login is disabled.
+An administrator can set a password for the account in the Admin Console.
+Email/password sign-in also requires an email address and, when verification
+is enabled, a verified email.
 
 **How do I export my data?**
 Export (JSON/ZIP) is a planned feature.
 
 **Can I create custom item types?**
 Custom types are on the roadmap. For now, the seven system types cover the common cases.
+
+---
+
+## 15. Admin Console
+
+Administrators can open **Admin Console** from the sidebar account menu. The
+**Users** tab lists accounts and allows editing their name, email, image URL,
+email verification, Pro flag, and administrator flag. User IDs cannot be edited,
+and administrators cannot remove their own administrator access. Changing an
+email preserves its verification status unless the administrator changes it.
+Image URLs must use a configured image host.
+
+Use **Create user** to add an account directly with a name, email, password,
+and email-verified, Pro, and administrator settings. No invitation or
+verification email is sent. If email verification is enforced, an unverified
+account cannot sign in until an administrator marks it verified.
+
+Use **Reset password** to set and confirm a password for any account. Passwords
+must be at least eight characters and at most 72 UTF-8 bytes. Existing sessions
+remain signed in after a reset.
+
+Use **Send Invites** to email an invitation. Links expire after seven days and
+are single-use; sending another invitation to the same email replaces the
+previous link. If delivery fails, the previous link may no longer be valid.
+Invitation delivery requires a configured canonical `NEXTAUTH_URL` and Resend
+API key. Set `RESEND_FROM_EMAIL` to a sender on a verified Resend domain for
+delivery to arbitrary recipients; the default Resend test sender is restricted.
 
 ---
 

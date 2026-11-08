@@ -24,6 +24,7 @@ interface SidebarUser {
   name?: string | null
   email?: string | null
   image?: string | null
+  isAdmin?: boolean
 }
 
 interface SidebarProps {
@@ -249,6 +250,7 @@ export default function Sidebar({
             name={user.name}
             email={user.email}
             image={user.image}
+            isAdmin={user.isAdmin}
             isCollapsed={isCollapsed}
           />
         </div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { signOut } from 'next-auth/react'
-import { LogOut, Settings, User } from 'lucide-react'
+import { LogOut, Settings, Shield, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import UserAvatar from '@/components/user-avatar'
 
@@ -10,10 +10,11 @@ interface UserMenuProps {
   name?: string | null
   email?: string | null
   image?: string | null
+  isAdmin?: boolean
   isCollapsed: boolean
 }
 
-export default function UserMenu({ name, email, image, isCollapsed }: UserMenuProps) {
+export default function UserMenu({ name, email, image, isAdmin, isCollapsed }: UserMenuProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -68,6 +69,16 @@ export default function UserMenu({ name, email, image, isCollapsed }: UserMenuPr
             <Settings className="w-4 h-4" />
             Settings
           </a>
+          {isAdmin && (
+            <a
+              href="/admin-console"
+              className="flex items-center gap-2 px-3 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground transition-colors"
+              onClick={() => setOpen(false)}
+            >
+              <Shield className="w-4 h-4" />
+              Admin Console
+            </a>
+          )}
           <button
             className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-destructive hover:bg-accent hover:text-destructive transition-colors"
             onClick={() => signOut({ redirectTo: '/sign-in' })}

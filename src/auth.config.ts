@@ -1,6 +1,5 @@
 import Credentials from 'next-auth/providers/credentials'
 import type { NextAuthConfig } from 'next-auth'
-import { getSocialProviders } from '@/lib/social-auth'
 
 export default {
   trustHost: true,
@@ -8,7 +7,6 @@ export default {
     signIn: '/sign-in',
   },
   providers: [
-    ...getSocialProviders(),
     Credentials({
       credentials: {
         email: { label: 'Email', type: 'email' },

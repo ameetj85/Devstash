@@ -1,19 +1,14 @@
 import type { NextConfig } from "next";
+import { IMAGE_HOSTNAMES } from './src/lib/image-hosts'
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
   devIndicators: false,
+  async headers() {
+    return [{ source: '/register', headers: [{ key: 'Referrer-Policy', value: 'no-referrer' }] }]
+  },
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'pub-8f096ef8fd4845ec899196fba35f7096.r2.dev',
-      },
-    ],
+    remotePatterns: IMAGE_HOSTNAMES.map((hostname) => ({ protocol: 'https' as const, hostname })),
   },
 };
 
