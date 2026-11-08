@@ -1,15 +1,14 @@
-# Purple UI Refresh
+# Admin User Creation
 
 ## Status
 Completed
 
 ## Goals
-- Apply a professional purple-tinted palette across the application.
-- Add visible hover transitions to interactive elements while respecting reduced motion.
-- Preserve functionality, responsive layouts, and item type colors.
+- Allow administrators to create users with a name, email, password, and access flags.
+- Protect creation with server-side admin checks and validation.
 
 ## Notes
-- Use Tailwind v4 CSS theme tokens and shared UI components.
+- Email verification is optional and no invitation or verification email is sent.
 
 
 
@@ -79,3 +78,8 @@ Completed
 - 2026-11-08: Removed Stripe payment processing and subscription gates — retired checkout, portal, webhook, and upgrade UI while keeping their files, removed paid-tier limits for all users, preserved legacy SQLite subscription fields, updated guides, and verified the app with tests, a production build, and browser checks using an isolated non-Pro account.
 - 2026-11-08: Disabled social login by default — gated the retained GitHub provider and sign-in/registration controls behind `SOCIAL_LOGINS_ENABLED`, preserved social account data, and documented access and re-enablement limitations.
 - 2026-11-08: Purple UI refresh — introduced purple-tinted shared theme tokens, updated homepage accents and interactive cards, added hover transitions with reduced-motion support, and corrected the shared Geist font application.
+- 2026-11-08: User isAdmin flag — added `isAdmin Boolean @default(false)` to the `User` model in `prisma/schema.prisma` with migration `20261108210400_add_is_admin_to_user` (SQLite table redefine; existing rows get `false`). Regenerated the Prisma client. No code reads the flag yet.
+- 2026-11-08: Admin Console — added an admin-only account menu link and `/admin-console` page. Session and route checks read the current database flag; unauthenticated users are redirected to sign-in and non-admins to the dashboard. Verified with unit tests, a production build, and isolated browser checks.
+- 2026-11-08: Admin Console user management — added a Users tab with profile, verification, Pro and admin editing, read-only IDs, self-demotion protection, and password reset with bcrypt and confirmation. Added server-side admin checks, validation, tests, and an isolated browser verification.
+- 2026-11-08: Invite-only registration — added an admin Send Invites tab, seven-day single-use hashed invitation tokens and transactional registration using the verified invited email. Resending replaces prior links; disabled public registration and social login while retaining social code. Added the SQLite migration, Resend sender configuration, tests and isolated browser checks.
+- 2026-11-08: Admin user creation — added an admin-only create-user dialog for name, email, password, email verification, Pro and administrator flags. Added validation, bcrypt hashing, duplicate checks, unit tests and isolated browser verification.

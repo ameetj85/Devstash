@@ -4,7 +4,7 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@/lib/prisma'
 import { checkRateLimit, getIp } from '@/lib/rate-limit'
-import { getSocialProviders } from '@/lib/social-auth'
+import { isUserAdmin } from '@/lib/db/admin'
 
 class EmailNotVerified extends CredentialsSignin {
   code = 'email_not_verified'
@@ -18,15 +18,15 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: 'jwt' },
   callbacks: {
-    session({ session, token }) {
+    async session({ session, token }) {
       if (token.sub) {
         session.user.id = token.sub
       }
+      session.user.isAdmin = token.sub ? await isUserAdmin(token.sub) : false
       return session
     },
   },
   providers: [
-    ...getSocialProviders(),
     Credentials({
       credentials: {
         email: { label: 'Email', type: 'email' },

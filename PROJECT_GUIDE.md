@@ -55,7 +55,6 @@ At minimum, configure these entries in `.env`:
 SQLITE_DATABASE_URL="file:./prisma/scribbles.db"
 AUTH_SECRET="your-generated-random-secret"
 NEXTAUTH_URL="http://localhost:3000"
-REGISTRATION_ENABLED="true"
 EMAIL_VERIFICATION_ENABLED="false"
 ```
 
@@ -70,10 +69,13 @@ Prisma loads `.env` through `prisma.config.ts`; both the Prisma CLI and
 application use `SQLITE_DATABASE_URL`. Never commit `.env` or put real
 credentials in documentation.
 
-`REGISTRATION_ENABLED` is false unless explicitly set to the string `true`.
-Enable it for local account creation. With `EMAIL_VERIFICATION_ENABLED=false`,
-new password accounts are immediately verified; the default in
-`.env.example` is false.
+New accounts require an invitation sent by an administrator. Configure
+`NEXTAUTH_URL` and `RESEND_API_KEY` to send invitations. Invited email
+addresses are verified on registration regardless of `EMAIL_VERIFICATION_ENABLED`.
+To bootstrap an administrator on an existing installation, use
+`npm run studio` to set the existing user's `isAdmin` field to true. For a new local
+development database, seed the demo account first; never use the demo seed in
+production. Admins can then send invitations from the Admin Console.
 
 ### 3. Initialize the database and optionally seed sample data
 
@@ -124,8 +126,8 @@ created through registration or with the demo credentials above after seeding.
 The database and Auth.js secret are needed for the core signed-in application.
 Other providers are only needed when using their corresponding features:
 
-- GitHub OAuth is disabled by default; enabling it requires GitHub OAuth credentials.
-- Email verification and password-reset email delivery need Resend.
+- GitHub OAuth is disabled; restoring it requires code changes.
+- Invitations and password-reset email delivery need Resend.
 - File and image uploads/downloads need Cloudflare R2.
 - AI actions need an OpenAI API key.
 - Upstash credentials enable shared rate limiting. If they are absent or
@@ -144,13 +146,14 @@ does not validate all settings centrally at startup.
 | --- | --- | --- |
 | `SQLITE_DATABASE_URL` | SQLite file URL; defaults to `file:./prisma/scribbles.db` | Required for database-backed pages, auth, migrations, and seed |
 | `AUTH_SECRET` | Auth.js token/session signing | Required for authentication |
-| `SOCIAL_LOGINS_ENABLED` | Enables the retained GitHub provider and sign-in buttons when exactly `true` | Defaults to disabled |
-| `AUTH_GITHUB_ID` | GitHub OAuth client ID | GitHub sign-in/registration |
-| `AUTH_GITHUB_SECRET` | GitHub OAuth client secret | GitHub sign-in/registration |
-| `NEXTAUTH_URL` | Base URL used to construct email links; defaults to `http://localhost:3000` in the email helper | Set to the local or deployed canonical app URL, especially for email flows |
-| `REGISTRATION_ENABLED` | Opens/closes the registration page and registration API | Set to `true` to allow sign-ups; otherwise registration is closed |
+| `SOCIAL_LOGINS_ENABLED` | Legacy social login configuration; social login is disabled in the application | No effect on login |
+| `AUTH_GITHUB_ID` | Retained GitHub OAuth client ID | Social login is disabled |
+| `AUTH_GITHUB_SECRET` | Retained GitHub OAuth client secret | Social login is disabled |
+| `NEXTAUTH_URL` | Base URL used to construct email links | Required for invitations; use the canonical HTTPS URL in production |
+| `REGISTRATION_ENABLED` | Legacy public-registration setting | No effect; invitations are always required |
 | `EMAIL_VERIFICATION_ENABLED` | Requires verified email before credentials sign-in | Set to `true` to enable the verification flow |
-| `RESEND_API_KEY` | Sends verification and password-reset messages | Email verification or password reset |
+| `RESEND_API_KEY` | Sends invitation, verification and password-reset messages | Required for invitations and other email flows |
+| `RESEND_FROM_EMAIL` | Sender address for invitation emails | Use a verified Resend domain for delivery to arbitrary recipients; otherwise the restricted test sender is used |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint | Shared rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token | Shared rate limiting |
 | `R2_ACCOUNT_ID` | Cloudflare account identifier used to construct the S3-compatible endpoint | File/image storage |
@@ -164,12 +167,10 @@ When email verification is enabled, configure a valid Resend key and ensure the
 email links point to the correct `NEXTAUTH_URL`. Rate limits are maintained in
 Upstash when configured; without it, the application deliberately fails open.
 
-Social-only accounts have no password to reset and cannot sign in while social
-login is disabled. Existing sessions are not revoked by this setting. To restore
-GitHub login, configure its credentials and callback URL, set
-`SOCIAL_LOGINS_ENABLED="true"`, and restart the app. When enabled, GitHub OAuth
-can create accounts independently of the `REGISTRATION_ENABLED` registration
-form/API setting; review that behavior before enabling it.
+Social-only accounts cannot sign in while social login is disabled. An
+administrator can set a password for those accounts; existing sessions are not
+revoked. Re-enabling social login requires code changes and a review of the
+invitation-only policy.
 
 ## Recent changes: SQLite, payments, and social login
 
@@ -220,22 +221,15 @@ form/API setting; review that behavior before enabling it.
 
 ### Social sign-in
 
-- `SOCIAL_LOGINS_ENABLED` defaults to disabled and must equal the exact string
-  `true` to enable the retained GitHub provider. The shared provider
-  configuration is in `src/lib/social-auth.ts` and is used by both
-  `src/auth.ts` and `src/auth.config.ts`. With the flag disabled, GitHub is not
-  registered with Auth.js, direct GitHub sign-in is unavailable, and the
-  sign-in and registration pages hide their social buttons.
+- GitHub is not registered with Auth.js and the social buttons are hidden,
+  even if `SOCIAL_LOGINS_ENABLED` is set to `true`.
 - The GitHub button component, provider configuration, OAuth credentials in
   existing environment files, and linked account records are retained.
   Disabling the provider does not delete accounts or invalidate existing
   sessions. Users who only used GitHub have no password to reset and cannot
-  initiate a new sign-in until a supported access method is restored.
-- To re-enable GitHub sign-in, set `SOCIAL_LOGINS_ENABLED="true"` and configure
-  `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, and the appropriate GitHub OAuth
-  callback URL; restart the application. Review registration policy first:
-  the GitHub OAuth flow can create accounts even when `REGISTRATION_ENABLED`
-  disables the email/password registration page and API.
+  initiate a new sign-in until an administrator sets a password.
+- Restoring social sign-in requires code changes and review of its account
+  creation behavior; configuration alone does not enable it.
 
 ### Verification
 
@@ -382,7 +376,7 @@ There is no dedicated `typecheck` script in `package.json`; run
 3. Generate the Prisma client during dependency installation/build.
 4. Configure `AUTH_SECRET` and the public canonical `NEXTAUTH_URL`.
 5. Configure OAuth, email, Redis, R2, and OpenAI only for the features being enabled.
-6. Keep `REGISTRATION_ENABLED` disabled unless public sign-up is intended.
+6. Configure invitation email delivery and establish an initial administrator.
 7. Do not run the demo seed against production.
 
 Removing the integration does not cancel subscriptions or stop charges at the

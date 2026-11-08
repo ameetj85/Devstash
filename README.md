@@ -16,9 +16,9 @@ All users have access to the app's features without a subscription. AI and file
 uploads still require their respective service credentials and remain subject
 to applicable rate and file-size limits.
 
-Social login is disabled by default. Existing social-only users cannot sign in
-or reset a password while it is disabled. See the project guide before enabling
-the retained GitHub integration.
+Social login is disabled. Existing social-only users need an administrator to
+set a password before they can sign in. Restoring social login requires code
+changes and review of the invitation-only policy.
 
 ## Run locally
 
@@ -38,9 +38,12 @@ npx prisma migrate deploy
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Set
-`REGISTRATION_ENABLED="true"` in `.env` to allow account creation. Other
-third-party keys are only required for their corresponding integrations.
+Open [http://localhost:3000](http://localhost:3000). Registration requires an
+administrator's invitation. Configure `NEXTAUTH_URL` and `RESEND_API_KEY` to
+send invitations; set `RESEND_FROM_EMAIL` to a sender on a verified Resend
+domain for delivery to arbitrary recipients. The default test sender is
+restricted. Other third-party keys are only required for their
+corresponding integrations.
 
 To load the development/demo records into the SQLite database:
 
