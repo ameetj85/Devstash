@@ -4,7 +4,7 @@ import { defineConfig } from 'prisma/config'
 export default defineConfig({
   schema: 'prisma/schema.prisma',
   datasource: {
-    url: process.env.DATABASE_URL,
+    url: process.env.SQLITE_DATABASE_URL ?? 'file:./prisma/scribbles.db',
   },
   migrations: {
     seed: 'npx tsx prisma/seed.ts',

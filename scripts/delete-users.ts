@@ -1,10 +1,12 @@
 import 'dotenv/config'
-import { PrismaNeon } from '@prisma/adapter-neon'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { PrismaClient } from '../src/generated/prisma/client'
 
 const KEEP_EMAIL = 'demo@Scribbles.io'
 
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
+const adapter = new PrismaBetterSqlite3({
+  url: process.env.SQLITE_DATABASE_URL ?? 'file:./prisma/scribbles.db',
+})
 const prisma = new PrismaClient({ adapter })
 
 async function main() {

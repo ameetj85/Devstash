@@ -22,4 +22,4 @@ Updated 2026-03-23 after full audit of implemented features:
 
 8. **Fragile slug-to-type-name mapping** — `src/app/items/[type]/page.tsx` line 21 strips trailing 's' to get DB type name. Works for current types but will break for any future type with an irregular plural or one that naturally ends in 's'.
 
-9. **prisma/schema.prisma datasource has no url field** — Relies on prisma.config.ts to supply DATABASE_URL. Running bare `prisma` CLI commands without the config file will fail with a confusing error.
+9. **prisma/schema.prisma datasource has no url field** — Relies on prisma.config.ts to supply SQLITE_DATABASE_URL (defaulting to `file:./prisma/scribbles.db`). Run Prisma CLI commands from the repository root so they load the config.

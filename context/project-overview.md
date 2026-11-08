@@ -145,9 +145,10 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
 }
+
+// The URL is configured in prisma.config.ts via SQLITE_DATABASE_URL.
 
 // ─── User ────────────────────────────────────────────
 // Extends NextAuth User model
@@ -337,8 +338,8 @@ model ItemTag {
 | ---------------- | -------------------------- | --------------------------------------------------------------------- |
 | **Framework**    | Next.js 16 / React 19     | App Router, SSR, Cache Components, Turbopack (default bundler)        |
 | **Language**     | TypeScript                 | Strict mode                                                           |
-| **Database**     | Neon PostgreSQL            | Serverless Postgres                                                   |
-| **ORM**          | Prisma 7                   | Rust-free `prisma-client` provider, TypeScript-native query compiler  |
+| **Database**     | SQLite                     | Local database file at `prisma/scribbles.db` by default               |
+| **ORM**          | Prisma 7                   | `prisma-client` generator with the `better-sqlite3` driver adapter     |
 | **Auth**         | NextAuth v5 (Auth.js)      | Email/password + GitHub OAuth                                         |
 | **File Storage** | Cloudflare R2              | S3-compatible object storage for file/image uploads                   |
 | **AI**           | OpenAI `gpt-5-nano`        | Auto-tagging, summaries, code explanation, prompt optimization        |
@@ -349,7 +350,7 @@ model ItemTag {
 
 **Next.js 16** — Released October 2025. Turbopack is now the stable default bundler. Middleware has been renamed to `proxy.ts`. Cache Components replace PPR with explicit `use cache` directives. React 19.2 with View Transitions and React Compiler support.
 
-**Prisma 7** — Rust-free architecture. Uses `prisma-client` provider (not `prisma-client-js`). Generated client must specify an `output` path. Requires a driver adapter (e.g., `@prisma/adapter-pg`) or `accelerateUrl` when instantiating `PrismaClient`. Latest stable is v7.4 with query caching.
+**Prisma 7** — Uses the `prisma-client` generator (not `prisma-client-js`) with an explicit output path. This project uses `@prisma/adapter-better-sqlite3` and the `SQLITE_DATABASE_URL` setting.
 
 **NextAuth v5** — The stable release of Auth.js for Next.js. Supports the App Router natively, edge-compatible sessions, and database adapters via Prisma.
 
@@ -468,7 +469,7 @@ model ItemTag {
               ┌────────────┘    │    └────────────┐
               │                 │                  │
      ┌────────▼───────┐ ┌──────▼──────┐  ┌───────▼───────┐
-     │  Neon Postgres  │ │ Cloudflare  │  │   OpenAI      │
+     │     SQLite      │ │ Cloudflare  │  │   OpenAI      │
      │  (via Prisma 7) │ │     R2      │  │  gpt-5-nano   │
      │                 │ │ File Storage│  │  (Pro only)   │
      └─────────────────┘ └─────────────┘  └───────────────┘
@@ -501,7 +502,6 @@ model ItemTag {
 
 | Resource                   | URL                                                   |
 | -------------------------- | ----------------------------------------------------- |
-| Neon (Serverless Postgres) | https://neon.tech                                     |
 | Cloudflare R2              | https://developers.cloudflare.com/r2                  |
 | Stripe Billing             | https://stripe.com/docs/billing                       |
 | OpenAI API                 | https://platform.openai.com/docs                      |
