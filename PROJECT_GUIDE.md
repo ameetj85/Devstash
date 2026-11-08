@@ -15,7 +15,7 @@ implemented in this repository, including how to run it locally.
 | Authentication | Auth.js / NextAuth 5 beta, Prisma adapter, JWT sessions |
 | Tests | Vitest 4 |
 | File and image storage | Cloudflare R2 via the AWS S3-compatible SDK |
-| Email | Resend |
+| Email | Nodemailer (SMTP) |
 | Rate limiting | Upstash Redis and `@upstash/ratelimit` |
 | AI | OpenAI Responses API (`gpt-5-nano`) |
 
@@ -70,7 +70,7 @@ application use `SQLITE_DATABASE_URL`. Never commit `.env` or put real
 credentials in documentation.
 
 New accounts require an invitation sent by an administrator. Configure
-`NEXTAUTH_URL` and `RESEND_API_KEY` to send invitations. Invited email
+`NEXTAUTH_URL` and the SMTP settings described below to send invitations. Invited email
 addresses are verified on registration regardless of `EMAIL_VERIFICATION_ENABLED`.
 To bootstrap an administrator on an existing installation, use
 `npm run studio` to set the existing user's `isAdmin` field to true. For a new local
@@ -127,7 +127,7 @@ The database and Auth.js secret are needed for the core signed-in application.
 Other providers are only needed when using their corresponding features:
 
 - GitHub OAuth is disabled; restoring it requires code changes.
-- Invitations and password-reset email delivery need Resend.
+- Invitations and password-reset email delivery need SMTP credentials.
 - File and image uploads/downloads need Cloudflare R2.
 - AI actions need an OpenAI API key.
 - Upstash credentials enable shared rate limiting. If they are absent or
@@ -152,8 +152,12 @@ does not validate all settings centrally at startup.
 | `NEXTAUTH_URL` | Base URL used to construct email links | Required for invitations; use the canonical HTTPS URL in production |
 | `REGISTRATION_ENABLED` | Legacy public-registration setting | No effect; invitations are always required |
 | `EMAIL_VERIFICATION_ENABLED` | Requires verified email before credentials sign-in | Set to `true` to enable the verification flow |
-| `RESEND_API_KEY` | Sends invitation, verification and password-reset messages | Required for invitations and other email flows |
-| `RESEND_FROM_EMAIL` | Sender address for invitation emails | Use a verified Resend domain for delivery to arbitrary recipients; otherwise the restricted test sender is used |
+| `SMTP_HOST` | SMTP server host (e.g. `smtp.gmail.com`) | Required for all email flows |
+| `SMTP_PORT` | SMTP server port (e.g. `587`) | Required for all email flows |
+| `SMTP_SECURE` | Use implicit TLS | `true` for port 465; `false` for STARTTLS on 587 |
+| `SMTP_USER` | SMTP username | Required for all email flows |
+| `SMTP_PASS` | SMTP password (Gmail app password) | Required for all email flows |
+| `EMAIL_FROM` | Sender address for outgoing email | Falls back to `SMTP_USER` when unset; Gmail may rewrite it to the authenticated account |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint | Shared rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token | Shared rate limiting |
 | `R2_ACCOUNT_ID` | Cloudflare account identifier used to construct the S3-compatible endpoint | File/image storage |
@@ -163,7 +167,7 @@ does not validate all settings centrally at startup.
 | `R2_PUBLIC_URL` | Public base URL used to form stored file URLs | Upload display and file URL/key handling |
 | `OPENAI_API_KEY` | OpenAI API key | AI auto-tagging, descriptions, code explanations, and prompt optimization |
 
-When email verification is enabled, configure a valid Resend key and ensure the
+When email verification is enabled, configure valid SMTP credentials and ensure the
 email links point to the correct `NEXTAUTH_URL`. Rate limits are maintained in
 Upstash when configured; without it, the application deliberately fails open.
 

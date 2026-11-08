@@ -9,7 +9,7 @@ commands, links, files, and images.
 - Tailwind CSS 4 and shadcn/ui
 - Prisma 7 with a local SQLite database
 - Auth.js / NextAuth 5
-- Optional integrations: Cloudflare R2, Resend, Upstash Redis,
+- Optional integrations: Cloudflare R2, SMTP email (nodemailer), Upstash Redis,
   and OpenAI
 
 All users have access to the app's features without a subscription. AI and file
@@ -39,11 +39,10 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000). Registration requires an
-administrator's invitation. Configure `NEXTAUTH_URL` and `RESEND_API_KEY` to
-send invitations; set `RESEND_FROM_EMAIL` to a sender on a verified Resend
-domain for delivery to arbitrary recipients. The default test sender is
-restricted. Other third-party keys are only required for their
-corresponding integrations.
+administrator's invitation. Configure `NEXTAUTH_URL` and the SMTP settings
+(`SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`,
+`EMAIL_FROM`) to send invitations and other email. Other third-party keys are
+only required for their corresponding integrations.
 
 To load the development/demo records into the SQLite database:
 

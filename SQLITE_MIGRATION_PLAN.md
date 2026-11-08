@@ -115,7 +115,7 @@ against SQLite.
 7. Update `.env.example` and setup documentation for the SQLite path. Ensure
    local `.db` files and backups are ignored by Git.
 8. Remove Neon packages from `package.json` only if no remaining code uses them.
-   Keep Prisma packages and other independent providers (R2, Stripe, Resend,
+   Keep Prisma packages and other independent providers (R2, Stripe, SMTP,
    Upstash, and OpenAI) as required by their features.
 
 ### Migration history
