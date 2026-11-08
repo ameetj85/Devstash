@@ -33,7 +33,11 @@ export async function POST(req: Request) {
   }
 
   const { token } = await generatePasswordResetToken(email)
-  await sendPasswordResetEmail(email, token)
+  try {
+    await sendPasswordResetEmail(email, token)
+  } catch (error) {
+    console.error('Failed to send password reset email:', error)
+  }
 
   return NextResponse.json({ message: 'If that email exists, a reset link has been sent.' })
 }
