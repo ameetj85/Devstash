@@ -1,14 +1,13 @@
-# Admin User Creation
+# Current Feature
 
 ## Status
 Completed
 
 ## Goals
-- Allow administrators to create users with a name, email, password, and access flags.
-- Protect creation with server-side admin checks and validation.
+<!-- Add feature goals here. -->
 
 ## Notes
-- Email verification is optional and no invitation or verification email is sent.
+<!-- Add feature notes here. -->
 
 
 
