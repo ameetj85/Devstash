@@ -8,7 +8,7 @@ import { ScrollFadeIn } from '@/components/homepage/scroll-fade-in';
 
 export default function Home() {
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-[#f0f0f5]">
+    <div className="min-h-screen bg-background text-foreground">
       <Navbar />
       <HeroSection />
       <FeaturesSection />

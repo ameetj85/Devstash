@@ -55,7 +55,7 @@ export function FeaturesSection() {
   return (
     <section id="features" className="mx-auto max-w-[1200px] px-5 py-24">
       <div className="homepage-fade-in">
-        <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#3b82f6]">
+        <div className="mb-3 text-xs font-semibold uppercase tracking-wider text-primary">
           Features
         </div>
         <h2 className="mb-3 text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-[#f0f0f5]">

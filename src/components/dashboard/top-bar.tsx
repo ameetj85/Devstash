@@ -25,7 +25,7 @@ export default function TopBar({ onMobileMenuToggle, collections = [], hasFavori
   const [createCollectionOpen, setCreateCollectionOpen] = useState(false)
 
   return (
-    <header className="flex items-center px-4 h-14 border-b border-border shrink-0">
+    <header className="flex items-center px-4 h-14 border-b border-border bg-card/60 shrink-0">
       {/* Left section — logo & hamburger */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
         <button

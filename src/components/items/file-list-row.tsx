@@ -54,7 +54,7 @@ export default function FileListRow({ item, onClick }: FileListRowProps) {
 
   return (
     <div
-      className="flex items-center gap-4 px-4 py-3 rounded-lg border border-border bg-card hover:bg-muted/50 transition-colors cursor-pointer"
+      className="flex items-center gap-4 px-4 py-3 rounded-lg border border-border bg-card hover:bg-accent/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-200 cursor-pointer"
       onClick={onClick}
     >
       {/* File icon */}

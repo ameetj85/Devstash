@@ -1,18 +1,15 @@
-# Remove Payments and Disable Social Logins
+# Purple UI Refresh
 
 ## Status
 Completed
 
 ## Goals
-- Remove Stripe payment and subscription upgrade functionality.
-- Give all users access to implemented features without subscription limits.
-- Disable social login and hide its controls while retaining the implementation.
-- Preserve authentication, operational limits, and existing subscription data.
+- Apply a professional purple-tinted palette across the application.
+- Add visible hover transitions to interactive elements while respecting reduced motion.
+- Preserve functionality, responsive layouts, and item type colors.
 
 ## Notes
-- Keep existing payment-only files rather than deleting them.
-- Retain legacy subscription columns in SQLite for reversibility.
-- Social login is disabled by default and can be restored via configuration.
+- Use Tailwind v4 CSS theme tokens and shared UI components.
 
 
 
@@ -81,3 +78,4 @@ Completed
 - 2026-11-08: VPS SQLite setup — added a repeatable setup script that applies committed migrations and initializes missing system item types without creating demo users or copying existing data; documented usage and backup considerations.
 - 2026-11-08: Removed Stripe payment processing and subscription gates — retired checkout, portal, webhook, and upgrade UI while keeping their files, removed paid-tier limits for all users, preserved legacy SQLite subscription fields, updated guides, and verified the app with tests, a production build, and browser checks using an isolated non-Pro account.
 - 2026-11-08: Disabled social login by default — gated the retained GitHub provider and sign-in/registration controls behind `SOCIAL_LOGINS_ENABLED`, preserved social account data, and documented access and re-enablement limitations.
+- 2026-11-08: Purple UI refresh — introduced purple-tinted shared theme tokens, updated homepage accents and interactive cards, added hover transitions with reduced-motion support, and corrected the shared Geist font application.

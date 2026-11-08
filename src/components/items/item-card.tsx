@@ -37,7 +37,7 @@ export default function ItemCard({ item, onClick }: ItemCardProps) {
 
   return (
     <div
-      className="rounded-lg border border-l-4 border-border bg-card p-4 hover:bg-card/80 transition-colors cursor-pointer flex flex-col gap-3"
+      className="rounded-lg border border-l-4 border-border bg-card p-4 hover:bg-accent/40 hover:shadow-lg hover:shadow-primary/5 motion-safe:hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col gap-3"
       style={{ borderLeftColor: color }}
       onClick={onClick}
     >
