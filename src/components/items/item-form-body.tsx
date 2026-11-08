@@ -29,7 +29,6 @@ interface ItemFormBodyProps {
   selectedCollections: string[]
   onCollectionsChange: (ids: string[]) => void
   allCollections: { id: string; name: string }[]
-  isPro: boolean
   descriptionFileName?: string
   descriptionRows?: number
   optimizeToastMessage?: string
@@ -45,7 +44,6 @@ export default function ItemFormBody({
   selectedCollections,
   onCollectionsChange,
   allCollections,
-  isPro,
   descriptionFileName,
   descriptionRows = 3,
   optimizeToastMessage = 'Optimized prompt applied.',
@@ -78,7 +76,6 @@ export default function ItemFormBody({
             fileName={descriptionFileName}
             language={form.language}
             tags={tagList}
-            isPro={isPro}
             onGenerated={(description) => onFormChange({ description })}
           />
         </div>
@@ -126,7 +123,6 @@ export default function ItemFormBody({
               optimize={typeName === 'prompt' ? {
                 typeName: 'prompt',
                 title: form.title || undefined,
-                isPro,
                 onAccept: (optimized) => {
                   onFormChange({ content: optimized })
                   toast.success(optimizeToastMessage)
@@ -179,7 +175,6 @@ export default function ItemFormBody({
             title={form.title}
             content={form.content}
             typeName={typeName}
-            isPro={isPro}
             onAcceptTag={(tag) => {
               const existing = form.tags.split(',').map((t) => t.trim()).filter(Boolean)
               if (existing.includes(tag)) return

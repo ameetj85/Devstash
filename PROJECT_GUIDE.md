@@ -17,7 +17,6 @@ implemented in this repository, including how to run it locally.
 | File and image storage | Cloudflare R2 via the AWS S3-compatible SDK |
 | Email | Resend |
 | Rate limiting | Upstash Redis and `@upstash/ratelimit` |
-| Payments | Stripe subscriptions and webhooks |
 | AI | OpenAI Responses API (`gpt-5-nano`) |
 
 The package versions above are the versions declared in `package.json`; the
@@ -76,13 +75,19 @@ Enable it for local account creation. With `EMAIL_VERIFICATION_ENABLED=false`,
 new password accounts are immediately verified; the default in
 `.env.example` is false.
 
-### 3. Apply migrations and optionally seed sample data
+### 3. Initialize the database and optionally seed sample data
 
-Apply the migrations checked into `prisma/migrations`:
+Create the SQLite file if needed, apply the migrations checked into
+`prisma/migrations`, and add the seven required system item types:
 
 ```powershell
-npx prisma migrate deploy
+npm run setup-sqlite
 ```
+
+The setup script does not add accounts or sample content. It can be rerun on an
+existing Prisma-managed database; back up existing data before applying pending
+migrations. `npx prisma migrate deploy` applies the schema alone and does not
+initialize the system item types.
 
 To load the development/demo records:
 
@@ -119,18 +124,15 @@ created through registration or with the demo credentials above after seeding.
 The database and Auth.js secret are needed for the core signed-in application.
 Other providers are only needed when using their corresponding features:
 
-- GitHub OAuth needs GitHub OAuth credentials.
+- GitHub OAuth is disabled by default; enabling it requires GitHub OAuth credentials.
 - Email verification and password-reset email delivery need Resend.
 - File and image uploads/downloads need Cloudflare R2.
 - AI actions need an OpenAI API key.
-- Stripe checkout, billing portal, and webhook handling need Stripe settings.
 - Upstash credentials enable shared rate limiting. If they are absent or
   unavailable, the current rate-limit helper fails open (requests are allowed).
 
-Some provider clients are imported by their respective route modules and Stripe
-is initialized from `STRIPE_SECRET_KEY` at module load. Configure the relevant
-provider before exercising its routes; do not assume an empty placeholder value
-is a valid provider credential.
+Configure the relevant provider before exercising its routes; do not assume an
+empty placeholder value is a valid provider credential.
 
 ## Environment variables
 
@@ -142,6 +144,7 @@ does not validate all settings centrally at startup.
 | --- | --- | --- |
 | `SQLITE_DATABASE_URL` | SQLite file URL; defaults to `file:./prisma/scribbles.db` | Required for database-backed pages, auth, migrations, and seed |
 | `AUTH_SECRET` | Auth.js token/session signing | Required for authentication |
+| `SOCIAL_LOGINS_ENABLED` | Enables the retained GitHub provider and sign-in buttons when exactly `true` | Defaults to disabled |
 | `AUTH_GITHUB_ID` | GitHub OAuth client ID | GitHub sign-in/registration |
 | `AUTH_GITHUB_SECRET` | GitHub OAuth client secret | GitHub sign-in/registration |
 | `NEXTAUTH_URL` | Base URL used to construct email links; defaults to `http://localhost:3000` in the email helper | Set to the local or deployed canonical app URL, especially for email flows |
@@ -156,15 +159,91 @@ does not validate all settings centrally at startup.
 | `R2_BUCKET_NAME` | Bucket for uploaded objects | File/image storage |
 | `R2_PUBLIC_URL` | Public base URL used to form stored file URLs | Upload display and file URL/key handling |
 | `OPENAI_API_KEY` | OpenAI API key | AI auto-tagging, descriptions, code explanations, and prompt optimization |
-| `STRIPE_SECRET_KEY` | Stripe server API key | Checkout, billing portal, and Stripe webhook routes |
-| `STRIPE_WEBHOOK_SECRET` | Stripe signature verification secret | Stripe webhook route |
-| `STRIPE_PRICE_ID_MONTHLY` | Stripe monthly subscription price ID | Monthly checkout |
-| `STRIPE_PRICE_ID_YEARLY` | Stripe yearly subscription price ID | Yearly checkout |
-| `STRIPE_PUBLISHABLE_KEY` | Present in `.env.example`, but not referenced by current application source | Not currently used by the app code |
 
 When email verification is enabled, configure a valid Resend key and ensure the
 email links point to the correct `NEXTAUTH_URL`. Rate limits are maintained in
 Upstash when configured; without it, the application deliberately fails open.
+
+Social-only accounts have no password to reset and cannot sign in while social
+login is disabled. Existing sessions are not revoked by this setting. To restore
+GitHub login, configure its credentials and callback URL, set
+`SOCIAL_LOGINS_ENABLED="true"`, and restart the app. When enabled, GitHub OAuth
+can create accounts independently of the `REGISTRATION_ENABLED` registration
+form/API setting; review that behavior before enabling it.
+
+## Recent changes: SQLite, payments, and social login
+
+### PostgreSQL-to-SQLite migration
+
+- Prisma now uses the SQLite provider and `@prisma/adapter-better-sqlite3`.
+  `SQLITE_DATABASE_URL` identifies the database, defaulting to
+  `file:./prisma/scribbles.db`; relative paths are resolved from the project
+  directory. The active migration history is under `prisma/migrations/`.
+- The existing PostgreSQL data was copied into the local SQLite database. The
+  source was left unchanged, and the previous PostgreSQL migration history was
+  retained under `prisma/migrations-postgresql-archive/` for reference. It is
+  not part of the active SQLite migration history.
+- The SQLite database and `.env` are Git-ignored. Cloning or deploying this
+  repository does **not** copy existing users or content. Back up the database
+  consistently and transfer it separately if the deployed instance needs the
+  existing data. The migration and verification record is documented in
+  [SQLITE_MIGRATION_PLAN.md](./SQLITE_MIGRATION_PLAN.md).
+- `scripts/setup-sqlite.ts`, invoked by `npm run setup-sqlite`, applies
+  committed migrations and adds missing system item types without creating
+  demo users or copying data. The setup command requires development
+  dependencies, including Prisma and `tsx`.
+
+### Payments and feature access
+
+- Stripe checkout, the billing portal, webhook processing, pricing UI,
+  subscription settings, upgrade links, and Pro badges are no longer active.
+  The Stripe package and Stripe environment settings were removed. The retained
+  `POST /api/stripe/checkout`, `POST /api/stripe/portal`, and
+  `POST /api/webhooks/stripe` endpoints return HTTP 410; `/upgrade` redirects
+  to `/settings`.
+- All authenticated users can create items and collections without the former
+  50-item and 3-collection tier limits, use file and image types, and use AI
+  actions. Authentication, ownership checks, validation, and operational limits
+  remain. Uploads require R2 configuration and are limited to 10 MiB for files
+  and 5 MiB for images with allowed MIME types; AI requires OpenAI configuration
+  and retains the shared 20-requests-per-hour user limit when rate limiting is
+  configured.
+- The `User.isPro`, `User.stripeCustomerId`, and
+  `User.stripeSubscriptionId` database fields remain unchanged for
+  reversibility but no longer grant or restrict feature access. No schema
+  migration or account-data deletion was performed for this change.
+- Retiring the application integration **does not cancel existing Stripe
+  subscriptions or stop charges**. Manage existing subscriptions and disable
+  the old webhook separately at the payment provider before deployment.
+  Retained payment-related source files no longer implement payment processing;
+  restoring the integration would require code changes, not just configuration.
+
+### Social sign-in
+
+- `SOCIAL_LOGINS_ENABLED` defaults to disabled and must equal the exact string
+  `true` to enable the retained GitHub provider. The shared provider
+  configuration is in `src/lib/social-auth.ts` and is used by both
+  `src/auth.ts` and `src/auth.config.ts`. With the flag disabled, GitHub is not
+  registered with Auth.js, direct GitHub sign-in is unavailable, and the
+  sign-in and registration pages hide their social buttons.
+- The GitHub button component, provider configuration, OAuth credentials in
+  existing environment files, and linked account records are retained.
+  Disabling the provider does not delete accounts or invalidate existing
+  sessions. Users who only used GitHub have no password to reset and cannot
+  initiate a new sign-in until a supported access method is restored.
+- To re-enable GitHub sign-in, set `SOCIAL_LOGINS_ENABLED="true"` and configure
+  `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, and the appropriate GitHub OAuth
+  callback URL; restart the application. Review registration policy first:
+  the GitHub OAuth flow can create accounts even when `REGISTRATION_ENABLED`
+  disables the email/password registration page and API.
+
+### Verification
+
+The latest implementation checks passed the production build and 193 Vitest
+tests. Browser checks covered a non-Pro account's file/image pages and settings,
+and the sign-in and registration pages with social login disabled. The Auth.js
+provider endpoint was also checked in both disabled and enabled configurations.
+The full lint command still reports pre-existing UI lint issues.
 
 ## What the application contains
 
@@ -179,11 +258,10 @@ Upstash when configured; without it, the application deliberately fails open.
 - `/collections` and `/collections/[id]` — collection list and detail pages.
 - `/favorites` — favorited items and collections.
 - `/profile` — profile and usage information.
-- `/settings` — subscription, editor preferences, password, and account settings.
-- `/upgrade` — subscription/upgrade information.
+- `/settings` — editor preferences, password, and account settings.
 
 The `src/proxy.ts` Auth.js proxy protects dashboard, item, collection, profile,
-settings, favorites, and upgrade routes. API handlers and server actions also
+settings and favorites routes. API handlers and server actions also
 perform their own authentication/ownership checks where appropriate.
 
 ### Core capabilities
@@ -192,21 +270,20 @@ perform their own authentication/ownership checks where appropriate.
 - Add an item to multiple collections.
 - Search items and collections using the command palette (`Ctrl+K` / `Cmd+K`).
 - Edit snippets and commands with Monaco; write and preview prompt/note Markdown.
-- Upload files/images to R2 for Pro users.
-- Generate tags/descriptions, explain code, and optimize prompts with OpenAI for
-  Pro users.
-- Manage monthly/yearly Stripe subscriptions.
+- Upload files/images to R2.
+- Generate tags/descriptions, explain code, and optimize prompts with OpenAI.
 - Configure Monaco editor preferences per user.
 
-Free accounts are limited to 50 items and 3 collections; file/image uploads and
-AI features are Pro-gated in the application.
+All users can access these features without a subscription. File uploads and AI
+still require their respective provider credentials and retain their operational
+limits, including file-size and AI rate limits.
 
 ## Architecture and source map
 
 The Next.js App Router renders server pages and client-side interactive
 components. Server components fetch directly through Prisma. Mutations are
 implemented mainly as server actions; API routes are used for authentication,
-uploads, file downloads, search, billing, and webhooks.
+uploads, file downloads, and search.
 
 | Path | Responsibility |
 | --- | --- |
@@ -214,7 +291,7 @@ uploads, file downloads, search, billing, and webhooks.
 | `src/components/` | Page and feature UI, including dashboard, items, collections, auth, and settings |
 | `src/actions/` | Server actions for items, collections, settings, and AI |
 | `src/lib/db/` | Prisma-backed query functions |
-| `src/lib/` | Prisma, Auth-related helpers, rate limits, email, R2, Stripe, OpenAI, and shared utilities |
+| `src/lib/` | Prisma, Auth-related helpers, rate limits, email, R2, OpenAI, and shared utilities |
 | `src/hooks/` | Reusable client-side hooks |
 | `src/contexts/` | React contexts, including editor preferences |
 | `src/types/` | Shared TypeScript and Auth.js type declarations |
@@ -236,8 +313,8 @@ by Git.
 
 The Prisma schema uses SQLite and includes:
 
-- `User` — account details, password hash, Pro status, Stripe identifiers, and
-  editor preferences.
+- `User` — account details, password hash, and editor preferences. Legacy
+  subscription columns remain in the database for reversibility but are unused.
 - `Account`, `Session`, and `VerificationToken` — Auth.js account linkage,
   persisted session model, and short-lived verification/reset tokens. The
   configured Auth.js session strategy is JWT.
@@ -266,8 +343,7 @@ The main route handlers are:
 - `/api/upload` and `/api/files/[key]` — R2 upload and file access.
 - `/api/profile/change-password` and `/api/profile/delete-account` — account
   management.
-- `/api/stripe/checkout`, `/api/stripe/portal`, and
-  `/api/webhooks/stripe` — subscription checkout, portal, and webhook updates.
+- The retired payment endpoints return HTTP 410 and do not process payments.
 
 The `src/actions/` server actions provide item and collection CRUD/toggles,
 settings updates, and AI operations. Their database queries are generally
@@ -285,6 +361,7 @@ delegated to `src/lib/db/`.
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run test:coverage` | Run Vitest with V8 coverage |
 | `npm run studio` | Open Prisma Studio |
+| `npm run setup-sqlite` | Apply SQLite migrations and initialize system item types |
 | `npm run delete-users` | Run `scripts/delete-users.ts` to delete non-demo users |
 
 There is no dedicated `typecheck` script in `package.json`; run
@@ -294,16 +371,17 @@ There is no dedicated `typecheck` script in `package.json`; run
 
 1. Provide production environment variables and a persistent writable SQLite
    file path via `SQLITE_DATABASE_URL`.
-2. Apply checked-in database migrations with `npx prisma migrate deploy` before
-   serving the app.
+2. Run `npm run setup-sqlite` before serving the app to apply migrations and
+   initialize system item types. Back up an existing database first.
 3. Generate the Prisma client during dependency installation/build.
 4. Configure `AUTH_SECRET` and the public canonical `NEXTAUTH_URL`.
-5. Configure OAuth, email, Redis, R2, OpenAI, and Stripe only for the features
-   being enabled.
-6. Point Stripe's webhook endpoint at `/api/webhooks/stripe` and set its
-   signing secret in `STRIPE_WEBHOOK_SECRET`.
-7. Keep `REGISTRATION_ENABLED` disabled unless public sign-up is intended.
-8. Do not run the demo seed against production.
+5. Configure OAuth, email, Redis, R2, and OpenAI only for the features being enabled.
+6. Keep `REGISTRATION_ENABLED` disabled unless public sign-up is intended.
+7. Do not run the demo seed against production.
+
+Removing the integration does not cancel subscriptions or stop charges at the
+payment provider. Handle any existing subscriptions and webhook configuration
+there separately before deploying.
 
 For production, build with `npm run build` and start with `npm run start` (or
 use the hosting platform's equivalent Next.js deployment workflow). A local

@@ -1,5 +1,8 @@
 # AI Integration Plan
 
+> Historical plan: subscription gating described below has been removed. AI
+> remains authenticated, rate-limited, and dependent on OpenAI configuration.
+
 > Research findings for integrating OpenAI `gpt-5-nano` into Scribbles.
 
 ---

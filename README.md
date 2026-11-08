@@ -9,8 +9,16 @@ commands, links, files, and images.
 - Tailwind CSS 4 and shadcn/ui
 - Prisma 7 with a local SQLite database
 - Auth.js / NextAuth 5
-- Optional integrations: GitHub OAuth, Cloudflare R2, Resend, Upstash Redis,
-  Stripe, and OpenAI
+- Optional integrations: Cloudflare R2, Resend, Upstash Redis,
+  and OpenAI
+
+All users have access to the app's features without a subscription. AI and file
+uploads still require their respective service credentials and remain subject
+to applicable rate and file-size limits.
+
+Social login is disabled by default. Existing social-only users cannot sign in
+or reset a password while it is disabled. See the project guide before enabling
+the retained GitHub integration.
 
 ## Run locally
 

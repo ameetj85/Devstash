@@ -27,7 +27,6 @@ interface MarkdownEditorProps {
   optimize?: {
     typeName: 'prompt'
     title?: string
-    isPro: boolean
     onAccept: (optimized: string) => void | Promise<void>
   }
 }
@@ -144,7 +143,6 @@ export default function MarkdownEditor({
         {/* Optimize button (prompt type only) */}
         {showOptimizeUI && (
           <ProAIButton
-            isPro={optimize!.isPro}
             loading={optimizing}
             onClick={handleOptimize}
             title="Optimize prompt with AI"

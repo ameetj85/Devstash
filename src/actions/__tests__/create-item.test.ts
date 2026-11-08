@@ -10,11 +10,6 @@ vi.mock('@/lib/db/items', () => ({
   deleteItem: vi.fn(),
 }))
 
-vi.mock('@/lib/subscription', () => ({
-  canCreateItem: vi.fn().mockResolvedValue(true),
-  canUseFileUpload: vi.fn().mockReturnValue(true),
-}))
-
 import { auth } from '@/auth'
 import { createItem as createItemQuery } from '@/lib/db/items'
 import { createItem } from '@/actions/items'
@@ -105,8 +100,8 @@ describe('createItem server action', () => {
     expect(result).toEqual({ success: false, error: 'Invalid item type' })
   })
 
-  it('returns success with created item', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
+  it('creates an item for a non-Pro user', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never)
     mockCreateItemQuery.mockResolvedValue(fakeItem)
 
     const result = await createItem(validInput)
@@ -117,6 +112,16 @@ describe('createItem server action', () => {
       typeName: 'snippet',
       tags: ['ts'],
     }))
+  })
+
+  it('creates more than 50 items for a non-Pro user', async () => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never)
+    mockCreateItemQuery.mockResolvedValue(fakeItem)
+
+    for (let i = 0; i < 51; i++) {
+      expect((await createItem(validInput)).success).toBe(true)
+    }
+    expect(mockCreateItemQuery).toHaveBeenCalledTimes(51)
   })
 
   it('returns validation error when file type has no fileUrl', async () => {
@@ -149,13 +154,13 @@ describe('createItem server action', () => {
     expect(mockCreateItemQuery).not.toHaveBeenCalled()
   })
 
-  it('passes valid file item through successfully', async () => {
-    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: true } } as never)
+  it.each(['file', 'image'] as const)('creates a %s item for a non-Pro user', async (typeName) => {
+    mockAuth.mockResolvedValue({ user: { id: 'user-1', isPro: false } } as never)
     mockCreateItemQuery.mockResolvedValue({ ...fakeItem, typeName: 'file' } as never)
 
     const result = await createItem({
       ...validInput,
-      typeName: 'file',
+      typeName,
       content: null,
       fileUrl: 'https://pub.r2.dev/user-1/file.pdf',
       fileName: 'file.pdf',
@@ -163,7 +168,7 @@ describe('createItem server action', () => {
 
     expect(result.success).toBe(true)
     expect(mockCreateItemQuery).toHaveBeenCalledWith('user-1', expect.objectContaining({
-      typeName: 'file',
+      typeName,
       fileUrl: 'https://pub.r2.dev/user-1/file.pdf',
       fileName: 'file.pdf',
     }))

@@ -15,7 +15,7 @@ export function AISection() {
         <div>
           <div className="mb-5 inline-flex items-center gap-1.5 rounded-full bg-[rgba(139,92,246,0.15)] px-3 py-1 text-xs font-semibold text-[#a78bfa]">
             <Sparkles className="size-3.5" />
-            Pro Feature
+            AI Features
           </div>
           <h2 className="mb-3 text-[clamp(1.75rem,4vw,2.5rem)] font-bold text-[#f0f0f5]">
             AI that understands your code

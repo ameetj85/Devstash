@@ -55,15 +55,15 @@ Developers keep their essentials scattered across too many places:
 
 Items are the core unit of Scribbles. Each item has a **type** that determines its behavior and appearance. Users will eventually be able to create custom types, but the app ships with these **system types** (non-editable):
 
-| Type        | Content Mode | Color                       | Icon        | Pro Only |
-| ----------- | ------------ | --------------------------- | ----------- | -------- |
-| `snippet`   | Text         | `#3b82f6` (Blue)            | `Code`      | No       |
-| `prompt`    | Text         | `#8b5cf6` (Purple)          | `Sparkles`  | No       |
-| `note`      | Text         | `#fde047` (Yellow)          | `StickyNote` | No      |
-| `command`   | Text         | `#f97316` (Orange)          | `Terminal`  | No       |
-| `link`      | URL          | `#10b981` (Emerald)         | `Link`      | No       |
-| `file`      | File         | `#6b7280` (Gray)            | `File`      | Yes      |
-| `image`     | File         | `#ec4899` (Pink)            | `Image`     | Yes      |
+| Type        | Content Mode | Color                       | Icon         |
+| ----------- | ------------ | --------------------------- | ------------ |
+| `snippet`   | Text         | `#3b82f6` (Blue)            | `Code`       |
+| `prompt`    | Text         | `#8b5cf6` (Purple)          | `Sparkles`   |
+| `note`      | Text         | `#fde047` (Yellow)          | `StickyNote` |
+| `command`   | Text         | `#f97316` (Orange)          | `Terminal`   |
+| `link`      | URL          | `#10b981` (Emerald)         | `Link`       |
+| `file`      | File         | `#6b7280` (Gray)            | `File`       |
+| `image`     | File         | `#ec4899` (Pink)            | `Image`      |
 
 > **Routing:** Type-based pages follow the pattern `/items/snippets`, `/items/prompts`, etc.
 >
@@ -89,7 +89,7 @@ Full-text search across:
 ### D. Authentication
 
 - Email / password sign-in
-- GitHub OAuth sign-in
+- GitHub OAuth sign-in is retained but disabled by default
 - Powered by **NextAuth v5** (Auth.js)
 
 ### E. Core Features
@@ -105,7 +105,7 @@ Full-text search across:
 - Add/remove items to/from **multiple collections**
 - View which collections an item belongs to
 
-### F. AI Features (Pro Only)
+### F. AI Features
 
 - **AI auto-tag suggestions** — Suggest relevant tags on save
 - **AI summaries** — Generate a summary of any item
@@ -340,11 +340,10 @@ model ItemTag {
 | **Language**     | TypeScript                 | Strict mode                                                           |
 | **Database**     | SQLite                     | Local database file at `prisma/scribbles.db` by default               |
 | **ORM**          | Prisma 7                   | `prisma-client` generator with the `better-sqlite3` driver adapter     |
-| **Auth**         | NextAuth v5 (Auth.js)      | Email/password + GitHub OAuth                                         |
+| **Auth**         | NextAuth v5 (Auth.js)      | Email/password; GitHub OAuth disabled by default                      |
 | **File Storage** | Cloudflare R2              | S3-compatible object storage for file/image uploads                   |
 | **AI**           | OpenAI `gpt-5-nano`        | Auto-tagging, summaries, code explanation, prompt optimization        |
 | **Styling**      | Tailwind CSS v4 + shadcn/ui| Utility-first CSS with pre-built accessible components                |
-| **Payments**     | Stripe                     | Subscriptions for Pro tier                                            |
 
 ### Key Stack Notes
 
@@ -358,24 +357,9 @@ model ItemTag {
 
 ## Monetization
 
-### Freemium Model
-
-| Feature                    | Free              | Pro ($8/mo · $72/yr)    |
-| -------------------------- | ----------------- | ----------------------- |
-| Items                      | 50 total          | Unlimited               |
-| Collections                | 3                 | Unlimited               |
-| System types               | Text & URL only   | All (incl. file/image)  |
-| File / image uploads       | —                 | ✓ (Cloudflare R2)       |
-| Custom types               | —                 | ✓ (future)              |
-| AI auto-tagging            | —                 | ✓                       |
-| AI code explanation        | —                 | ✓                       |
-| AI prompt optimizer        | —                 | ✓                       |
-| AI summaries               | —                 | ✓                       |
-| Export (JSON/ZIP)          | —                 | ✓                       |
-| Search                     | Basic             | Full                    |
-| Priority support           | —                 | ✓                       |
-
-> **Dev note:** During development, all users can access everything. The Pro gate infrastructure (Stripe integration, `isPro` checks) should be set up but not enforced until launch.
+All users have access to implemented features without a subscription.
+External services still require configuration and applicable operational limits
+continue to apply. Legacy subscription fields are retained for reversibility.
 
 ---
 
@@ -471,13 +455,8 @@ model ItemTag {
      ┌────────▼───────┐ ┌──────▼──────┐  ┌───────▼───────┐
      │     SQLite      │ │ Cloudflare  │  │   OpenAI      │
      │  (via Prisma 7) │ │     R2      │  │  gpt-5-nano   │
-     │                 │ │ File Storage│  │  (Pro only)   │
+     │                 │ │ File Storage│  │               │
      └─────────────────┘ └─────────────┘  └───────────────┘
-              │
-     ┌────────▼───────┐
-     │    Stripe       │
-     │   Payments      │
-     └─────────────────┘
 ```
 
 ---
@@ -503,7 +482,6 @@ model ItemTag {
 | Resource                   | URL                                                   |
 | -------------------------- | ----------------------------------------------------- |
 | Cloudflare R2              | https://developers.cloudflare.com/r2                  |
-| Stripe Billing             | https://stripe.com/docs/billing                       |
 | OpenAI API                 | https://platform.openai.com/docs                      |
 
 ### Design References

@@ -8,7 +8,11 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import GitHubSignInButton from './github-sign-in-button'
 
-export default function RegisterForm() {
+interface RegisterFormProps {
+  socialLoginsEnabled: boolean
+}
+
+export default function RegisterForm({ socialLoginsEnabled }: RegisterFormProps) {
   const router = useRouter()
   const [form, setForm] = useState({
     name: '',
@@ -91,17 +95,19 @@ export default function RegisterForm() {
         <p className="text-sm text-muted-foreground">Start saving your developer knowledge</p>
       </div>
 
-      <GitHubSignInButton label="Sign up with GitHub" />
-
-      {/* Divider */}
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-border" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">or</span>
-        </div>
-      </div>
+      {socialLoginsEnabled && (
+        <>
+          <GitHubSignInButton label="Sign up with GitHub" />
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-background px-2 text-muted-foreground">or</span>
+            </div>
+          </div>
+        </>
+      )}
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-4">

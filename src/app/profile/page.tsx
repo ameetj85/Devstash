@@ -7,7 +7,6 @@ import { getCollections } from '@/lib/db/collections'
 import DashboardShell from '@/components/dashboard/dashboard-shell'
 import UserAvatar from '@/components/user-avatar'
 import { Layers, Folders } from 'lucide-react'
-import { FREE_LIMITS } from '@/lib/stripe-config'
 
 export const metadata: Metadata = { title: 'Profile' }
 
@@ -38,7 +37,6 @@ export default async function ProfilePage() {
       user={user}
       editorPreferences={editorPreferences}
       hasFavorites={favoritesExist}
-      isPro={session.user?.isPro ?? false}
     >
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto px-4 py-12 space-y-10">
@@ -72,26 +70,22 @@ export default async function ProfilePage() {
                 <div className="flex items-center gap-3">
                   <Layers className="w-5 h-5 shrink-0" style={{ color: '#3b82f6' }} />
                   <p className="text-3xl font-bold">
-                    {profile.isPro
-                      ? profile.totalItems
-                      : `${profile.totalItems} / ${FREE_LIMITS.items}`}
+                    {profile.totalItems}
                   </p>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {profile.isPro ? 'Unlimited items' : 'Total items'}
+                  Total items
                 </p>
               </div>
               <div className="rounded-md bg-muted/40 p-4">
                 <div className="flex items-center gap-3">
                   <Folders className="w-5 h-5 shrink-0" style={{ color: '#10b981' }} />
                   <p className="text-3xl font-bold">
-                    {profile.isPro
-                      ? profile.totalCollections
-                      : `${profile.totalCollections} / ${FREE_LIMITS.collections}`}
+                    {profile.totalCollections}
                   </p>
                 </div>
                 <p className="text-sm text-muted-foreground mt-1">
-                  {profile.isPro ? 'Unlimited collections' : 'Collections'}
+                  Collections
                 </p>
               </div>
             </div>

@@ -40,18 +40,26 @@ describe('optimizePrompt server action', () => {
     const result = await optimizePrompt(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Unauthorized')
+    expect('error' in result && result.error).toBe('Unauthorized')
   })
 
-  it('returns error for non-Pro users', async () => {
+  it('optimizes prompts for non-Pro users', async () => {
     mockAuth.mockResolvedValue({
       user: { id: 'user-1', isPro: false },
     } as never)
 
+    const create = vi.fn().mockResolvedValue({
+      output_text: '{"optimized":"Improved prompt","changed":true,"rationale":"More detail"}',
+    })
+    mockGetOpenAIClient.mockReturnValue({ responses: { create } } as never)
     const result = await optimizePrompt(validInput)
 
-    expect(result.success).toBe(false)
-    expect(result.error).toContain('Pro subscription')
+    expect(result).toEqual({
+      success: true,
+      data: { optimized: 'Improved prompt', changed: true, rationale: 'More detail' },
+    })
+    expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
+    expect(create).toHaveBeenCalledOnce()
   })
 
   it('returns error for invalid input (empty content)', async () => {
@@ -65,7 +73,7 @@ describe('optimizePrompt server action', () => {
     } as never)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid input')
+    expect('error' in result && result.error).toBe('Invalid input')
   })
 
   it('returns error for invalid typeName (not prompt)', async () => {
@@ -79,7 +87,7 @@ describe('optimizePrompt server action', () => {
     } as never)
 
     expect(result.success).toBe(false)
-    expect(result.error).toBe('Invalid input')
+    expect('error' in result && result.error).toBe('Invalid input')
   })
 
   it('returns error when rate limited', async () => {
@@ -91,7 +99,7 @@ describe('optimizePrompt server action', () => {
     const result = await optimizePrompt(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('rate limit')
+    expect('error' in result && result.error).toContain('rate limit')
     expect(mockCheckRateLimit).toHaveBeenCalledWith('ai', 'user-1')
   })
 
@@ -167,7 +175,7 @@ describe('optimizePrompt server action', () => {
     const result = await optimizePrompt(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Unexpected')
+    expect('error' in result && result.error).toContain('Unexpected')
   })
 
   it('returns error when AI returns empty optimized string', async () => {
@@ -187,7 +195,7 @@ describe('optimizePrompt server action', () => {
     const result = await optimizePrompt(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Unexpected')
+    expect('error' in result && result.error).toContain('Unexpected')
   })
 
   it('truncates content to 2000 chars before sending to AI', async () => {
@@ -299,6 +307,6 @@ describe('optimizePrompt server action', () => {
     const result = await optimizePrompt(validInput)
 
     expect(result.success).toBe(false)
-    expect(result.error).toContain('Failed to optimize')
+    expect('error' in result && result.error).toContain('Failed to optimize')
   })
 })

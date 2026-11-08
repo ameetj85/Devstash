@@ -13,7 +13,6 @@ interface ItemDrawerEditProps {
   selectedCollections: string[]
   onCollectionsChange: (ids: string[]) => void
   allCollections: { id: string; name: string }[]
-  isPro: boolean
   saving: boolean
   onSave: () => void
   onCancel: () => void
@@ -26,7 +25,6 @@ export default function ItemDrawerEdit({
   selectedCollections,
   onCollectionsChange,
   allCollections,
-  isPro,
   saving,
   onSave,
   onCancel,
@@ -63,7 +61,6 @@ export default function ItemDrawerEdit({
         selectedCollections={selectedCollections}
         onCollectionsChange={onCollectionsChange}
         allCollections={allCollections}
-        isPro={isPro}
         descriptionFileName={item.fileName ?? undefined}
         descriptionRows={3}
         optimizeToastMessage="Optimized prompt applied. Click Save to persist."

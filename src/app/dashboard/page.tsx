@@ -29,13 +29,12 @@ export default async function DashboardPage() {
   const user = session.user ?? {}
 
   return (
-    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites} isPro={session.user?.isPro ?? false}>
+    <DashboardShell itemTypes={itemTypes} collections={collections} user={user} editorPreferences={editorPreferences} hasFavorites={userHasFavorites}>
       <MainContent
         collections={collections}
         pinnedItems={pinnedItems}
         recentItems={recentItems}
         itemStats={itemStats}
-        isPro={session.user?.isPro ?? false}
       />
     </DashboardShell>
   )

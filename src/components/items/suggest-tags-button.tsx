@@ -11,7 +11,6 @@ interface SuggestTagsButtonProps {
   content: string
   typeName: string
   onAcceptTag: (tag: string) => void
-  isPro: boolean
 }
 
 export default function SuggestTagsButton({
@@ -19,12 +18,9 @@ export default function SuggestTagsButton({
   content,
   typeName,
   onAcceptTag,
-  isPro,
 }: SuggestTagsButtonProps) {
   const [loading, setLoading] = useState(false)
   const [suggestions, setSuggestions] = useState<string[]>([])
-
-  if (!isPro) return null
 
   async function handleSuggest() {
     if (!title.trim()) {

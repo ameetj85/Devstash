@@ -36,10 +36,9 @@ interface CreateItemDialogProps {
   collections?: { id: string; name: string }[]
   externalOpen?: boolean
   onExternalOpenChange?: (open: boolean) => void
-  isPro?: boolean
 }
 
-export default function CreateItemDialog({ defaultType, collections = [], externalOpen, onExternalOpenChange, isPro = false }: CreateItemDialogProps) {
+export default function CreateItemDialog({ defaultType, collections = [], externalOpen, onExternalOpenChange }: CreateItemDialogProps) {
   const router = useRouter()
   const initialType: ItemType =
     defaultType && (ITEM_TYPES as readonly string[]).includes(defaultType)
@@ -208,7 +207,6 @@ export default function CreateItemDialog({ defaultType, collections = [], extern
             selectedCollections={selectedCollections}
             onCollectionsChange={setSelectedCollections}
             allCollections={collections}
-            isPro={isPro}
             descriptionFileName={uploadedFile?.fileName}
             descriptionRows={2}
             fileUploadSlot={fileUploadSlot}

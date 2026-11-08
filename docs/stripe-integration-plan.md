@@ -1,5 +1,8 @@
 # Stripe Subscription Integration Plan
 
+> Historical plan: the payment integration and subscription gates have been
+> retired. Existing provider subscriptions must be handled separately.
+
 > Scribbles Pro: $8/mo monthly, $72/yr ($6/mo) annual
 
 ---
