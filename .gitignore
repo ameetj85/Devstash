@@ -43,6 +43,8 @@ next-env.d.ts
 
 # prisma generated client
 /src/generated
+/prisma/*.db
+/prisma/*.db-*
 
 # playwright MCP artifacts
 .playwright-mcp/

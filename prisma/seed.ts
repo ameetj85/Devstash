@@ -1,9 +1,12 @@
 import 'dotenv/config'
 import bcrypt from 'bcryptjs'
-import { PrismaNeon } from '@prisma/adapter-neon'
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
 import { PrismaClient } from '../src/generated/prisma/client'
+import { SYSTEM_ITEM_TYPES } from './system-item-types'
 
-const adapter = new PrismaNeon({ connectionString: process.env.DATABASE_URL! })
+const adapter = new PrismaBetterSqlite3({
+  url: process.env.SQLITE_DATABASE_URL ?? 'file:./prisma/scribbles.db',
+})
 const prisma = new PrismaClient({ adapter })
 
 async function main() {
@@ -30,17 +33,7 @@ async function main() {
 
   // ─── System item types ─────────────────────────────────────────────────────
 
-  const itemTypes = [
-    { id: 'type_snippet', name: 'snippet', icon: 'Code',       color: '#3b82f6' },
-    { id: 'type_prompt',  name: 'prompt',  icon: 'Sparkles',   color: '#8b5cf6' },
-    { id: 'type_command', name: 'command', icon: 'Terminal',   color: '#f97316' },
-    { id: 'type_note',    name: 'note',    icon: 'StickyNote', color: '#fde047' },
-    { id: 'type_file',    name: 'file',    icon: 'File',       color: '#6b7280' },
-    { id: 'type_image',   name: 'image',   icon: 'Image',      color: '#ec4899' },
-    { id: 'type_link',    name: 'link',    icon: 'Link',       color: '#10b981' },
-  ]
-
-  for (const t of itemTypes) {
+  for (const t of SYSTEM_ITEM_TYPES) {
     await prisma.itemType.upsert({
       where: { id: t.id },
       update: {},
@@ -48,7 +41,7 @@ async function main() {
     })
   }
 
-  console.log(`✓ Item types: ${itemTypes.length}`)
+  console.log(`✓ Item types: ${SYSTEM_ITEM_TYPES.length}`)
 
   // ─── Collections ───────────────────────────────────────────────────────────
 

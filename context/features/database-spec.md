@@ -1,25 +1,39 @@
-# Prisma + Neon PostgreSQL Setup
+# Prisma + SQLite Database
 
 ## Overview
 
-Set up Prisma ORM with Neon PostgreSQL database.
+Scribbles uses Prisma ORM 7 with a local SQLite database. The default database
+file is `prisma/scribbles.db`, configured by `SQLITE_DATABASE_URL`.
 
 ## Requirements
 
-- Use Neon PostgreSQL (serverless)
-- Create initial schema based on data models in project-overview.md (this will evolve)
-- Include NextAuth models (Account, Session, VerificationToken)
-- Add appropriate indexes and cascade deletes
+- Use SQLite with Prisma's `@prisma/adapter-better-sqlite3` adapter.
+- Keep the generated client on Prisma's `prisma-client` generator.
+- Include Auth.js models (`Account`, `Session`, `VerificationToken`).
+- Preserve the item, collection, tag, and user relations, indexes, and cascade
+  behavior in `prisma/schema.prisma`.
+- Use Prisma migrations for schema changes; do not use `prisma db push`.
+
+## Configuration and commands
+
+`prisma.config.ts` reads `SQLITE_DATABASE_URL`, defaulting to
+`file:./prisma/scribbles.db`. The same setting is used by the app, seed script,
+and database utilities.
+
+```powershell
+npx prisma migrate dev --name describe_the_change
+npx prisma migrate deploy
+npx prisma migrate status
+npx prisma studio
+```
+
+The active SQLite migration history lives in `prisma/migrations/`. The prior
+PostgreSQL migration files are retained only in
+`prisma/migrations-postgresql-archive/` for historical reference.
 
 ## References
 
-- Initial data models: `@context/project-overview.md`
-- Prisma docs: https://prisma.io/docs (Prisma 7 has breaking changes - fetch latest)
-
-## Notes
-
-We will have a development branch that we work on that will be in DATABASE_URL and then we will have a production branch. So we ALWAYS create migrations and never push directly unless specified.
-
-IMPORTANT! Use Prisma 7, which has some breaking changes. Read the entire upgrade guide at https://www.prisma.io/docs/orm/more/upgrade-guides/upgrading-versions/upgrading-to-prisma-7 to get a good idea of the changes.
-
-You can also look at the setup guide here - https://www.prisma.io/docs/getting-started/prisma-orm/quickstart/prisma-postgres
+- Current models: `prisma/schema.prisma`
+- Prisma config: `prisma.config.ts`
+- SQLite setup: https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/sqlite
+- Prisma migration guidance: https://www.prisma.io/docs/orm/prisma-migrate

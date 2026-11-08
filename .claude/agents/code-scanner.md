@@ -62,7 +62,7 @@ This project uses:
 - Next.js 16 with App Router (Turbopack, Cache Components)
 - React 19
 - TypeScript (strict mode)
-- Prisma 7 with `prisma-client` provider (Rust-free, TypeScript-native) and Neon PostgreSQL
+- Prisma 7 with `prisma-client` provider and SQLite via `@prisma/adapter-better-sqlite3`
 - NextAuth v5 (Auth.js)
 - Tailwind CSS v4 + shadcn/ui
 - Cloudflare R2 for file storage

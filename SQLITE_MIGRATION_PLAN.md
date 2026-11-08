@@ -1,0 +1,299 @@
+# PostgreSQL-to-SQLite Migration Record
+
+## Status and scope
+
+- **Branch:** `migrate-to-sqlite`
+- **Status:** Executed and data-validated
+- **SQLite database:** `prisma/scribbles.db`
+- **PostgreSQL source:** Left unchanged
+
+This document records the changes and copy plan used to move the application
+from PostgreSQL/Neon to a local SQLite database. The source was only read. All
+10 application tables were copied, preserving identifiers and values, then
+reconciled against the source. No PostgreSQL data or schema was changed.
+
+The target is a local SQLite database file. This is appropriate for local
+development or a single persistent server, but requires durable storage and is
+not automatically suitable for serverless or multi-instance deployments.
+
+## Current database and application setup
+
+The application currently uses:
+
+- PostgreSQL on Neon.
+- Prisma ORM 7.5.0 with the `prisma-client` generator.
+- `@prisma/adapter-neon` plus `@neondatabase/serverless` in the Prisma client
+  setup.
+- `DATABASE_URL` loaded by `prisma.config.ts` and the Prisma runtime singleton
+  in `src/lib/prisma.ts`.
+- A PostgreSQL migration history under `prisma/migrations/`, including the
+  initial schema and the editor-preferences change.
+
+The same Neon adapter is instantiated by `prisma/seed.ts`,
+`scripts/test-db.ts`, and `scripts/delete-users.ts`. These scripts must be
+reviewed as part of the switch so they do not continue to depend on Neon.
+
+The schema has 10 application tables:
+
+1. `User`
+2. `Account`
+3. `Session`
+4. `VerificationToken`
+5. `ItemType`
+6. `Item`
+7. `Collection`
+8. `ItemCollection`
+9. `Tag`
+10. `ItemTag`
+
+Prisma's `_prisma_migrations` table is provider-specific migration metadata;
+it is not application data and should not be copied into a new SQLite database.
+
+## Read-only source database inventory
+
+Inspected on **2026-11-08** from the configured `.env` PostgreSQL connection.
+Only counts and aggregate metadata were queried; no names, emails, tokens,
+password hashes, item bodies, or connection credentials were output.
+
+| PostgreSQL table / property | Observed value |
+| --- | ---: |
+| Database/schema | `neondb` / `public` |
+| Users | 2 |
+| Accounts | 1 |
+| Sessions | 0 |
+| Verification tokens | 0 |
+| Item types | 7 |
+| Items | 19 |
+| Collections | 3 |
+| Item-collection links | 19 |
+| Tags | 54 |
+| Item-tag links | 53 |
+| Users with editor preferences | 1 |
+| Users with a password hash | 1 |
+| System-owned item types | 7 |
+| User-owned item types | 0 |
+| Text items / file items | 19 / 0 |
+| Items with a file URL | 0 |
+| Largest item content | 1,140 bytes |
+
+Item counts by type:
+
+| Type | Items |
+| --- | ---: |
+| `command` | 5 |
+| `file` | 0 |
+| `image` | 0 |
+| `link` | 6 |
+| `note` | 0 |
+| `prompt` | 3 |
+| `snippet` | 5 |
+
+Read-only referential-integrity checks found zero item rows without a user or
+item type, zero account/session rows without a user, and zero invalid
+item-collection or item-tag links.
+
+These are the pre-copy source counts. The copy used a single PostgreSQL query to
+read all table snapshots, then independently compared row hashes and counts
+against SQLite.
+
+## What must change in the project
+
+### Prisma and SQLite setup
+
+1. Change the Prisma datasource provider from `postgresql` to `sqlite`.
+2. Configure a SQLite file URL in `prisma.config.ts`, for example
+   `file:./prisma/dev.db`. Prisma 7 resolves SQLite CLI paths relative to the
+   config file; verify that the application adapter and Prisma CLI resolve the
+   same file.
+3. Add a Prisma 7 SQLite driver adapter. For Node.js and a local SQLite file,
+   Prisma's documented option is `@prisma/adapter-better-sqlite3`, with the
+   `better-sqlite3` driver.
+4. Replace `PrismaNeon` setup in `src/lib/prisma.ts` with the selected SQLite
+   adapter and retain the current development singleton pattern.
+5. Update the Prisma adapter initialization in the seed and maintenance scripts.
+6. Regenerate the Prisma client after changing the provider.
+7. Update `.env.example` and setup documentation for the SQLite path. Ensure
+   local `.db` files and backups are ignored by Git.
+8. Remove Neon packages from `package.json` only if no remaining code uses them.
+   Keep Prisma packages and other independent providers (R2, Stripe, Resend,
+   Upstash, and OpenAI) as required by their features.
+
+### Migration history
+
+PostgreSQL and SQLite migration SQL are not interchangeable. The current
+`prisma/migrations/migration_lock.toml` identifies PostgreSQL, so it cannot be
+reused as SQLite history. Prisma documents the provider change as requiring a
+new migration history. On this branch, preserve the PostgreSQL migration files
+as an archive or rely on Git history, and create a fresh SQLite baseline
+migration from the SQLite schema. Do not copy the PostgreSQL migration lock or
+`_prisma_migrations` records into SQLite.
+
+### Schema-specific considerations
+
+The current data model is mostly portable, but target behavior still needs
+testing:
+
+- IDs are strings generated by CUID, so the existing identifiers can be
+  preserved; no PostgreSQL sequences need to be advanced.
+- PostgreSQL's native `ContentType` enum becomes text in SQLite. Prisma validates
+  enum values at the client layer, while SQLite itself will not enforce the enum
+  constraint.
+- `editorPreferences` is PostgreSQL `jsonb`; Prisma maps `Json` to SQLite JSON
+  storage. Copy values as JSON values, not PostgreSQL-specific binary output.
+- PostgreSQL timestamps are `timestamp without time zone` with millisecond
+  precision in the migrations. The SQLite adapter must use a consistent
+  `DateTime` representation; compare timestamp values and ordering after import.
+- Booleans are stored by SQLite as `0`/`1`; validate Prisma reads and writes.
+- SQLite has different write/concurrency and filesystem characteristics from
+  Neon. Avoid assuming that the existing deployment architecture can safely
+  share a local database file.
+- Current code uses Prisma Client queries rather than raw PostgreSQL SQL in the
+  examined app, seed, and maintenance-script surfaces. This reduces query
+  rewrites, but does not remove adapter, schema, migration, or deployment work.
+
+## Proposed data-copy plan
+
+The following describes the executed approach.
+
+### Phase 1 — Confirm destination and capture a fresh baseline
+
+1. Confirm the target is local SQLite rather than Turso/libSQL, Cloudflare D1,
+   or another SQLite-compatible service.
+2. Confirm how the app will be hosted and whether that host provides a durable,
+   single-writer local filesystem.
+3. Read the source tables through a single read-only PostgreSQL query. No
+   provider snapshot was created; the original database remains unchanged.
+4. The source counts were captured in the same snapshot used for the copy.
+5. Sessions and verification tokens were copied (both tables were empty).
+
+### Phase 2 — Build a clean SQLite target
+
+1. Preserve the PostgreSQL migration history.
+2. Switch the schema and runtime adapter to SQLite.
+3. Generate and review a new SQLite initial migration from the current Prisma
+   schema.
+4. Create a new empty SQLite database and apply only the SQLite migration.
+5. Confirm the generated schema has the required uniqueness, foreign keys,
+   cascade behavior, indexes, nullability, and enum values.
+
+### Phase 3 — Copy records without changing identities
+
+An in-memory ETL read the PostgreSQL tables through the Neon serverless SQL
+driver and inserted them into SQLite with `better-sqlite3`. The source and target
+settings were kept separate (`DATABASE_URL` for the one-time source read and
+`SQLITE_DATABASE_URL` for the target). The PostgreSQL migration SQL and
+`_prisma_migrations` table were not copied.
+
+Copy all application records, retaining primary keys, nullable values,
+timestamps, and relationship IDs. Use this dependency order:
+
+1. `User`
+2. `ItemType`
+3. `Account`, `Session`, `VerificationToken`, and `Collection`
+4. `Tag`
+5. `Item`
+6. `ItemCollection` and `ItemTag`
+
+Copy password hashes, OAuth account records, editor preferences, Pro/Stripe
+identifiers, favorites, pin state, tags, and collection membership as stored.
+This keeps account and content associations intact. The current inventory has
+no session or verification-token rows and no file-backed items, but the copy
+should support those records rather than assume they will remain empty.
+
+Uploaded file bytes live outside PostgreSQL in Cloudflare R2. The database holds
+their URLs and metadata. No file bytes need to be transferred to SQLite; keep
+the R2 bucket and public URLs intact unless storage migration is separately
+requested.
+
+The SQLite import ran in a transaction and refused to write to a non-empty
+target. The Neon source remained untouched throughout.
+
+### Phase 4 — Reconcile and validate before cutover
+
+The copy was reconciled between PostgreSQL and SQLite:
+
+- Row counts for every one of the 10 application tables.
+- Item counts by type and `ContentType`.
+- Counts of nullable fields, file metadata, user preferences, and auth records.
+- Foreign-key/link consistency for items, collections, tags, and users.
+- Unique constraints, including email, Stripe IDs, tag name, OAuth provider
+  account, and composite join keys.
+- Representative content and timestamps using non-sensitive hashes or equality
+  checks; do not print content or credential values in logs.
+- Application behavior: credentials and GitHub sign-in, item CRUD, collection
+  membership, favorites/pinning, editor preferences, and account settings.
+- `npm test`, `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
+
+Counts, row-level hashes, item-type distributions, foreign keys, and SQLite
+integrity all matched. The PostgreSQL database remains available as a manual
+rollback source; the application now points at SQLite.
+
+## Operational choice: local file vs hosted SQLite-compatible DB
+
+**Local SQLite file** is the simplest fit for local development and a
+single-instance server with a durable disk. It is not automatically suitable
+for serverless deployments, ephemeral filesystems, or multiple application
+instances: each instance may see a different file, writes can contend, and a
+file may disappear on redeploy.
+
+If the production app needs remote access, multiple instances, or managed
+availability, decide on a hosted SQLite-compatible target such as Turso/libSQL
+or Cloudflare D1 before implementation. These require their own adapters,
+credentials, deployment/migration workflow, and behavioral validation; they
+are not the same as pointing a local SQLite adapter at a file.
+
+## Execution results
+
+The SQLite target contains the following rows, with every count matching the
+PostgreSQL source:
+
+| Table | Rows |
+| --- | ---: |
+| `User` | 2 |
+| `Account` | 1 |
+| `Session` | 0 |
+| `VerificationToken` | 0 |
+| `ItemType` | 7 |
+| `Item` | 19 |
+| `Collection` | 3 |
+| `ItemCollection` | 19 |
+| `Tag` | 54 |
+| `ItemTag` | 53 |
+
+SHA-256 hashes of normalized row values matched for all rows in all 10 tables.
+Item-type counts matched (5 commands, 6 links, 3 prompts, 5 snippets; no file,
+image, or note items). SQLite `integrity_check` returned `ok`, and
+`foreign_key_check` returned zero errors. Uploaded object bytes remain in R2;
+the database contains no file-backed items to transfer.
+
+The original PostgreSQL migrations were moved to
+`prisma/migrations-postgresql-archive/`. They are retained for history only and
+are not used by Prisma. A new SQLite baseline was created and applied under
+`prisma/migrations/`.
+
+The PostgreSQL source was not modified or dropped. A provider snapshot was not
+created as part of this operation. The local environment now uses only
+`SQLITE_DATABASE_URL`; the source connection variable was removed after the
+copy.
+
+Validation completed:
+
+- `npm test` — 182 tests passed.
+- `npm run build` — production build passed.
+- `npx prisma migrate status` — SQLite schema is up to date.
+- `npx prisma validate` — schema is valid.
+- `npx tsx scripts/test-db.ts` — Prisma read the expected counts, DateTime, and
+  JSON preference values from SQLite.
+- Targeted ESLint on the changed database runtime/config/scripts passed.
+- Full `npm run lint` still reports existing errors in unrelated UI components;
+  standalone `npx tsc --noEmit` still reports existing type errors in AI action
+  tests. These pre-existing issues were not changed as part of the migration.
+
+## References
+
+- [Prisma ORM v7 SQLite connector](https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/sqlite) — provider setup, adapters, type mappings, and SQLite considerations.
+- [Prisma ORM v7 limitations and known issues](https://www.prisma.io/docs/orm/v7/prisma-migrate/understanding-prisma-migrate/limitations-and-known-issues) — provider-specific migration history and starting a new history when changing providers.
+- [Current Prisma schema](./prisma/schema.prisma)
+- [Prisma configuration](./prisma.config.ts)
+- [Runtime Prisma client](./src/lib/prisma.ts)
+- [Archived PostgreSQL migrations](./prisma/migrations-postgresql-archive)
