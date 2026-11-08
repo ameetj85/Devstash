@@ -15,7 +15,7 @@ export default function CollectionCard({ collection: col }: CollectionCardProps)
 
   return (
     <div
-      className="group rounded-lg border bg-card p-4 hover:bg-card/80 transition-colors cursor-pointer"
+      className="group rounded-lg border bg-card p-4 hover:bg-accent/40 hover:shadow-lg hover:shadow-primary/5 motion-safe:hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
       style={{ borderColor: col.dominantColor + '55' }}
       onClick={() => router.push(`/collections/${col.id}`)}
     >

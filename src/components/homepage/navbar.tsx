@@ -20,8 +20,8 @@ export function Navbar() {
     <nav
       className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-all duration-300 ${
         scrolled || menuOpen
-          ? 'border-b border-[#2a2a3a] bg-[#0a0a0f]/95'
-          : 'border-b border-transparent bg-[#0a0a0f]/60'
+          ? 'border-b border-border bg-background/95'
+          : 'border-b border-transparent bg-background/60'
       }`}
     >
       <div className="flex items-center justify-between px-6 py-4">
@@ -52,7 +52,7 @@ export function Navbar() {
             href="/register"
             className={cn(
               buttonVariants(),
-              'bg-[#3b82f6] text-white hover:bg-[#2563eb]'
+              'bg-primary text-primary-foreground hover:bg-primary/85'
             )}
           >
             Get Started
@@ -95,7 +95,7 @@ export function Navbar() {
               onClick={() => setMenuOpen(false)}
               className={cn(
                 buttonVariants(),
-                'w-full bg-[#3b82f6] text-white hover:bg-[#2563eb]'
+                'w-full bg-primary text-primary-foreground hover:bg-primary/85'
               )}
             >
               Get Started

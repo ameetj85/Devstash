@@ -46,7 +46,7 @@ export default function DashboardItemRows({ pinnedItems, recentItems, collection
                 <div
                   key={item.id}
                   onClick={() => openDrawer(item.id)}
-                  className="flex items-center gap-3 rounded-lg border border-l-2 border-border bg-card px-4 py-3 hover:bg-card/80 transition-colors cursor-pointer"
+                  className="flex items-center gap-3 rounded-lg border border-l-2 border-border bg-card px-4 py-3 hover:bg-accent/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-200 cursor-pointer"
                   style={{ borderLeftColor: item.itemType.color }}
                 >
                   <div
@@ -91,7 +91,7 @@ export default function DashboardItemRows({ pinnedItems, recentItems, collection
               <div
                 key={item.id}
                 onClick={() => openDrawer(item.id)}
-                className="flex items-center gap-3 rounded-lg border border-l-2 border-border bg-card px-4 py-3 hover:bg-card/80 transition-colors cursor-pointer"
+                className="flex items-center gap-3 rounded-lg border border-l-2 border-border bg-card px-4 py-3 hover:bg-accent/40 hover:shadow-md hover:shadow-primary/5 transition-all duration-200 cursor-pointer"
                 style={{ borderLeftColor: item.itemType.color }}
               >
                 <div

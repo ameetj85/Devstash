@@ -15,12 +15,12 @@ const TYPE_COLORS = {
 export function HeroSection() {
   return (
     <section className="mx-auto max-w-[1200px] px-5 pt-40 pb-16 text-center max-md:px-5 max-md:pt-32">
-      <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#2a2a3a] bg-[#12121a] px-4 py-1.5 text-xs text-[#8888a0]">
-        <span className="text-[#3b82f6]">&#9679;</span>
+      <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/10 px-4 py-1.5 text-xs text-muted-foreground">
+        <span className="text-primary">&#9679;</span>
         Built for developers who ship
       </div>
 
-      <h1 className="mb-5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 bg-clip-text text-transparent text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1]">
+      <h1 className="mb-5 bg-gradient-to-r from-violet-300 via-purple-400 to-fuchsia-300 bg-clip-text text-transparent text-[clamp(2.5rem,6vw,4rem)] font-extrabold leading-[1.1]">
         Stop Losing Your Developer Knowledge
       </h1>
 
@@ -31,7 +31,7 @@ export function HeroSection() {
       <div className="mb-16 flex flex-wrap items-center justify-center gap-4 max-md:flex-col">
         <Link
           href="/register"
-          className="inline-flex items-center justify-center rounded-lg h-11 px-8 text-base font-medium bg-[#3b82f6] text-white transition-all hover:bg-[#2563eb] hover:-translate-y-px"
+          className="inline-flex items-center justify-center rounded-lg h-11 px-8 text-base font-medium bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/85 motion-safe:hover:-translate-y-px"
         >
           Get Started &mdash; It&apos;s Free
         </Link>
@@ -55,7 +55,7 @@ export function HeroSection() {
 
         {/* Arrow */}
         <div className="flex shrink-0 items-center justify-center max-md:rotate-90">
-          <ArrowRight className="size-12 animate-pulse text-[#3b82f6]" />
+          <ArrowRight className="size-12 animate-pulse text-primary" />
         </div>
 
         {/* Order / Dashboard preview */}

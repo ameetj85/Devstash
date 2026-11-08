@@ -11,7 +11,7 @@ export function BottomCTA() {
       </p>
       <Link
         href="/register"
-        className="inline-flex items-center justify-center rounded-lg h-11 px-8 text-base font-medium bg-[#3b82f6] text-white transition-all hover:bg-[#2563eb] hover:-translate-y-px"
+        className="inline-flex items-center justify-center rounded-lg h-11 px-8 text-base font-medium bg-primary text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:bg-primary/85 motion-safe:hover:-translate-y-px"
       >
         Get Started &mdash; It&apos;s Free
       </Link>

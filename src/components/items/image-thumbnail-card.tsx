@@ -12,7 +12,7 @@ export default function ImageThumbnailCard({ item, onClick }: ImageThumbnailCard
 
   return (
     <div
-      className="rounded-lg border border-border bg-card overflow-hidden cursor-pointer group"
+      className="rounded-lg border border-border bg-card overflow-hidden cursor-pointer group hover:border-primary/50 hover:shadow-lg hover:shadow-primary/5 motion-safe:hover:-translate-y-0.5 transition-all duration-200"
       onClick={onClick}
     >
       {/* Thumbnail */}
