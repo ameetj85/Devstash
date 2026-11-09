@@ -334,10 +334,11 @@ Available on **Prompt** items. Click the **Sparkles** icon in the markdown edito
 
 ## 9. Files & Images
 
-- **Files** — upload anything (context files, PDFs, zips, etc.). Stored in Cloudflare R2. File rows show a type-aware icon, name, size, and a download button.
+- **Files** — upload supported file types, such as text, PDF, JSON, YAML and CSV, up to 10 MiB. File rows show a type-aware icon, name, size, and a download button.
 - **Images** — upload PNG, JPG, GIF, etc. The `/items/images` page defaults to a **gallery view** with 16:9 thumbnails. Toggle to card view with the layout button.
 
 Files and images are deleted from storage automatically when you delete the item.
+Both are stored in the local SQLite database. Images are limited to 5 MiB.
 
 ---
 
@@ -380,9 +381,8 @@ Account actions (password, delete) live on `/settings`.
 
 ## 12. Feature Access
 
-All users can access implemented features without a subscription. AI and file
-uploads require their respective services to be configured and remain subject
-to operational limits such as rate and file-size limits.
+All users can access implemented features without a subscription. AI requires
+its service to be configured; uploads are subject to file-size and type limits.
 
 ---
 
@@ -411,7 +411,7 @@ Scribbles rate-limits sensitive endpoints (sign-in, registration, password reset
 Check that the OpenAI API key is configured and that you haven't hit the AI rate limit.
 
 **My file upload failed.**
-Check your connection, file size, and R2 configuration.
+Check the file type and size, connection, and available space and write permissions for the SQLite database.
 
 **I signed up with GitHub but want to add a password.**
 An administrator can set a password for the account in the Admin Console.

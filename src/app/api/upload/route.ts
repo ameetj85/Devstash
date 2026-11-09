@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { PutObjectCommand } from '@aws-sdk/client-s3'
-import { randomUUID } from 'crypto'
 import { auth } from '@/auth'
-import { r2, R2_BUCKET_NAME } from '@/lib/r2'
+import { prisma } from '@/lib/prisma'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -63,22 +61,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `File exceeds ${limit} limit` }, { status: 400 })
   }
 
-  const ext = file.name.split('.').pop() ?? 'bin'
-  const key = `${session.user.id}/${randomUUID()}.${ext}`
   const buffer = Buffer.from(await file.arrayBuffer())
 
-  await r2.send(
-    new PutObjectCommand({
-      Bucket: R2_BUCKET_NAME,
-      Key: key,
-      Body: buffer,
-      ContentType: file.type,
-      ContentLength: file.size,
-    })
-  )
+  await prisma.itemFile.deleteMany({
+    where: {
+      userId: session.user.id,
+      itemId: null,
+      sourceKey: null,
+      createdAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+    },
+  })
+  const stored = await prisma.itemFile.create({
+    data: {
+      userId: session.user.id,
+      itemType,
+      fileName: file.name,
+      mimeType: file.type,
+      size: file.size,
+      data: buffer,
+    },
+    select: { id: true },
+  })
 
-  const publicUrl = process.env.R2_PUBLIC_URL!
-  const fileUrl = `${publicUrl.replace(/\/$/, '')}/${key}`
-
-  return NextResponse.json({ fileUrl, fileName: file.name, fileSize: file.size, key })
+  return NextResponse.json({ fileUrl: `/api/files/${stored.id}`, fileName: file.name, fileSize: file.size, key: stored.id })
 }

@@ -25,6 +25,7 @@ model User {
   accounts    Account[]
   sessions    Session[]
   items       Item[]
+  itemFiles   ItemFile[]
   itemTypes   ItemType[]
   collections Collection[]
 
@@ -118,12 +119,31 @@ model Item {
 
   collections ItemCollection[]
   tags        ItemTag[]
+  file        ItemFile?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([itemTypeId])
+}
+
+model ItemFile {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String?  @unique
+  sourceKey String?  @unique
+  itemType  String
+  fileName  String
+  mimeType  String
+  size      Int
+  data      Bytes
+  createdAt DateTime @default(now())
+
+  user User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  item Item? @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum ContentType {

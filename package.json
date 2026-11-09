@@ -13,6 +13,7 @@
     "postinstall": "prisma generate",
     "studio": "prisma studio",
     "setup-sqlite": "tsx scripts/setup-sqlite.ts",
+    "migrate-r2-files": "tsx scripts/migrate-r2-files.ts",
     "delete-users": "npx tsx scripts/delete-users.ts"
   },
   "dependencies": {

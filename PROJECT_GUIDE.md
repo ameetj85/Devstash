@@ -14,7 +14,7 @@ implemented in this repository, including how to run it locally.
 | ORM and database driver | Prisma 7.5 with the `prisma-client` generator and `better-sqlite3` adapter |
 | Authentication | Auth.js / NextAuth 5 beta, Prisma adapter, JWT sessions |
 | Tests | Vitest 4 |
-| File and image storage | Cloudflare R2 via the AWS S3-compatible SDK |
+| File and image storage | SQLite `ItemFile` BLOBs |
 | Email | Nodemailer (SMTP) |
 | Rate limiting | Upstash Redis and `@upstash/ratelimit` |
 | AI | OpenAI Responses API (`gpt-5-nano`) |
@@ -128,7 +128,7 @@ Other providers are only needed when using their corresponding features:
 
 - GitHub OAuth is disabled; restoring it requires code changes.
 - Invitations and password-reset email delivery need SMTP credentials.
-- File and image uploads/downloads need Cloudflare R2.
+- File and image uploads/downloads use the SQLite database.
 - AI actions need an OpenAI API key.
 - Upstash credentials enable shared rate limiting. If they are absent or
   unavailable, the current rate-limit helper fails open (requests are allowed).
@@ -160,11 +160,11 @@ does not validate all settings centrally at startup.
 | `EMAIL_FROM` | Sender address for outgoing email | Falls back to `SMTP_USER` when unset; Gmail may rewrite it to the authenticated account |
 | `UPSTASH_REDIS_REST_URL` | Upstash Redis REST endpoint | Shared rate limiting |
 | `UPSTASH_REDIS_REST_TOKEN` | Upstash Redis REST token | Shared rate limiting |
-| `R2_ACCOUNT_ID` | Cloudflare account identifier used to construct the S3-compatible endpoint | File/image storage |
-| `R2_ACCESS_KEY_ID` | R2 S3-compatible access key | File/image storage |
-| `R2_SECRET_ACCESS_KEY` | R2 S3-compatible secret key | File/image storage |
-| `R2_BUCKET_NAME` | Bucket for uploaded objects | File/image storage |
-| `R2_PUBLIC_URL` | Public base URL used to form stored file URLs | Upload display and file URL/key handling |
+| `R2_ACCOUNT_ID` | Cloudflare account identifier used to construct the S3-compatible endpoint | Legacy R2 migration only |
+| `R2_ACCESS_KEY_ID` | R2 S3-compatible access key | Legacy R2 migration only |
+| `R2_SECRET_ACCESS_KEY` | R2 S3-compatible secret key | Legacy R2 migration only |
+| `R2_BUCKET_NAME` | Bucket containing legacy objects | Legacy R2 migration only |
+| `R2_PUBLIC_URL` | Public base URL of legacy files | Legacy R2 migration only |
 | `OPENAI_API_KEY` | OpenAI API key | AI auto-tagging, descriptions, code explanations, and prompt optimization |
 
 When email verification is enabled, configure valid SMTP credentials and ensure the
@@ -209,7 +209,7 @@ invitation-only policy.
 - All authenticated users can create items and collections without the former
   50-item and 3-collection tier limits, use file and image types, and use AI
   actions. Authentication, ownership checks, validation, and operational limits
-  remain. Uploads require R2 configuration and are limited to 10 MiB for files
+  remain. Uploads use SQLite and are limited to 10 MiB for files
   and 5 MiB for images with allowed MIME types; AI requires OpenAI configuration
   and retains the shared 20-requests-per-hour user limit when rate limiting is
   configured.
@@ -268,13 +268,12 @@ perform their own authentication/ownership checks where appropriate.
 - Add an item to multiple collections.
 - Search items and collections using the command palette (`Ctrl+K` / `Cmd+K`).
 - Edit snippets and commands with Monaco; write and preview prompt/note Markdown.
-- Upload files/images to R2.
+- Upload files/images to SQLite.
 - Generate tags/descriptions, explain code, and optimize prompts with OpenAI.
 - Configure Monaco editor preferences per user.
 
-All users can access these features without a subscription. File uploads and AI
-still require their respective provider credentials and retain their operational
-limits, including file-size and AI rate limits.
+All users can access these features without a subscription. AI requires provider
+credentials; file-size and AI rate limits still apply.
 
 ## Architecture and source map
 
@@ -344,7 +343,7 @@ The main route handlers are:
   `/api/auth/forgot-password`, `/api/auth/reset-password` — account lifecycle.
 - `/api/items/[id]` — fetch an item's details for the drawer.
 - `/api/search` — search palette data.
-- `/api/upload` and `/api/files/[key]` — R2 upload and file access.
+- `/api/upload` and `/api/files/[key]` — SQLite upload and authenticated file access.
 - `/api/profile/change-password` and `/api/profile/delete-account` — account
   management.
 - The retired payment endpoints return HTTP 410 and do not process payments.
@@ -366,6 +365,7 @@ delegated to `src/lib/db/`.
 | `npm run test:coverage` | Run Vitest with V8 coverage |
 | `npm run studio` | Open Prisma Studio |
 | `npm run setup-sqlite` | Apply SQLite migrations and initialize system item types |
+| `npm run migrate-r2-files` | Copy and verify legacy R2 objects in SQLite |
 | `npm run delete-users` | Run `scripts/delete-users.ts` to delete non-demo users |
 
 There is no dedicated `typecheck` script in `package.json`; run
@@ -379,7 +379,7 @@ There is no dedicated `typecheck` script in `package.json`; run
    initialize system item types. Back up an existing database first.
 3. Generate the Prisma client during dependency installation/build.
 4. Configure `AUTH_SECRET` and the public canonical `NEXTAUTH_URL`.
-5. Configure OAuth, email, Redis, R2, and OpenAI only for the features being enabled.
+5. Configure email, Redis, and OpenAI only for the features being enabled; R2 credentials are needed only for legacy migration.
 6. Configure invitation email delivery and establish an initial administrator.
 7. Do not run the demo seed against production.
 

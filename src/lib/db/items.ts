@@ -331,7 +331,7 @@ export type CreateItemData = {
   fileSize: number | null
 }
 
-/** Creates a new item for the user. Returns null if the item type is not found. */
+/** Creates an item, attaching an owned upload atomically when needed. */
 export async function createItem(userId: string, data: CreateItemData): Promise<ItemDetail | null> {
   const itemType = await prisma.itemType.findFirst({
     where: { name: data.typeName, isSystem: true },
@@ -339,42 +339,63 @@ export async function createItem(userId: string, data: CreateItemData): Promise<
   if (!itemType) return null
 
   const contentType = data.typeName === 'file' || data.typeName === 'image' ? 'FILE' : 'TEXT'
+  let file: { id: string; fileName: string; size: number } | null = null
+  if (contentType === 'FILE') {
+    const match = /^\/api\/files\/([a-zA-Z0-9_-]+)$/.exec(data.fileUrl ?? '')
+    if (!match) return null
+    file = await prisma.itemFile.findFirst({
+      where: { id: match[1], userId, itemId: null, itemType: data.typeName, sourceKey: null },
+      select: { id: true, fileName: true, size: true },
+    })
+    if (!file) return null
+  }
 
-  const created = await prisma.item.create({
-    data: {
-      title: data.title,
-      description: data.description,
-      content: data.content,
-      url: data.url,
-      language: data.language,
-      fileUrl: data.fileUrl,
-      fileName: data.fileName,
-      fileSize: data.fileSize,
-      contentType,
-      userId,
-      itemTypeId: itemType.id,
-      tags: {
-        create: data.tags.map((name) => ({
-          tag: {
-            connectOrCreate: {
-              where: { name },
-              create: { name },
+  let created
+  try {
+    created = await prisma.item.create({
+      data: {
+        title: data.title,
+        description: data.description,
+        content: data.content,
+        url: data.url,
+        language: data.language,
+        fileUrl: file ? `/api/files/${file.id}` : null,
+        fileName: file?.fileName ?? null,
+        fileSize: file?.size ?? null,
+        contentType,
+        userId,
+        itemTypeId: itemType.id,
+        ...(file ? {
+          file: { connect: {
+            id: file.id, userId, itemType: data.typeName, AND: [{ itemId: null }, { sourceKey: null }],
+          } },
+        } : {}),
+        tags: {
+          create: data.tags.map((name) => ({
+            tag: {
+              connectOrCreate: {
+                where: { name },
+                create: { name },
+              },
             },
-          },
-        })),
+          })),
+        },
+        collections: {
+          create: data.collectionIds.map((collectionId) => ({
+            collectionId,
+          })),
+        },
       },
-      collections: {
-        create: data.collectionIds.map((collectionId) => ({
-          collectionId,
-        })),
+      include: {
+        itemType: true,
+        tags: { include: { tag: true } },
+        collections: { include: { collection: { select: { id: true, name: true } } } },
       },
-    },
-    include: {
-      itemType: true,
-      tags: { include: { tag: true } },
-      collections: { include: { collection: { select: { id: true, name: true } } } },
-    },
-  })
+    })
+  } catch (error: unknown) {
+    if (file && isPrismaNotFoundError(error)) return null
+    throw error
+  }
 
   return {
     id: created.id,
@@ -499,4 +520,3 @@ export async function getItemTypesWithCounts(userId: string): Promise<ItemTypeWi
     count: t._count.items,
   }))
 }
-

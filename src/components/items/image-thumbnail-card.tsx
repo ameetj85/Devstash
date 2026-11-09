@@ -20,6 +20,7 @@ export default function ImageThumbnailCard({ item, onClick }: ImageThumbnailCard
         {item.fileUrl ? (
           <Image
             src={item.fileUrl}
+            unoptimized
             alt={item.title}
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"

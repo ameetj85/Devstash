@@ -2,7 +2,6 @@
 
 import { z } from 'zod'
 import { updateItem as updateItemQuery, deleteItem as deleteItemQuery, createItem as createItemQuery, toggleItemFavorite as toggleItemFavoriteQuery, toggleItemPin as toggleItemPinQuery } from '@/lib/db/items'
-import { deleteR2Object, keyFromUrl } from '@/lib/r2'
 import { requireAuth, parseOrFail } from '@/lib/action-helpers'
 
 const updateItemSchema = z.object({
@@ -91,13 +90,9 @@ export async function createItem(data: CreateItemInput) {
     fileSize: fileSize ?? null,
   })
 
-  if (!created) {
-    // Clean up the uploaded R2 file if the item record couldn't be created
-    if (fileUrl) {
-      const key = keyFromUrl(fileUrl)
-      if (key) await deleteR2Object(key).catch(() => {})
-    }
-    return { success: false as const, error: 'Invalid item type' }
+  if (!created) return {
+    success: false as const,
+    error: typeName === 'file' || typeName === 'image' ? 'Invalid item type or uploaded file' : 'Invalid item type',
   }
 
   return { success: true as const, data: created }
@@ -110,17 +105,6 @@ export async function deleteItem(itemId: string) {
   const deleted = await deleteItemQuery(session.userId, itemId)
   if (!deleted) {
     return { success: false as const, error: 'Item not found or access denied' }
-  }
-
-  // Delete file from R2 if present
-  if (deleted.fileUrl) {
-    const key = keyFromUrl(deleted.fileUrl)
-    if (key) {
-      await deleteR2Object(key).catch(() => {
-        // Non-fatal: log but don't fail the action
-        console.error(`Failed to delete R2 object: ${key}`)
-      })
-    }
   }
 
   return { success: true as const }

@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GetObjectCommand } from '@aws-sdk/client-s3'
 import { auth } from '@/auth'
-import { r2, R2_BUCKET_NAME } from '@/lib/r2'
 import { prisma } from '@/lib/prisma'
-import { Readable } from 'stream'
 
 export async function GET(
   req: NextRequest,
@@ -16,40 +13,24 @@ export async function GET(
 
   const { key } = await params
 
-  // The key is stored as userId/uuid.ext — verify the userId prefix matches
-  if (!key.startsWith(session.user.id + '/')) {
-    // Also allow if item is found in DB owned by this user
-    const fileUrl = `${process.env.R2_PUBLIC_URL!.replace(/\/$/, '')}/${key}`
-    const item = await prisma.item.findFirst({
-      where: { fileUrl, userId: session.user.id },
-    })
-    if (!item) {
-      return NextResponse.json({ error: 'Not found' }, { status: 404 })
-    }
-  }
-
-  const command = new GetObjectCommand({ Bucket: R2_BUCKET_NAME, Key: key })
-  const response = await r2.send(command)
-
-  if (!response.Body) {
+  const file = await prisma.itemFile.findFirst({
+    where: { id: key, userId: session.user.id },
+    select: { data: true, mimeType: true, fileName: true },
+  })
+  if (!file) {
     return NextResponse.json({ error: 'File not found' }, { status: 404 })
   }
 
-  const stream = response.Body as Readable
-  const chunks: Buffer[] = []
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk))
-  }
-  const body = Buffer.concat(chunks)
+  const download = req.nextUrl.searchParams.has('download') || req.nextUrl.searchParams.has('name')
+  const disposition = !download && file.mimeType.startsWith('image/') ? 'inline' : 'attachment'
 
-  const fileName = req.nextUrl.searchParams.get('name') ?? key.split('/').pop() ?? 'download'
-  const contentType = response.ContentType ?? 'application/octet-stream'
-
-  return new NextResponse(body, {
+  return new NextResponse(new Uint8Array(file.data), {
     headers: {
-      'Content-Type': contentType,
-      'Content-Disposition': `attachment; filename="${encodeURIComponent(fileName)}"`,
-      'Cache-Control': 'private, max-age=3600',
+      'Content-Type': file.mimeType,
+      'Content-Disposition': `${disposition}; filename="${encodeURIComponent(file.fileName)}"`,
+      'Cache-Control': 'private, no-store',
+      'X-Content-Type-Options': 'nosniff',
+      'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
     },
   })
 }

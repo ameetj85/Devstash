@@ -28,7 +28,6 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import CodeEditor from '@/components/items/code-editor'
 import MarkdownEditor from '@/components/items/markdown-editor'
 import { LANGUAGE_TYPES, MARKDOWN_TYPES, FILE_TYPES } from '@/lib/item-type-config'
-import { extractFileKey } from '@/lib/file-utils'
 import type { ItemDetailResponse } from './item-drawer-types'
 import { formatDate } from './item-drawer-types'
 
@@ -212,7 +211,7 @@ export default function ItemDrawerView({
                 <p className="text-sm font-medium truncate">{item.fileName ?? 'File'}</p>
               </div>
               <a
-                href={`/api/files/${encodeURIComponent(extractFileKey(item.fileUrl))}?name=${encodeURIComponent(item.fileName ?? 'download')}`}
+                href={`${item.fileUrl}?download=1`}
                 download={item.fileName ?? 'download'}
                 className="shrink-0 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
               >
@@ -223,7 +222,7 @@ export default function ItemDrawerView({
           )}
           {typeName === 'image' && item.fileName && (
             <a
-              href={`/api/files/${encodeURIComponent(extractFileKey(item.fileUrl))}?name=${encodeURIComponent(item.fileName)}`}
+              href={`${item.fileUrl}?download=1`}
               download={item.fileName}
               className="mt-2 inline-flex items-center gap-1.5 text-xs px-3 h-8 rounded-md border border-border bg-background hover:bg-accent transition-colors"
             >

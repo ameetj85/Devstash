@@ -4,10 +4,10 @@
 Completed
 
 ## Goals
-<!-- Add feature goals here. -->
+Move file and image storage from Cloudflare R2 to SQLite, preserving existing objects and item links.
 
 ## Notes
-<!-- Add feature notes here. -->
+Keep the R2 bucket intact during migration. The current SQLite database has no linked file items; the bucket has six objects with local user prefixes.
 
 
 
@@ -83,3 +83,4 @@ Completed
 - 2026-11-08: Invite-only registration — added an admin Send Invites tab, seven-day single-use hashed invitation tokens and transactional registration using the verified invited email. Resending replaces prior links; disabled public registration and social login while retaining social code. Added the SQLite migration, Resend sender configuration, tests and isolated browser checks.
 - 2026-11-08: Admin user creation — added an admin-only create-user dialog for name, email, password, email verification, Pro and administrator flags. Added validation, bcrypt hashing, duplicate checks, unit tests and isolated browser verification.
 - 2026-11-08: Replaced Resend with Nodemailer SMTP for invitation, password reset and verification emails. Added SMTP configuration and tests, preserved generic password-reset responses on delivery failure, and updated documentation.
+- 2026-11-08: SQLite file storage — added an `ItemFile` BLOB table and migration, ownership-checked uploads and downloads, atomic item attachment and cascade deletion. Copied and SHA-256 verified all six configured R2 objects; no local item referenced them, so they remain preserved as unlinked records and the R2 originals remain intact. Added a repeatable migration script, tests, documentation, and isolated browser verification.

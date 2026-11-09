@@ -162,14 +162,14 @@ describe('createItem server action', () => {
       ...validInput,
       typeName,
       content: null,
-      fileUrl: 'https://pub.r2.dev/user-1/file.pdf',
+      fileUrl: '/api/files/file-1',
       fileName: 'file.pdf',
     })
 
     expect(result.success).toBe(true)
     expect(mockCreateItemQuery).toHaveBeenCalledWith('user-1', expect.objectContaining({
       typeName,
-      fileUrl: 'https://pub.r2.dev/user-1/file.pdf',
+      fileUrl: '/api/files/file-1',
       fileName: 'file.pdf',
     }))
   })

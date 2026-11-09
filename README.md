@@ -9,12 +9,12 @@ commands, links, files, and images.
 - Tailwind CSS 4 and shadcn/ui
 - Prisma 7 with a local SQLite database
 - Auth.js / NextAuth 5
-- Optional integrations: Cloudflare R2, SMTP email (nodemailer), Upstash Redis,
+- Optional integrations: SMTP email (nodemailer), Upstash Redis,
   and OpenAI
 
-All users have access to the app's features without a subscription. AI and file
-uploads still require their respective service credentials and remain subject
-to applicable rate and file-size limits.
+All users have access to the app's features without a subscription. AI requires
+its service credentials; uploads are stored in SQLite and remain subject to
+file-size limits.
 
 Social login is disabled. Existing social-only users need an administrator to
 set a password before they can sign in. Restoring social login requires code
@@ -66,6 +66,7 @@ creates or updates demo records.
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run test:coverage` | Run Vitest with coverage |
 | `npm run studio` | Open Prisma Studio for the configured SQLite database |
+| `npm run migrate-r2-files` | Copy and verify legacy R2 objects in SQLite |
 | `npx prisma migrate dev --name <name>` | Create and apply a development migration |
 | `npx prisma migrate deploy` | Apply committed migrations |
 
@@ -78,6 +79,11 @@ The default is `file:./prisma/scribbles.db`. The active SQLite migration history
 is in `prisma/migrations/`; the original PostgreSQL migrations are retained in
 `prisma/migrations-postgresql-archive/` for historical reference and are not
 used by the app.
+
+File and image bytes are stored in SQLite. Use persistent storage and include
+the database in backups. Unattached new uploads older than 24 hours are cleaned
+up on the user's next upload. R2 is only needed for the optional legacy
+migration; see [the migration record](./docs/r2-to-sqlite-file-storage.md).
 
 For detailed architecture and setup information, see
 [PROJECT_GUIDE.md](./PROJECT_GUIDE.md). The source data transfer and validation

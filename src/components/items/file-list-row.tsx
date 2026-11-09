@@ -9,7 +9,6 @@ import {
   Download,
 } from 'lucide-react'
 import type { ItemWithType } from '@/lib/db/items'
-import { extractFileKey } from '@/lib/file-utils'
 
 function getFileIcon(fileName: string | null) {
   if (!fileName) return File
@@ -47,9 +46,7 @@ export default function FileListRow({ item, onClick }: FileListRowProps) {
   function handleDownload(e: React.MouseEvent) {
     e.stopPropagation()
     if (!item.fileUrl) return
-    const key = encodeURIComponent(extractFileKey(item.fileUrl))
-    const name = encodeURIComponent(item.fileName ?? 'download')
-    window.location.href = `/api/files/${key}?name=${name}`
+    window.location.href = `${item.fileUrl}?download=1`
   }
 
   return (
