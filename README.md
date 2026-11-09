@@ -71,6 +71,8 @@ creates or updates demo records.
 | `npx prisma migrate deploy` | Apply committed migrations |
 
 Database schema changes must use Prisma migrations, not `prisma db push`.
+For step-by-step creation and verification, see the
+[SQLite setup guide](./docs/sqlite-setup.md).
 
 ## Database
 
